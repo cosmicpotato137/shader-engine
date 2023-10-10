@@ -1,0 +1,3 @@
+C:/Users/imacs/Documents/NerdThings/C++/Shader Ideas/build/CMakeFiles/shader-ideas.dir
+C:/Users/imacs/Documents/NerdThings/C++/Shader Ideas/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/imacs/Documents/NerdThings/C++/Shader Ideas/build/CMakeFiles/ZERO_CHECK.dir

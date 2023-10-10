@@ -1,0 +1,10 @@
+^C:\USERS\IMACS\DOCUMENTS\NERDTHINGS\C++\SHADER IDEAS\BUILD\CMAKEFILES\232E5BDC9B38A64079977B01B56411CF\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/imacs/Documents/NerdThings/C++/Shader Ideas" "-BC:/Users/imacs/Documents/NerdThings/C++/Shader Ideas/build" --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file "C:/Users/imacs/Documents/NerdThings/C++/Shader Ideas/build/shader-ideas.sln"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
