@@ -60,9 +60,6 @@
     <ClInclude Include="C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\src\RenderTexture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\src\Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\src\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -76,6 +73,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\src\stb_image_include.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\src\Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

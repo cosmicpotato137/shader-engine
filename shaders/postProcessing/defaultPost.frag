@@ -16,8 +16,5 @@ void main() {
 
     // Output the sampled color as the final color
     float t = time;
-    FragColor = color * vec4((sin(t) + 1) / 2, (cos(t) + 1) / 2, 0.0, 1.0);
-
-    // Output texCoord as color
-    //FragColor = vec4(1, 0, 0.0f, 1.0f);
+    FragColor = color;
 }

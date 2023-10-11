@@ -1,5 +1,2 @@
 ﻿  Renderer.cpp
-  main.cpp
-  Generating Code...
-glew32s.lib(glew.obj) : warning LNK4099: PDB '' was not found with 'glew32s.lib(glew.obj)' or at ''; linking object as if no debug info
   shader-ideas.vcxproj -> C:\Users\imacs\Documents\NerdThings\C++\Shader Ideas\bin\Debug\shader-ideas.exe

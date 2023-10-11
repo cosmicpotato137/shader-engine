@@ -22,18 +22,6 @@ find_library(GLFW NAMES glfw3 PATHS vendor/lib)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
 set(CORE ${GLEW} ${GLFW} ${ASSIMP} opengl32.lib)
 
-# Add your source files here (e.g., .cpp files)
-file(GLOB SOURCES src/*.cpp)
-file(GLOB HEADERS src/*.h)
-file(GLOB_RECURSE SHADERS shaders/*.vert shaders/*.frag)
-
-source_group("Source Files" FILES ${SOURCES})
-source_group("Header Files" FILES ${HEADERS})
-source_group("Shader Files" FILES ${SHADERS})
-
-# Add executable target
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
-
-target_include_directories(${PROJECT_NAME} PRIVATE vendor/include)
-target_link_directories(${PROJECT_NAME} PUBLIC vendor/lib)
-target_link_libraries(${PROJECT_NAME} ${CORE})
+# Include sub-projects.
+add_subdirectory ("RenderLib")
+add_subdirectory ("RenderEngine")
