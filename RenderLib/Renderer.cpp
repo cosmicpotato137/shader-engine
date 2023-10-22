@@ -9,6 +9,43 @@
 
 Renderer* Renderer::s_Instance = nullptr;
 
+std::string postFrag = R"(
+#version 330 core
+
+// input and output
+in vec2 TexCoord;
+out vec4 FragColor;
+
+// The input texture sampler
+uniform sampler2D renderTexture;
+
+uniform float time;
+
+
+void main() {
+    // Sample the color from the input render texture
+    vec4 color = texture(renderTexture, TexCoord);
+
+    // Output the sampled color as the final color
+    float t = time;
+    FragColor = color;
+}
+)";
+
+std::string postVert = R"(
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+
+void main() {
+    gl_Position = vec4(aPos, 1.0);
+    TexCoord = aTexCoord;
+}
+)";
+
 Renderer::Renderer()
     : context(nullptr), renderTarget(nullptr)
 {
@@ -60,7 +97,7 @@ bool Renderer::Init(GLFWwindow* context)
     renderTarget->Init();
 
     auto defaultPost = std::make_shared<Shader>("Default Post");
-    defaultPost->Init("../shaders/postProcessing/defaultPost.vert", "../shaders/postProcessing/defaultPost.frag");
+    defaultPost->InitFromSource(postVert, postFrag);
     postProcessing = std::make_shared<Material>("Default Post", defaultPost, renderTarget->GetTexture());
 
     return true;
@@ -87,6 +124,11 @@ void Renderer::Render()
     }
 
     renderTarget->EndRender();
+}
+
+void Renderer::PostProcess()
+{
+    float time = GetTime();
 
     glDisable(GL_DEPTH_TEST);
     postProcessing->Bind();

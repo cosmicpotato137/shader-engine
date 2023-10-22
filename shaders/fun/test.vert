@@ -4,6 +4,7 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexCoord; // UV coordinates
 
 out vec2 texCoord; // Pass UV coordinates to the fragment shader
+out float texTime;
 
 uniform mat4 model;
 uniform mat4 viewProjection;
@@ -19,4 +20,5 @@ void main()
     oldpos.z += oldpos.z * (sin(time + oldpos.y * frequency) + offset) * amplitude;
     gl_Position = viewProjection * model * oldpos;
     texCoord = inTexCoord; // Pass UV coordinates to fragment shader
+    texTime = time / 35;
 }

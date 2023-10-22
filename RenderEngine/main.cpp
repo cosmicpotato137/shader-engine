@@ -11,6 +11,10 @@
 #include "Texture.h"
 #include "RenderTexture.h"
 
+#define SHADER_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/shaders")
+#define RESOURCE_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/res")
+#define TEXTURE_DIR RESOURCE_DIR + std::string("/textures")
+
 
 class MyApp : public Application {
 
@@ -33,22 +37,29 @@ protected:
         ren.SetClearColor(.1, .1, .2);
         cam = ren.GetMainCamera();
 
+        //ptr<Shader> postShader = std::make_shared<Shader>("defaultPost");
+        //postShader->Init(SHADER_DIR + "/postProcessing/defaultPost.vert", SHADER_DIR + "/postProcessing/defaultPost.frag");
+        //ren.SetPostProcess(std::make_shared<Material>(
+        //    "defaultPost",
+        //    postShader
+        //));
+
         quad = Mesh::Quad();
         box = Mesh::Cube();
 
         
         ptr<Shader> defaultShader;
-        defaultShader = ren.LoadShader("defaultShader", "../shaders/default.vert", "../shaders/default.frag");
+        defaultShader = ren.LoadShader("defaultShader", SHADER_DIR + "/default.vert", SHADER_DIR + "/default.frag");
 
         ptr<Shader> testShader;
-        testShader = ren.LoadShader("test", "../shaders/fun/test.vert", "../shaders/fun/test.frag");
+        testShader = ren.LoadShader("test", SHADER_DIR + "/fun/test.vert", SHADER_DIR + "/fun/test.frag");
 
         ptr<Shader> texShader;
-        texShader = ren.LoadShader("texture", "../shaders/texture.vert", "../shaders/texture.frag");
+        texShader = ren.LoadShader("texture", SHADER_DIR + "/texture.vert", SHADER_DIR + "/texture.frag");
 
         ptr<Texture> tex;
         tex = std::make_shared<Texture>();
-        tex->Init("../res/textures/checkers-2.png");
+        tex->Init(TEXTURE_DIR + "/checkers-2.png");
 
 
         ptr<RenderObject> object = std::make_shared<RenderObject>(
@@ -84,11 +95,16 @@ protected:
             std::make_shared<Material>("default", texShader, tex)
         );
         ren.PushObject(object2);
+
+        ren.Render();
     }
 
     virtual void Update(double dt) override
     {
         ren.Render();
+        ren.PostProcess();
+        //ptr<RenderTexture> t = ren.GetRenderTarget();
+        
     }
 
     void RotateCamera(float xOffset, float yOffset) {

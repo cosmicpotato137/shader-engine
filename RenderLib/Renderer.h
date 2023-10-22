@@ -32,10 +32,12 @@ public:
 	~Renderer();
 	bool Init(GLFWwindow* context);
 	void Render();
+	void PostProcess();
 	void Cleanup();
 
 	void SetClearColor(float r, float g, float b);
 	void SetRenderTarget(ptr<RenderTexture> source);
+	ptr<RenderTexture> GetRenderTarget() const { return renderTarget; }
 	void SetPostProcess(ptr<Material> post);
 
 	ptr<Shader> LoadShader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
