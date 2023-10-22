@@ -16,9 +16,14 @@ bool Shader::Init(const std::string& vertexShaderPath, const std::string& fragme
         return false;
     }
 
+    return InitFromSource(vertexShaderSource, fragmentShaderSource);
+}
+
+bool Shader::InitFromSource(const std::string& vertexSource, const std::string& fragmentSource)
+{
     // Compile and link shaders
-    GLuint vertexShader = Compile(GL_VERTEX_SHADER, vertexShaderSource.c_str());
-    GLuint fragmentShader = Compile(GL_FRAGMENT_SHADER, fragmentShaderSource.c_str());
+    GLuint vertexShader = Compile(GL_VERTEX_SHADER, vertexSource.c_str());
+    GLuint fragmentShader = Compile(GL_FRAGMENT_SHADER, fragmentSource.c_str());
 
     if (!vertexShader || !fragmentShader)
     {

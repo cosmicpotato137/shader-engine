@@ -1,5 +1,6 @@
-project(shader-ideas)
 cmake_minimum_required(VERSION 2.8.11)
+
+project(shader-ideas)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS 

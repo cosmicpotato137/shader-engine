@@ -15,6 +15,7 @@ public:
     ~Shader() { Cleanup(); }
 
     bool Init(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+    bool InitFromSource(const std::string& vertexSource, const std::string& fragmentSource);
 
     // Use the shader program
     void Use() const { glUseProgram(program); }

@@ -7,6 +7,7 @@ out vec2 fragTexCoord; // Pass UV coordinates to the fragment shader
 
 uniform mat4 model;
 uniform mat4 viewProjection;
+uniform float time;
 
 void main()
 {
