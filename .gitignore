@@ -4,8 +4,9 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 # build and bin folders
-/build
-/bin
+/build/
+/bin/
+./vs/
 
 # User-specific files
 *.rsuser

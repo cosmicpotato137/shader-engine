@@ -14,3 +14,11 @@ target_link_libraries(RenderEngine RenderLib)
 target_include_directories(RenderEngine PUBLIC 
 	${PROJECT_SOURCE_DIR}/vendor/include
 	${PROJECT_SOURCE_DIR}/RenderLib)
+
+add_custom_command(
+    TARGET RenderEngine
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_SOURCE_DIR}/vendor/lib/assimp-vc143-mt.dll
+        $<TARGET_FILE_DIR:RenderEngine>
+)
