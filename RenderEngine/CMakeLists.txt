@@ -13,6 +13,7 @@ add_executable(RenderEngine ${SOURCES} ${HEADERS} ${SHADERS})
 target_link_libraries(RenderEngine RenderLib)
 target_include_directories(RenderEngine PUBLIC 
 	${PROJECT_SOURCE_DIR}/vendor/include
+<<<<<<< HEAD
 	${PROJECT_SOURCE_DIR}/RenderLib)
 
 add_custom_command(
@@ -22,3 +23,6 @@ add_custom_command(
         ${CMAKE_SOURCE_DIR}/vendor/lib/assimp-vc143-mt.dll
         $<TARGET_FILE_DIR:RenderEngine>
 )
+=======
+	${PROJECT_SOURCE_DIR}/RenderLib)
+>>>>>>> ba16253d78ef5e4df971985c5574e3eaf2cc07bb
