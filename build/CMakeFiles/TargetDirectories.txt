@@ -1,4 +1,0 @@
-C:/Users/imacs/Documents/NerdThings/Shader-Ideas/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/imacs/Documents/NerdThings/Shader-Ideas/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/imacs/Documents/NerdThings/Shader-Ideas/build/RenderLib/CMakeFiles/RenderLib.dir
-C:/Users/imacs/Documents/NerdThings/Shader-Ideas/build/RenderEngine/CMakeFiles/RenderEngine.dir

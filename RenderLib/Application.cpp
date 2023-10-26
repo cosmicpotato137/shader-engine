@@ -27,8 +27,8 @@ bool Application::Init(const std::string& winname)
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
-    // Initialize GLEW
-    if (glewInit() != GLEW_OK) {
+    // Initialize glad
+    if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         Console::Error("Failed to initialize GLEW");
         return false;
     }

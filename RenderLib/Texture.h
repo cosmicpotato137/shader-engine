@@ -1,7 +1,6 @@
 #pragma once
 #include "core.h"
 
-#include <GL/glew.h>
 #include <iostream>
 #include <string>
 

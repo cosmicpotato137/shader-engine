@@ -20,12 +20,11 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 find_package(OpenGL REQUIRED)
 find_library(GLFW NAMES glfw3 PATHS vendor/lib)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
-set(CORE ${GLEW} ${GLFW} ${ASSIMP} opengl32.lib)
+set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
 
 # Include sub-projects.
 add_subdirectory ("RenderLib")
 add_subdirectory ("RenderEngine")
 
-# include submodules
-add_subdirectory(vendor/glew)
-include_directories(${CMAKE_SOURCE_DIR}/vendor/glew/include)
+# include external libs
+add_subdirectory("vendor")
