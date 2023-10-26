@@ -2,25 +2,28 @@
 
 #include <fstream>
 #include <sstream>
+#include <cstdio>
 
 #include "Log.h"
 
 
-bool Shader::Init(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+bool Shader::Init(const std::string & shaderPath)
 {
     // Load shader source code from files
-    std::string vertexShaderSource, fragmentShaderSource;
-    if (!LoadSource(vertexShaderPath, vertexShaderSource) ||
-        !LoadSource(fragmentShaderPath, fragmentShaderSource))
+    std::string shaderSource;
+    if (!LoadSource(shaderPath, shaderSource))
     {
         return false;
     }
 
-    return InitFromSource(vertexShaderSource, fragmentShaderSource);
+    return InitFromSource(shaderSource);
 }
 
-bool Shader::InitFromSource(const std::string& vertexSource, const std::string& fragmentSource)
+bool Shader::InitFromSource(const std::string & shaderSource)
 {
+    std::string vertexSource, fragmentSource;
+    ParseVertexAndFragment(shaderSource, vertexSource, fragmentSource);
+
     // Compile and link shaders
     GLuint vertexShader = Compile(GL_VERTEX_SHADER, vertexSource.c_str());
     GLuint fragmentShader = Compile(GL_FRAGMENT_SHADER, fragmentSource.c_str());
@@ -30,7 +33,7 @@ bool Shader::InitFromSource(const std::string& vertexSource, const std::string& 
         return false;
     }
 
-    program = Link(vertexShader, fragmentShader);
+    program = Link({ vertexShader, fragmentShader });
 
     if (!program)
     {
@@ -58,7 +61,7 @@ GLint Shader::GetUniformLocation(const std::string& name)
     // set the uniform if not found
     GLuint loc = glGetUniformLocation(program, name.c_str());
     if (loc == -1)
-        Console::Log("WARNING::" + this->name + ": Uniform '" + name + "' not found in " + this->name);
+        Console::Warning("%s: Uniform '%s' not found", this->name.c_str(), name.c_str());
 
     uniformLocations.insert({ name, loc });
     return loc;
@@ -138,7 +141,7 @@ bool Shader::LoadSource(const std::string& filepath, std::string& shaderSource)
         fileStream.close();
     }
     else {
-        Console::Error("Unable to open file: " + std::string(filepath));
+        Console::Error("Unable to open file: %s", filepath.c_str());
         return false;
     }
 
@@ -162,8 +165,7 @@ GLuint Shader::Compile(GLenum shaderType, const char* shaderSource)
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
         std::vector<GLchar> errorLog(maxLength);
         glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
-        std::cerr << "Shader compilation error:\n"
-            << &errorLog[0] << std::endl;
+        Console::Error("%s: Shader compilation error: \n%s\n", name.c_str(), &errorLog[0]);
         glDeleteShader(shader);
         return 0;
     }
@@ -171,11 +173,11 @@ GLuint Shader::Compile(GLenum shaderType, const char* shaderSource)
     return shader;
 }
 
-GLuint Shader::Link(GLuint vertexShader, GLuint fragmentShader)
+GLuint Shader::Link(std::vector<GLuint> programs)
 {
     GLuint program = glCreateProgram();
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
+    for (GLuint p : programs)
+        glAttachShader(program, p);
     glLinkProgram(program);
 
     GLint success;
@@ -186,11 +188,35 @@ GLuint Shader::Link(GLuint vertexShader, GLuint fragmentShader)
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
         std::vector<GLchar> errorLog(maxLength);
         glGetProgramInfoLog(program, maxLength, &maxLength, &errorLog[0]);
-        std::cerr << "Shader program linking error:\n"
-            << &errorLog[0] << std::endl;
+        Console::Error("%s : Shader program linking error", name.c_str());
         glDeleteProgram(program);
         return 0;
     }
 
     return program;
+}
+
+void Shader::ParseVertexAndFragment(const std::string& input, std::string& vertexShader, std::string& fragmentShader)
+{
+    std::string vdelimiter = "#vertex\n";  // The tag indicating the start of the vertex shader
+    size_t vertexPos = input.find(vdelimiter);
+    if (vertexPos == std::string::npos) {
+        Console::Error("%s: Vertex shader tag not found:", name.c_str());
+        return;
+    }
+    std::string fdelimiter = "#fragment\n";  // The tag indicating the start of the fragment shader
+    size_t fragmentPos = input.find(fdelimiter);
+    if (fragmentPos == std::string::npos)
+    {
+        Console::Error("%s: Fragment shader tag not found:", name.c_str());
+        return;
+    }
+    if (fragmentPos < vertexPos)
+    {
+        Console::Error("%s: Vertex shader must appear before fragment shader", name.c_str());
+        return;
+    }
+
+    vertexShader = input.substr(vertexPos + vdelimiter.length(), fragmentPos - vdelimiter.length() - 1);
+    fragmentShader = input.substr(fragmentPos + fdelimiter.length());
 }

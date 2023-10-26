@@ -4,6 +4,7 @@
 
 
 class Shader {
+protected:
     GLuint program;
 
     std::map<std::string, GLuint> uniformLocations;
@@ -14,11 +15,11 @@ public:
     Shader(const std::string& name) : program(0), name(name) {}
     ~Shader() { Cleanup(); }
 
-    bool Init(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
-    bool InitFromSource(const std::string& vertexSource, const std::string& fragmentSource);
+    bool Init(const std::string & shaderPath);
+    virtual bool InitFromSource(const std::string & shaderSource);
 
     // Use the shader program
-    void Use() const { glUseProgram(program); }
+    virtual void Use() const { glUseProgram(program); }
     void Drop() const { glUseProgram(0); }
 
     void Cleanup();
@@ -39,10 +40,13 @@ public:
     // Set a uniform Mat4 value
     bool SetUniform(const std::string& name, const glm::mat4& value);
 
-private:
+protected:
     bool LoadSource(const std::string& filepath, std::string& shaderSource);
-
+    
     GLuint Compile(GLenum shaderType, const char* shaderSource);
 
-    GLuint Link(GLuint vertexShader, GLuint fragmentShader);
+    GLuint Link(std::vector<GLuint> programs);
+
+private:
+    void ParseVertexAndFragment(const std::string& input, std::string& vertexShader, std::string& fragmentShader);
 };

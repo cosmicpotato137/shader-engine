@@ -11,8 +11,9 @@ bool Application::Init(const std::string& winname)
     }
 
     //Configure GLFW (optional)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create a GLFW window
     window = glfwCreateWindow(800, 600, winname.c_str(), nullptr, nullptr);
@@ -34,13 +35,13 @@ bool Application::Init(const std::string& winname)
 
     // Print OpenGL version
     std::string glVersion((char*)glGetString(GL_VERSION));
-    Console::Log("OpenGL Version: " + glVersion);
+    Console::Log("OpenGL Version: %s", glVersion.c_str());
 
     // set the window user pointer
     glfwSetWindowUserPointer(window, this);
 
     // set window size
-    glfwGetWindowSize(window, &width, &height);
+    glfwGetWindowSize(window, &screenWidth, &screenHeight);
 
     // set callbacks
     glfwSetKeyCallback(window, Application::KeyCallback);
@@ -85,8 +86,8 @@ glm::vec2 Application::GetCursorPosition()
 
 void Application::OnWindowResize(int width, int height)
 {
-    this->width = width;
-    this->height = height;
+    this->screenWidth = width;
+    this->screenHeight = height;
     glViewport(0, 0, width, height);
 }
 

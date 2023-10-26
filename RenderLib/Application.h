@@ -6,9 +6,9 @@
 class Application {
 protected:
     GLFWwindow* window;
-    int width, height;
+    int screenWidth, screenHeight;
 public:
-    Application() : window(nullptr), width(0), height(0) {}
+    Application() : window(nullptr), screenWidth(0), screenHeight(0) {}
     ~Application() { Cleanup(); }
 
     // Initialize GLFW and GLEW
@@ -24,12 +24,12 @@ public:
     GLFWwindow* GetWindow() const { return window; }
     // get the aspect ratio of the window
     float GetAspect() const { 
-        return (float)width / (float)height; 
+        return (float)screenWidth / (float)screenHeight; 
     }
 
     // get window size
     glm::vec2 GetWindowSize() { 
-        return { width, height };
+        return { screenWidth, screenHeight };
     }
 
     // get current time in app

@@ -9,7 +9,21 @@
 
 Renderer* Renderer::s_Instance = nullptr;
 
-std::string postFrag = R"(
+std::string postVert = R"(
+#vertex
+#version 330 core
+
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec2 aTexCoord;
+
+out vec2 TexCoord;
+
+void main() {
+    gl_Position = vec4(aPos, 1.0);
+    TexCoord = aTexCoord;
+}
+
+#fragment
 #version 330 core
 
 // input and output
@@ -32,20 +46,6 @@ void main() {
 }
 )";
 
-std::string postVert = R"(
-#version 330 core
-
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec2 aTexCoord;
-
-out vec2 TexCoord;
-
-void main() {
-    gl_Position = vec4(aPos, 1.0);
-    TexCoord = aTexCoord;
-}
-)";
-
 Renderer::Renderer()
     : context(nullptr), renderTarget(nullptr)
 {
@@ -53,7 +53,7 @@ Renderer::Renderer()
         s_Instance = this;
     else
     {
-        Console::Log("a renderer already exists");
+        Console::Log("A renderer already exists");
         delete (this);
     }
 }
@@ -93,11 +93,11 @@ bool Renderer::Init(GLFWwindow* context)
     screenQuad = Mesh::Quad();
 
     auto winSize = GetContextSize();
-    renderTarget = std::make_shared<RenderTexture>(winSize.x, winSize.y);
-    renderTarget->Init();
+    renderTarget = std::make_shared<RenderTexture>();
+    renderTarget->Init(winSize.x, winSize.y);
 
     auto defaultPost = std::make_shared<Shader>("Default Post");
-    defaultPost->InitFromSource(postVert, postFrag);
+    defaultPost->InitFromSource(postVert);
     postProcessing = std::make_shared<Material>("Default Post", defaultPost, renderTarget->GetTexture());
 
     return true;
@@ -131,11 +131,17 @@ void Renderer::PostProcess()
     float time = GetTime();
 
     glDisable(GL_DEPTH_TEST);
+    postProcessing->SetTexture(renderTarget->GetTexture());
     postProcessing->Bind();
     postProcessing->SetUniform("time", time);
     screenQuad->Draw();
 
     glfwSwapBuffers(context);
+}
+
+void Renderer::Clear()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::Cleanup()
@@ -156,7 +162,6 @@ void Renderer::SetRenderTarget(ptr<RenderTexture> source)
 
 void Renderer::SetPostProcess(ptr<Material> post) 
 {
-    post->SetTexture(renderTarget->GetTexture());
     this->postProcessing = post;
 }
 
@@ -183,10 +188,10 @@ void Renderer::PushObject(ptr<RenderObject> mesh)
     scene.push_back(mesh);
 }
 
-ptr<Shader> Renderer::LoadShader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+ptr<Shader> Renderer::LoadShader(const std::string& name, const std::string & shaderPath)
 {
     ptr<Shader> s = std::make_shared<Shader>(name);
-    s->Init(vertexShaderPath, fragmentShaderPath);
+    s->Init(shaderPath);
 
     return s;
 }

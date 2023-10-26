@@ -33,15 +33,16 @@ public:
 	bool Init(GLFWwindow* context);
 	void Render();
 	void PostProcess();
+	void Clear();
 	void Cleanup();
 
 	void SetClearColor(float r, float g, float b);
 	void SetRenderTarget(ptr<RenderTexture> source);
 	ptr<RenderTexture> GetRenderTarget() const { return renderTarget; }
 	void SetPostProcess(ptr<Material> post);
+	ptr<Material> GetPostProcess() const { return postProcessing; }
 
-	ptr<Shader> LoadShader(const std::string& name, const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
-	void SetPostMaterial(ptr<Material> postProcess) { this->postProcessing = postProcess; }
+	ptr<Shader> LoadShader(const std::string& name, const std::string & shaderPath);
 
 	void PushObject(ptr<RenderObject> mesh);
 

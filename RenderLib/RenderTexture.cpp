@@ -3,8 +3,8 @@
 #include "RenderTexture.h"
 #include <iostream>
 
-RenderTexture::RenderTexture(int width, int height) 
-    : framebufferID(0), renderbufferID(0), width(width), height(height) 
+RenderTexture::RenderTexture() 
+    : framebufferID(0), renderbufferID(0), width(0), height(0) 
 {
     texture = std::make_shared<Texture>();
 }
@@ -13,7 +13,10 @@ RenderTexture::~RenderTexture() {
     Cleanup();
 }
 
-bool RenderTexture::Init() {
+bool RenderTexture::Init(int width, int height) {
+    this->width = width;
+    this->height = height;
+
     // Create framebuffer object (FBO)
     glGenFramebuffers(1, &framebufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);

@@ -11,10 +11,10 @@ class RenderTexture {
     int height;
 
 public:
-    RenderTexture(int width, int height);
+    RenderTexture();
     ~RenderTexture();
 
-    bool Init();
+    bool Init(int width, int height);
     void Cleanup();
     void BeginRender();
     void EndRender();

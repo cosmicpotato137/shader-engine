@@ -1,3 +1,4 @@
+#vertex
 #version 330 core
 
 layout(location = 0) in vec3 inPosition;
@@ -21,4 +22,22 @@ void main()
     gl_Position = viewProjection * model * oldpos;
     texCoord = inTexCoord; // Pass UV coordinates to fragment shader
     texTime = time / 35;
+}
+
+
+#fragment
+#version 330 core
+
+in vec2 texCoord; // UV coordinates from vertex shader
+in float texTime;
+
+out vec4 fragColor;
+
+uniform sampler2D textureSampler; // Texture sampler
+
+void main()
+{
+    // Sample the texture using UV coordinates
+    vec4 textureColor = texture(textureSampler, texCoord + vec2(0, -texTime));
+    fragColor = textureColor;
 }

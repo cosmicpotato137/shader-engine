@@ -1,7 +1,7 @@
 # Add your source files here (e.g., .cpp files)
 file(GLOB SOURCES ./*.cpp)
 file(GLOB HEADERS ./*.h)
-file(GLOB_RECURSE SHADERS ../shaders/*.vert ../shaders/*.frag)
+file(GLOB_RECURSE SHADERS ../shaders/*.vert ../shaders/*.frag ../shaders/*.shader ../shaders/*.compute)
 
 source_group("Source Files" FILES ${SOURCES})
 source_group("Header Files" FILES ${HEADERS})

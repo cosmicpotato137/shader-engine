@@ -19,12 +19,13 @@ public:
 
     // Bind the texture for rendering
     void Bind() const;
+    void BindCompute() const;
 
     // Save texture to image
-    bool SaveToImage(const char* filePath);
+    bool SaveToImage(const std::string& filePath);
 
     // Unbind the currently bound texture
-    void Unbind();
+    void Unbind() const;
 
     // Get the texture width
     int GetWidth() const { return width; }
