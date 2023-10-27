@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(shader-ideas)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS 
     "/wd4018 /wd4244 /wd4305 
     /D_CRT_SECURE_NO_WARNINGS 
@@ -18,11 +18,13 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 
 # set up packages and libraries
 find_package(OpenGL REQUIRED)
-find_library(GLEW NAMES glew32s PATHS vendor/lib/x64)
 find_library(GLFW NAMES glfw3 PATHS vendor/lib)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
-set(CORE ${GLEW} ${GLFW} ${ASSIMP} opengl32.lib)
+set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
 
 # Include sub-projects.
 add_subdirectory ("RenderLib")
 add_subdirectory ("RenderEngine")
+
+# include external libs
+add_subdirectory("vendor")

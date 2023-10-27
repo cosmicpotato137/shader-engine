@@ -1,15 +1,29 @@
 #version 460 core
+layout(local_size_x = 8, local_size_y = 8) in;
 
-layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-	
-// images 
-layout(rgba32f, binding = 0) uniform image2D imgOutput;
+layout(rgba32f, binding = 0) uniform image2D cells_in;
+layout(rgba32f, binding = 1) uniform image2D cells_out;
 
-// variables
-uniform vec4 color;
+uint updateCell(ivec2 cell_idx) {
+  uint current_status = uint(imageLoad(cells_in, cell_idx).x);
+
+  uint alive_cells = 0;
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, -1)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, 0)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, 1)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(0, -1)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(0, 1)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, -1)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, 0)).x);
+  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, 1)).x);
+
+  return uint(current_status == 0 && alive_cells == 3) + uint(current_status == 1 && alive_cells > 1 && alive_cells < 4);
+}
 
 void main() {
-    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
-    imageStore(imgOutput, texelCoord, color);
-    // imageStore(imgOutput, texelCoord, vec4(1, 0, 0, 1));
+  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+
+  uint next_status = updateCell(gidx);
+
+  imageStore(cells_out, gidx, uvec4(next_status));
 }

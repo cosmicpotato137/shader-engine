@@ -2,8 +2,14 @@
 
 #include <functional>
 
+static void glfwErrorCallback(int error, const char* description) {
+    fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+}
+
 bool Application::Init(const std::string& winname)
 {
+    glfwSetErrorCallback(glfwErrorCallback);
+
     // Initialize GLFW
     if (!glfwInit()) {
         Console::Error("Failed to initialize GLFW");
@@ -27,8 +33,11 @@ bool Application::Init(const std::string& winname)
     // Make the window's context current
     glfwMakeContextCurrent(window);
 
-    // Initialize GLEW
-    if (glewInit() != GLEW_OK) {
+    // enable vsync
+    glfwSwapInterval(1);
+
+    // Initialize glad
+    if (!gladLoadGL((GLADloadfunc)glfwGetProcAddress)) {
         Console::Error("Failed to initialize GLEW");
         return false;
     }

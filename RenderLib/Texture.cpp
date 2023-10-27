@@ -12,6 +12,7 @@ bool Texture::Init(const std::string& filename)
 {
     // Generate and bind the texture
     glGenTextures(1, &textureID);
+    glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Set texture parameters (you can customize these)
@@ -78,9 +79,9 @@ void Texture::Bind() const
     glBindTexture(GL_TEXTURE_2D, textureID);
 }
 
-void Texture::BindCompute() const
+void Texture::BindCompute(int binding) const
 {
-    glBindImageTexture(0, textureID, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+    glBindImageTexture(binding, textureID, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 }
 
 bool Texture::SaveToImage(const std::string& filePath)
