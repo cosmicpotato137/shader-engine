@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.11)
 
 project(shader-ideas)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS 
     "/wd4018 /wd4244 /wd4305 
     /D_CRT_SECURE_NO_WARNINGS 

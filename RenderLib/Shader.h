@@ -1,7 +1,10 @@
 #pragma once 
 
 #include "core.h"
+#include <variant>
 
+typedef std::variant<bool, GLint, GLuint, GLfloat, glm::vec2,
+    glm::vec3, glm::vec4, glm::mat4> u_types;
 
 class Shader {
 protected:
@@ -27,18 +30,8 @@ public:
     // find the location of a uniform
     GLint GetUniformLocation(const std::string& name);
     
-    // Set a uniform integer value
-    bool SetUniform(const std::string& name, int value);
-    // Set a uniform float value
-    bool SetUniform(const std::string& name, float value);
-    // Set a uniform Vec2 value
-    bool SetUniform(const std::string& name, const glm::vec2& value);
-    // Set a uniform Vec3 value
-    bool SetUniform(const std::string& name, const glm::vec3& value);
-    // Set a uniform Vec4 value
-    bool SetUniform(const std::string& name, const glm::vec4& value);
-    // Set a uniform Mat4 value
-    bool SetUniform(const std::string& name, const glm::mat4& value);
+    bool SetUniform(const std::string& uniform_name,
+        const u_types& value);
 
 protected:
     bool LoadSource(const std::string& filepath, std::string& shaderSource);

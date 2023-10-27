@@ -67,65 +67,48 @@ GLint Shader::GetUniformLocation(const std::string& name)
     return loc;
 }
 
-bool Shader::SetUniform(const std::string& name, int value)
+bool Shader::SetUniform(const std::string& name, const u_types& value)
 {
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1i(location, value);
-        return true;
-    }
-    return false;
-}
+    // get location of uniform variable
+    const GLint location = GetUniformLocation(name);
+    if (location == -1)
+        return false;
 
-bool Shader::SetUniform(const std::string& name, float value)
-{
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform1f(location, value);
-        return true;
-    }
-    return false;
-}
+    // set value
+    struct Visitor {
+        GLuint program;
+        GLint location;
+        Visitor(GLuint program, GLint location)
+            : program(program), location(location) {}
 
-bool Shader::SetUniform(const std::string& name, const glm::vec2& value)
-{
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform2fv(location, 1, &value[0]);
-        return true;
-    }
-    return false;
-}
-
-bool Shader::SetUniform(const std::string& name, const glm::vec3& value)
-{
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform3fv(location, 1, &value[0]);
-        return true;
-    }
-    return false;
-}
-
-bool Shader::SetUniform(const std::string& name, const glm::vec4& value)
-{
-    GLint location = GetUniformLocation(name);
-    if (location != -1) {
-        glUniform4fv(location, 1, &value[0]);
-        return true;
-    }
-    return false;
-}
-
-bool Shader::SetUniform(const std::string& name, const glm::mat4& value)
-{
-    GLuint location = GetUniformLocation(name);
-    if (location != -1)
-    {
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-        return true;
-    }
-    return false;
+        void operator()(bool value) {
+            glProgramUniform1i(program, location, value);
+        }
+        void operator()(GLint value) {
+            glProgramUniform1i(program, location, value);
+        }
+        void operator()(GLuint value) {
+            glProgramUniform1ui(program, location, value);
+        }
+        void operator()(GLfloat value) {
+            glProgramUniform1f(program, location, value);
+        }
+        void operator()(const glm::vec2& value) {
+            glProgramUniform2fv(program, location, 1, glm::value_ptr(value));
+        }
+        void operator()(const glm::vec3& value) {
+            glProgramUniform3fv(program, location, 1, glm::value_ptr(value));
+        }
+        void operator()(const glm::vec4& value) {
+            glProgramUniform4fv(program, location, 1, glm::value_ptr(value));
+        }
+        void operator()(const glm::mat4& value) {
+            glProgramUniformMatrix4fv(program, location, 1, GL_FALSE,
+                glm::value_ptr(value));
+        }
+    };
+    std::visit(Visitor{ program, location }, value);
+    return true;
 }
 
 bool Shader::LoadSource(const std::string& filepath, std::string& shaderSource)

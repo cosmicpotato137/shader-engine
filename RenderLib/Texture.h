@@ -18,7 +18,7 @@ public:
 
     // Bind the texture for rendering
     void Bind() const;
-    void BindCompute() const;
+    void BindCompute(int binding) const;
 
     // Save texture to image
     bool SaveToImage(const std::string& filePath);
