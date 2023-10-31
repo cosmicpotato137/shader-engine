@@ -8,7 +8,12 @@
 #include <stb/stb_image_write.h>
 
 
-bool Texture::Init(const std::string& filename) 
+Texture::Texture() : textureID(0), width(0), height(0) {
+    // Generate and bind the texture
+    glGenTextures(1, &textureID);
+}
+
+bool Texture::Init(const std::string& filename)
 {
     // Generate and bind the texture
     glGenTextures(1, &textureID);
@@ -50,8 +55,6 @@ bool Texture::Init(int width, int height)
     this->width = width;
     this->height = height;
 
-    // Generate and bind the texture
-    glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
     // Set texture parameters (you can customize these)

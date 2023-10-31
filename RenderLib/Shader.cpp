@@ -67,7 +67,7 @@ GLint Shader::GetUniformLocation(const std::string& name)
     return loc;
 }
 
-bool Shader::SetUniform(const std::string& name, const u_types& value)
+bool Shader::SetUniform(const std::string& name, const uniform_types& value)
 {
     // get location of uniform variable
     const GLint location = GetUniformLocation(name);

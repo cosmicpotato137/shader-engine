@@ -8,8 +8,6 @@
 #include "Camera.h"
 
 class Renderer {
-	static Renderer* s_Instance;
-
 	GLFWwindow* context;
 	ptr<RenderTexture> renderTarget;
 	ptr<Mesh> screenQuad;
@@ -20,14 +18,6 @@ class Renderer {
 	std::vector<ptr<RenderObject>> scene;
 
 public:
-	Renderer GetInstance()
-	{
-		if (s_Instance)
-			return *s_Instance;
-		else
-			return Renderer();
-	}
-
 	Renderer();
 	~Renderer();
 	bool Init(GLFWwindow* context);

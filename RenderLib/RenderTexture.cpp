@@ -7,6 +7,9 @@ RenderTexture::RenderTexture()
     : framebufferID(0), renderbufferID(0), width(0), height(0) 
 {
     texture = std::make_shared<Texture>();
+
+    // Create framebuffer object (FBO)
+    glGenFramebuffers(1, &framebufferID);
 }
 
 RenderTexture::~RenderTexture() {
@@ -17,8 +20,6 @@ bool RenderTexture::Init(int width, int height) {
     this->width = width;
     this->height = height;
 
-    // Create framebuffer object (FBO)
-    glGenFramebuffers(1, &framebufferID);
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
 
     // Create texture as render target

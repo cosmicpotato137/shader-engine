@@ -4,7 +4,7 @@
 #include <variant>
 
 typedef std::variant<bool, GLint, GLuint, GLfloat, glm::vec2,
-    glm::vec3, glm::vec4, glm::mat4> u_types;
+    glm::vec3, glm::vec4, glm::mat4> uniform_types;
 
 class Shader {
 protected:
@@ -31,7 +31,7 @@ public:
     GLint GetUniformLocation(const std::string& name);
     
     bool SetUniform(const std::string& uniform_name,
-        const u_types& value);
+        const uniform_types& value);
 
 protected:
     bool LoadSource(const std::string& filepath, std::string& shaderSource);
