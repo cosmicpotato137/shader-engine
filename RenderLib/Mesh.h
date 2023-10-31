@@ -31,8 +31,6 @@ public:
 
     ~Mesh();
     void Draw();
-    void Cleanup();
-
 
     static ptr<Mesh> Quad();
     static ptr<Mesh> Cube();

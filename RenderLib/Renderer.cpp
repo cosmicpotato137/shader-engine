@@ -7,8 +7,6 @@
 #include "Renderer.h"
 #include "Log.h"
 
-Renderer* Renderer::s_Instance = nullptr;
-
 std::string postVert = R"(
 #vertex
 #version 330 core
@@ -49,13 +47,6 @@ void main() {
 Renderer::Renderer()
     : context(nullptr), renderTarget(nullptr)
 {
-    if (!s_Instance)
-        s_Instance = this;
-    else
-    {
-        Console::Log("A renderer already exists");
-        delete (this);
-    }
 }
 
 Renderer::~Renderer()
@@ -144,7 +135,6 @@ void Renderer::Clear()
 
 void Renderer::Cleanup()
 {
-    screenQuad->Cleanup();
 }
 
 void Renderer::SetClearColor(float r, float g, float b)

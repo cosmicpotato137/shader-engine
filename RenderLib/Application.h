@@ -46,13 +46,13 @@ public:
     virtual bool OnEvent(event_types e);
 
     // key callback
-    virtual void OnKey(int key, int scancode, int action, int mods) { Console::Log("base keyboard"); }
+    virtual void OnKey(int key, int scancode, int action, int mods) {}
     // mouse callback
-    virtual void OnMousePos(double xpos, double ypos) { Console::Log("base mouse pos"); }
+    virtual void OnMousePos(double xpos, double ypos) {}
     // scroll callback
     virtual void OnScroll(double xoffset, double yoffset) {}
     // mouse button callback
-    virtual void OnMouseButton(int button, int action, int mods) { Console::Log("base mouse button"); }
+    virtual void OnMouseButton(int button, int action, int mods) {}
     // window resize callback
     virtual void OnWindowResize(int width, int height);
 

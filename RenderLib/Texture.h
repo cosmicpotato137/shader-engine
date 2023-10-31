@@ -9,7 +9,7 @@ class Texture {
     int width;
     int height;
 public:
-    Texture() : textureID(0), width(0), height(0) {}
+    Texture();
     ~Texture() { Cleanup(); }
 
     // Initialize the texture from an image file
