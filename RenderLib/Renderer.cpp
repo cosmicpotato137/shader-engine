@@ -135,8 +135,6 @@ void Renderer::PostProcess()
     postProcessing->Bind();
     postProcessing->SetUniform("time", time);
     screenQuad->Draw();
-
-    glfwSwapBuffers(context);
 }
 
 void Renderer::Clear()

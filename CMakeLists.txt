@@ -22,6 +22,9 @@ find_library(GLFW NAMES glfw3 PATHS vendor/lib)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
 set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
 
+include_directories(${CMAKE_SOURCE_DIR}/vendor
+                    ${CMAKE_SOURCE_DIR}/vendor/include)
+
 # Include sub-projects.
 add_subdirectory ("RenderLib")
 add_subdirectory ("RenderEngine")

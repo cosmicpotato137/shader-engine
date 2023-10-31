@@ -63,6 +63,16 @@ bool Application::Init(const std::string& winname)
     return true;
 }
 
+void Application::PushLayer(ptr<ApplicationLayer> layer)
+{
+    layers.push_back(layer);
+}
+
+void Application::PopLayer()
+{
+    layers.pop_back();
+}
+
 void Application::Run()
 {
     double lastTime = 0;
@@ -70,9 +80,22 @@ void Application::Run()
     while (!glfwWindowShouldClose(window)) {
         // Process input events (e.g., keyboard and mouse)
         glfwPollEvents();
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        for (ptr<ApplicationLayer> l : layers)
+        {
+            l->Update(GetTime() - lastTime);
+        }
 
         lastTime = GetTime();
-        Update(GetTime() - lastTime);
+
+        for (ptr<ApplicationLayer> l : layers)
+        {
+            l->Render();
+        }
+
+        glfwSwapBuffers(window);
     }
 }
 
@@ -93,6 +116,20 @@ glm::vec2 Application::GetCursorPosition()
     return glm::vec2(xpos, ypos);
 }
 
+bool Application::OnEvent(event_types e)
+{
+    bool handled = false;
+    for (int i = layers.size() - 1; i >= 0; i--)
+    {
+        handled = std::visit(EventVisitor(layers[i]), e);
+
+        if (handled)
+            break;
+    }
+
+    return handled;
+}
+
 void Application::OnWindowResize(int width, int height)
 {
     this->screenWidth = width;
@@ -104,7 +141,9 @@ void Application::MouseButtonCallback(GLFWwindow* window, int button, int action
 {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     if (app) {
-        app->OnMouseButton(button, action, mods);
+        MouseButtonEvent me = { false, button, action, mods };
+        if (!app->OnEvent(me))
+            app->OnMouseButton(button, action, mods);
     }
 }
 
@@ -112,7 +151,9 @@ void Application::CursorPosCallback(GLFWwindow* window, double xpos, double ypos
 {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     if (app) {
-        app->OnMousePos(xpos, ypos);
+        CursorMovedEvent me = { false, xpos, ypos };
+        if (!app->OnEvent(me))
+            app->OnMousePos(xpos, ypos);
     }
 }
 
@@ -120,7 +161,9 @@ void Application::ScrollCallback(GLFWwindow* window, double xoffset, double yoff
 {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     if (app) {
-        app->OnScroll(xoffset, yoffset);
+        ScrollEvent se = { false, xoffset, yoffset };
+        if (!app->OnEvent(se))
+            app->OnScroll(xoffset, yoffset);
     }
 }
 
@@ -128,7 +171,9 @@ void Application::KeyCallback(GLFWwindow* window, int key, int scancode, int act
 {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     if (app) {
-        app->OnKey(key, scancode, action, mods);
+        KeyboardEvent ke = { false, key, scancode, action, mods };
+        if (!app->OnEvent(ke))
+            app->OnKey(key, scancode, action, mods);
     }
 }
 
@@ -136,6 +181,8 @@ void Application::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
     Application* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
     if (app) {
-        app->OnWindowResize(width, height);
+        WindowResizeEvent we = { false, width, height };
+        if (!app->OnEvent(we))
+            app->OnWindowResize(width, height);
     }
 }

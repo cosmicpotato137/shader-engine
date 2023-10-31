@@ -12,27 +12,90 @@
 #include "Application.h"
 #include "Texture.h"
 #include "RenderTexture.h"
+#include "ApplicationLayer.h"
+
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
 
 #define SHADER_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/shaders")
 #define RESOURCE_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/res")
 #define TEXTURE_DIR RESOURCE_DIR + std::string("/textures")
 
+class ImGUILayer : public ApplicationLayer {
+    Application* app;
+public:
+    ImGUILayer(Application* app) : ApplicationLayer("imgui layer"), app(app) {
+        // init imgui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
 
-class MyApp : public Application {
+        // set imgui style
+        ImGui::StyleColorsDark();
+
+        // Initialize ImGui for GLFW
+        ImGui_ImplGlfw_InitForOpenGL(app->GetWindow(), true);
+
+        // Initialize ImGui for OpenGL
+        ImGui_ImplOpenGL3_Init("#version 460 core");
+    }
+
+    void Update(double dt) {
+
+        // Start a new ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Create an ImGui window
+        ImGui::Begin("ImGui Window");
+
+        // Add ImGui widgets, e.g., buttons, sliders, etc.
+        ImGui::Text("Hello, ImGui!");
+        if (ImGui::Button("Click Me")) {
+            Console::Log("Hello world!");
+        }
+
+        // End the ImGui window
+        ImGui::End();
+    }
+
+    void Render() override {
+
+        // render imgui
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void HandleEvent(MouseButtonEvent& e) override
+    {
+        e.handled = ImGui::GetIO().WantCaptureMouse;
+    }
+
+    void HandleEvent(WindowResizeEvent& e) override
+    {
+        
+    }
+};
+
+class ShaderLayer : public ApplicationLayer {
+    Application* app;
 
     // render vars
     Renderer ren;
+    ptr<RenderTexture> renderTarget;
+    ptr<RenderTexture> swapTarget;
+    ptr<Camera> cam;
+
+    // meshes
     ptr<Mesh> quad;
     ptr<Mesh> box;
 
-    ptr<Camera> cam;
-
+    // shaders
     ptr<Shader> postShader;
     ptr<ComputeShader> helloShader;
     ptr<ComputeShader> conwayShader;
     ptr<ComputeShader> mandelbrotShader;
-    ptr<RenderTexture> renderTarget;
-    ptr<RenderTexture> swapTarget;
 
     // event vars
     bool isDragging = false;
@@ -40,14 +103,13 @@ class MyApp : public Application {
 
     glm::vec2 centerPos = glm::vec2(0);
     float zoom = 1.0f;
-    
+
     float resetTime = 0.0f;
 
-protected:
-    virtual void Start() override
-    {
+public:
+    ShaderLayer(Application* app) : ApplicationLayer("main render layer"), app(app) {
         // renderer settings
-        ren.Init(window);
+        ren.Init(app->GetWindow());
         cam = ren.GetMainCamera();
 
         ren.SetClearColor(.3, .3, .3);
@@ -70,7 +132,6 @@ protected:
 
         mandelbrotShader = std::make_shared<ComputeShader>("mandelbrot");
         mandelbrotShader->Init(SHADER_DIR + "/compute/mandelbrot.compute");
-        
 
         // materials
         ptr<Shader> defaultShader;
@@ -125,6 +186,10 @@ protected:
         );
         ren.PushObject(noiseQuad);
 
+        glm::vec2 screenSize = app->GetWindowSize();
+        int screenWidth = screenSize.x;
+        int screenHeight = screenSize.y;
+
         // assign the render target texture to the compute shader's buffer
         renderTarget = std::make_shared<RenderTexture>();
         renderTarget->Init(screenWidth, screenHeight);
@@ -143,17 +208,9 @@ protected:
         ren.Render();
     }
 
-    virtual void Update(double dt) override
-    {
-        //ren.Render();
-        //if (GetTime() - resetTime > 1)
-        //{
-        //    resetTime = GetTime();
-        //    postShader->SetUniform("step", true);
-        //}
-        //postShader->SetUniform("step", false);
-        //std::swap(ren.GetRenderTarget(), renderTarget);
+    virtual void Render() override {
 
+        // Your OpenGL rendering code goes here
         // hello world compute shader
         //renderTarget->GetTexture()->BindCompute(0);
         //helloShader->Use();
@@ -166,7 +223,7 @@ protected:
 
         // render the mandelbrot fractal
         renderTarget->GetTexture()->BindCompute(0);
-        mandelbrotShader->SetUniform("center", centerPos / GetWindowSize());
+        mandelbrotShader->SetUniform("center", centerPos / app->GetWindowSize());
         mandelbrotShader->SetUniform("scale", zoom);
         mandelbrotShader->SetUniform("max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
         mandelbrotShader->Use();
@@ -193,19 +250,30 @@ protected:
         }
     }
 
-    virtual void OnKey(int key, int scancode, int action, int mods) override {
+    virtual void HandleEvent(KeyboardEvent& keyEvent) override {
+        int key = keyEvent.key;
+        int scancode = keyEvent.scancode;
+        int action = keyEvent.action;
+        int mods = keyEvent.mods;
+
         if (key == GLFW_KEY_ESCAPE)
         {
-            glfwSetWindowShouldClose(window, true);
+            app->SetWindowShouldClose(true);
+            keyEvent.handled = true;
         }
         if (key == GLFW_KEY_R)
         {
             cam->SetPosition({ 0, 0, -5 });
             cam->LookAt({ 0, 0, 0 });
+            keyEvent.handled = true;
         }
+
     }
 
-    virtual void OnMousePos(double xpos, double ypos) override {
+    virtual void HandleEvent(CursorMovedEvent& cursorMoved) override {
+        float xpos = cursorMoved.xPos;
+        float ypos = cursorMoved.yPos;
+
         if (isDragging) {
             // Calculate the offset of the cursor from the last position
             float xOffset = xpos - lastMousePos.x;
@@ -214,53 +282,81 @@ protected:
             // Update the position of the dragged object (e.g., camera, object, etc.)
             RotateCamera(xOffset, yOffset);
 
-            centerPos.x -= xOffset * zoom * 2 * GetAspect();
+            centerPos.x -= xOffset * zoom * 2 * app->GetAspect();
             centerPos.y += yOffset * zoom * 2;
 
             // Update the last cursor position for the next frame
             lastMousePos = glm::vec2(xpos, ypos);
+
+            cursorMoved.handled = true;
         }
     }
 
-    virtual void OnMouseButton(int button, int action, int mods) override {
+    virtual void HandleEvent(MouseButtonEvent& mouseButton) override {
+        int button = mouseButton.button;
+        int action = mouseButton.action;
+
         if (button == GLFW_MOUSE_BUTTON_LEFT) {
             if (action == GLFW_PRESS) {
                 isDragging = true;
-                lastMousePos = GetCursorPosition();
+                lastMousePos = app->GetCursorPosition();
             }
             else if (action == GLFW_RELEASE) {
                 isDragging = false;
             }
+
+            mouseButton.handled = true;
         }
     }
 
-    virtual void OnScroll(double xoffset, double yoffset) override {
+    virtual void HandleEvent(ScrollEvent& scrollEvent) override {
+        float yoffset = scrollEvent.yOffset;
+
         float len = glm::length(cam->GetPosition());
         cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
         zoom += yoffset * zoom;
         zoom = std::max(zoom, 0.000001f);
         zoom = std::min(zoom, 3.0f);
+
+        scrollEvent.handled = true;
     }
 
-    virtual void OnWindowResize(int width, int height)
+    virtual void HandleEvent(WindowResizeEvent& resize)
     {
-        Application::OnWindowResize(width, height);
+        int width = resize.width;
+        int height = resize.height;
+
+        glm::vec2 screenSize = app->GetWindowSize();
         // resize textures
         renderTarget->Cleanup();
-        renderTarget->Init(screenWidth, screenHeight);
+        renderTarget->Init(screenSize.x, screenSize.y);
         swapTarget->Cleanup();
-        swapTarget->Init(screenWidth, screenHeight);
+        swapTarget->Init(screenSize.x, screenSize.y);
 
         // update shader work groups
-        conwayShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
-        mandelbrotShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
-        helloShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
+        conwayShader->SetWorkGroups(std::ceil(screenSize.x / 8.0), std::ceil(screenSize.y / 8.0), 1);
+        mandelbrotShader->SetWorkGroups(std::ceil(screenSize.x / 8.0), std::ceil(screenSize.y / 8.0), 1);
+        helloShader->SetWorkGroups(std::ceil(screenSize.x / 8.0), std::ceil(screenSize.y / 8.0), 1);
+    }
+};
+
+class MyApp : public Application {
+protected:
+    virtual void Start() override
+    {
+        PushLayer(std::make_shared<ShaderLayer>(this));
+        PushLayer(std::make_shared<ImGUILayer>(this));
+    }
+
+    virtual void Update(double dt) override
+    {
     }
 };
 
 int main() {
     MyApp app;
     
+
     if (app.Init("Shader Ideas"))
     {
         app.Run();
