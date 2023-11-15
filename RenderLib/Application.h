@@ -3,6 +3,7 @@
 #include "core.h"
 #include "Log.h"
 #include "ApplicationLayer.h"
+#include "ImGuiLayer.h"
 
 class Application {
 protected:
@@ -10,6 +11,7 @@ protected:
     int screenWidth, screenHeight;
 
     std::vector<ptr<ApplicationLayer>> layers;
+    ptr<ImGuiLayer> uiLayer;
 
 public:
     Application() : window(nullptr), screenWidth(0), screenHeight(0) {}

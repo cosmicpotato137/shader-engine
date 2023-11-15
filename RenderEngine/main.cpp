@@ -15,17 +15,15 @@
 #include "ApplicationLayer.h"
 
 // layers
-#include "ImGuiLayer.h"
 #include "RenderLayer.h"
 
-#define SHADER_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/shaders")
-#define RESOURCE_DIR std::string("C:/Users/imacs/Documents/NerdThings/Shader-Ideas/res")
+#define SHADER_DIR std::string("C:/Users/imacs/Documents/Code/Shader-Ideas/shaders")
+#define RESOURCE_DIR std::string("C:/Users/imacs/Documents/Code/Shader-Ideas/res")
 #define TEXTURE_DIR RESOURCE_DIR + std::string("/textures")
 
 class MyApp : public Application {
     void Start() override {
         PushLayer(std::make_shared<ShaderLayer>(this));
-        PushLayer(std::make_shared<ImGuiLayer>(this));
     }
 
     void Update(double dt) override {

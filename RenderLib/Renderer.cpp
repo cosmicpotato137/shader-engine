@@ -63,8 +63,6 @@ bool Renderer::Init(GLFWwindow* context)
     }
 
     this->context = context;
-    if (glfwGetCurrentContext() != context)
-        glfwMakeContextCurrent(context);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // Specify which faces to cull (in this case, back faces
@@ -72,9 +70,8 @@ bool Renderer::Init(GLFWwindow* context)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS); // Default depth comparison function
 
-
     mainCamera = std::make_shared<Camera>(
-        glm::vec3(0.0f, 0.0f, -5.0f), 
+        glm::vec3(0.0f, 0.0f, -5.0f),
         glm::vec3(0.0f, 1.0f, 0.0f),
         0.0f,
         0.0f
@@ -167,8 +164,8 @@ float Renderer::GetTime() const
 
 glm::vec2 Renderer::GetContextSize() const
 {
-    auto app = (Application*)glfwGetWindowUserPointer(context);
-    return app->GetWindowSize();
+        auto app = (Application*)glfwGetWindowUserPointer(context);
+        return app->GetWindowSize();
 }
 
 void Renderer::PushObject(ptr<RenderObject> mesh)

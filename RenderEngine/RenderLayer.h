@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Renderer.h"
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -31,13 +33,17 @@ class ShaderLayer : public ApplicationLayer {
     ptr<ComputeShader> mandelbrotShader;
 
     // event vars
-    bool isDragging = false;
     glm::vec2 lastMousePos = glm::vec2(0, 0);
+    bool isDragging = false;
+
 
     glm::vec2 centerPos = glm::vec2(0);
     float zoom = 1.0f;
 
     float resetTime = 0.0f;
+
+    glm::vec2 imContentSize;
+    glm::vec2 renderTargetSize;
 
 public:
     ShaderLayer(Application* app) : ApplicationLayer("main render layer"), app(app) {
@@ -119,7 +125,7 @@ public:
         );
         ren.PushObject(noiseQuad);
 
-        glm::vec2 screenSize = app->GetWindowSize();
+        glm::vec2 screenSize = renderTargetSize;
         int screenWidth = screenSize.x;
         int screenHeight = screenSize.y;
 
@@ -141,6 +147,9 @@ public:
         //ren.Render();
     }
 
+    virtual void Update(double dt) override {
+    }
+
     virtual void Render() override {
 
         // Your OpenGL rendering code goes here
@@ -156,12 +165,40 @@ public:
 
         // render the mandelbrot fractal
         renderTarget->GetTexture()->BindCompute(0);
-        mandelbrotShader->SetUniform("center", centerPos / app->GetWindowSize());
+        mandelbrotShader->SetUniform("center", centerPos / renderTargetSize);
         mandelbrotShader->SetUniform("scale", zoom);
         mandelbrotShader->SetUniform("max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
         mandelbrotShader->Use();
 
         ren.PostProcess();
+    }
+
+    virtual void ImGuiRender() override
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 3.0, 3.0 });
+
+        ImGui::Begin("Scene");
+
+        HandleSceneWindowResize();
+        HandleSceneMouseEvent();
+
+        ImVec2 s = ImGui::GetContentRegionAvail();
+        imContentSize = { s.x, s.y };
+
+        // render image to layer
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+        ImGui::GetWindowDrawList()->AddImage(
+            (void*)ren.GetRenderTarget()->GetTexture()->GetTextureID(),
+            ImVec2(pos),
+            ImVec2(pos.x + imContentSize.x, pos.y + imContentSize.y),
+            ImVec2(0, 1), ImVec2(1, 0)
+        );
+
+        ImGui::End();
+
+        ImGui::PopStyleVar(3);
     }
 
     void RotateCamera(float xOffset, float yOffset) {
@@ -184,6 +221,12 @@ public:
     }
 
     virtual void HandleEvent(KeyboardEvent& keyEvent) override {
+        //if (ImGui::GetIO().WantCaptureKeyboard)
+        //{
+        //    keyEvent.handled = true;
+        //    return;
+        //}
+
         int key = keyEvent.key;
         int scancode = keyEvent.scancode;
         int action = keyEvent.action;
@@ -204,10 +247,84 @@ public:
     }
 
     virtual void HandleEvent(CursorMovedEvent& cursorMoved) override {
-        float xpos = cursorMoved.xPos;
-        float ypos = cursorMoved.yPos;
+        if (ImGui::GetIO().WantSetMousePos)
+        {
+            cursorMoved.handled = true;
+            return;
+        }
+    }
 
-        if (isDragging) {
+    virtual void HandleEvent(MouseButtonEvent& mouseButton) override {
+        if (ImGui::GetIO().WantCaptureMouse)
+        {
+            mouseButton.handled = true;
+            return;
+        }
+    }
+
+    virtual void HandleEvent(ScrollEvent& scrollEvent) override {
+        if (ImGui::GetIO().WantCaptureMouse)
+        {
+            scrollEvent.handled = true;
+            return;
+        }
+
+        scrollEvent.handled = true;
+    }
+
+private:
+    void HandleSceneMouseEvent() {
+
+        if (!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered())
+        {
+            isDragging = false;
+            return;
+        }
+
+        // check if the mouse is hovering over the scene window
+        ImGuiIO& io = ImGui::GetIO();
+        ImVec2 mousePos = ImGui::GetMousePos();
+        ImVec2 windowPos = ImGui::GetWindowPos();
+        ImVec2 contentMin = ImGui::GetWindowContentRegionMin();
+        ImVec2 contentMax = ImGui::GetWindowContentRegionMax();
+
+
+        if (mousePos.x >= windowPos.x + contentMin.x && mousePos.x <= windowPos.x + contentMax.x &&
+            mousePos.y >= windowPos.y + contentMin.y && mousePos.y <= windowPos.y + contentMax.y)
+        {
+            // Mouse is inside the content area
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            {
+                // Handle left mosue click
+                isDragging = true;
+            }
+            else if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+            {
+                // Handle right mouse release
+            }
+            if (io.MouseWheel != 0.0f)
+            {
+                float yoffset = io.MouseWheel;
+
+                float len = glm::length(cam->GetPosition());
+                cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
+                zoom += yoffset * zoom;
+                zoom = std::max(zoom, 0.000001f);
+                zoom = std::min(zoom, 3.0f);
+            }
+        }
+
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        {
+            isDragging = false;
+        }
+
+        if (isDragging)
+        {
+            // click and drag
+            float xpos = mousePos.x;
+            float ypos = mousePos.y;
+
             // Calculate the offset of the cursor from the last position
             float xOffset = xpos - lastMousePos.x;
             float yOffset = ypos - lastMousePos.y; // Invert Y-axis if needed
@@ -215,55 +332,28 @@ public:
             // Update the position of the dragged object (e.g., camera, object, etc.)
             RotateCamera(xOffset, yOffset);
 
-            centerPos.x -= xOffset * zoom * 2 * app->GetAspect();
+            centerPos.x -= xOffset * zoom * 2 * renderTargetSize.x / renderTargetSize.y;
             centerPos.y += yOffset * zoom * 2;
-
-            // Update the last cursor position for the next frame
-            lastMousePos = glm::vec2(xpos, ypos);
-
-            cursorMoved.handled = true;
         }
+
+        // Update the last cursor position for the next frame
+        lastMousePos = { mousePos.x, mousePos.y };
     }
 
-    virtual void HandleEvent(MouseButtonEvent& mouseButton) override {
-        int button = mouseButton.button;
-        int action = mouseButton.action;
-
-        if (button == GLFW_MOUSE_BUTTON_LEFT) {
-            if (action == GLFW_PRESS) {
-                isDragging = true;
-                lastMousePos = app->GetCursorPosition();
-            }
-            else if (action == GLFW_RELEASE) {
-                isDragging = false;
-            }
-
-            mouseButton.handled = true;
-        }
-    }
-
-    virtual void HandleEvent(ScrollEvent& scrollEvent) override {
-        float yoffset = scrollEvent.yOffset;
-
-        float len = glm::length(cam->GetPosition());
-        cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
-        zoom += yoffset * zoom;
-        zoom = std::max(zoom, 0.000001f);
-        zoom = std::min(zoom, 3.0f);
-
-        scrollEvent.handled = true;
-    }
-
-    virtual void HandleEvent(WindowResizeEvent& resize)
+    void HandleSceneWindowResize()
     {
-        int width = resize.width;
-        int height = resize.height;
-            
-        //// resize textures
+        if (renderTargetSize == imContentSize)
+            return;
+
+        renderTargetSize = imContentSize;
+        float width = imContentSize.x;
+        float height = imContentSize.y;
+
+        // resize textures
         renderTarget->Init(width, height);
         swapTarget->Init(width, height);
 
-        //// update shader work groups
+        // update shader work groups
         conwayShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
         mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
         helloShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
