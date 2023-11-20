@@ -5,7 +5,7 @@
 
 class MyApp : public Application {
     void Start() override {
-        PushLayer(std::make_shared<ShaderLayer>(this));
+        PushLayer(std::make_shared<RenderLayer>(this));
     }
 
     void Update(double dt) override {

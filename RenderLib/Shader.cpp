@@ -114,6 +114,9 @@ void Shader::ApplyUniforms() {
     {
         const uniform_types value = iter->second->GetValue();
 
+        if (iter->second->GetType() == Error)
+            continue;
+
         // set value
         struct Visitor {
             ptr<Uniform> uniform;
@@ -143,7 +146,7 @@ void Shader::ApplyUniforms() {
             }
             void operator()(GLuint value) {
                 bool typecheck = false;
-                typecheck |= uniform->GetType() == Int;
+                typecheck |= uniform->GetType() == UInt;
                 typecheck |= uniform->GetType() == Image2D;
                 typecheck |= uniform->GetType() == Texture2D;
                 if (!typecheck)
@@ -284,10 +287,10 @@ void Shader::ParseVertexAndFragment(const std::string& input, std::string& verte
 ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsizei size)
 {
     // check inspector hide/show
-    std::regex re("_?((color)|(c_))[a-zA-Z]*");
+    std::regex re("^_?((color)|(c_))[a-zA-Z]*$");
 
     bool hidden = false;
-    std::regex re1("_.*");
+    std::regex re1("^_.*$");
     if (std::regex_search(name, re1))
         hidden = true;
 
@@ -295,7 +298,7 @@ ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsi
     {
     case GL_BOOL:           return std::make_shared<Uniform>(std::string(name), location, false, Bool, hidden);
     case GL_INT:            return std::make_shared<Uniform>(std::string(name), location, 0, Int, hidden);
-    case GL_UNSIGNED_INT:   return std::make_shared<Uniform>(std::string(name), location, 0, UInt, hidden);
+    case GL_UNSIGNED_INT:   return std::make_shared<Uniform>(std::string(name), location, (unsigned int)0, UInt, hidden);
     case GL_FLOAT:          return std::make_shared<Uniform>(std::string(name), location, 0.0f, Float, hidden);
     case GL_FLOAT_VEC2:     return std::make_shared<Uniform>(std::string(name), location, glm::vec2(0), Vec2, hidden);
     case GL_FLOAT_VEC3:     
