@@ -65,6 +65,7 @@ public:
         // compute shaders
         helloShader = std::make_shared<ComputeShader>("hello");
         helloShader->Init(SHADER_DIR + "/compute/hello.compute");
+        helloShader->SetUniform("color", glm::vec4(1, 1, 1, 1));
 
         conwayShader = std::make_shared<ComputeShader>("conway");
         conwayShader->Init(SHADER_DIR + "/compute/conway.compute");
@@ -153,9 +154,9 @@ public:
     virtual void Render() override {
 
         // Your OpenGL rendering code goes here
-        // hello world compute shader
-        //renderTarget->GetTexture()->BindCompute(0);
-        //helloShader->Use();
+        //hello world compute shader
+        renderTarget->GetTexture()->BindCompute(0);
+        helloShader->Use();
 
         // render conway's game of life
         //renderTarget->GetTexture()->BindCompute(0);
@@ -164,13 +165,13 @@ public:
         //renderTarget.swap(swapTarget);
 
         // render the mandelbrot fractal
-        renderTarget->GetTexture()->BindCompute(0);
-        mandelbrotShader->SetUniform("center", centerPos / renderTargetSize);
-        mandelbrotShader->SetUniform("scale", zoom);
-        mandelbrotShader->SetUniform("max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
-        mandelbrotShader->Use();
+        //renderTarget->GetTexture()->BindCompute(0);
+        //mandelbrotShader->SetUniform("center", centerPos / renderTargetSize);
+        //mandelbrotShader->SetUniform("scale", zoom);
+        //mandelbrotShader->SetUniform("max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
+        //mandelbrotShader->Use();
 
-        ren.PostProcess();
+        //ren.PostProcess();
     }
 
     virtual void ImGuiRender() override
@@ -199,6 +200,65 @@ public:
         ImGui::End();
 
         ImGui::PopStyleVar(3);
+
+
+        ImGui::Begin("Uniforms");
+
+        std::unordered_map<std::string, ptr<Uniform>> uniforms = helloShader->GetUniforms();
+        for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter)
+        {
+            std::string name = iter->second->GetName();
+            uniform_types value = iter->second->GetValue();
+
+            if (iter->second->GetHide())
+                continue;
+
+            struct Visitor {
+                ptr<Uniform> uniform;
+
+                Visitor(ptr<Uniform> uniform) : uniform(uniform) {}
+
+                void operator()(bool& value) {
+                    ImGui::Checkbox(uniform->GetName().c_str(), &value);
+                }
+                void operator()(GLint& value) {
+                    int v = value;
+                    ImGui::DragInt(uniform->GetName().c_str(), &v, -INT_MAX, INT_MAX);
+                    value = v;
+                }
+                void operator()(GLuint& value) {
+                    int v = value;
+                    ImGui::DragInt(uniform->GetName().c_str(), &v, 0, INT_MAX);
+                    value = v;
+                }
+                void operator()(GLfloat& value) {
+                    ImGui::DragFloat(uniform->GetName().c_str(), &(float)value, .1f, -FLT_MAX, FLT_MAX);
+                }
+                void operator()(glm::vec2& value) {
+                    ImGui::DragFloat2(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+                }
+                void operator()(glm::vec3& value) {
+                    if (uniform->GetType() == Col3)
+                        ImGui::ColorEdit3(uniform->GetName().c_str(), glm::value_ptr(value));
+                    else
+                        ImGui::DragFloat3(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+                }
+                void operator()(glm::vec4& value) {
+                    if (uniform->GetType() == Col4)
+                        ImGui::ColorEdit4(uniform->GetName().c_str(), glm::value_ptr(value));
+                    else
+                        ImGui::DragFloat4(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+
+                }
+                void operator()(const glm::mat4& value) {
+                }
+            };
+
+            std::visit(Visitor(iter->second), value);
+            iter->second->SetValue(value);
+        }
+
+        ImGui::End();
     }
 
     void RotateCamera(float xOffset, float yOffset) {

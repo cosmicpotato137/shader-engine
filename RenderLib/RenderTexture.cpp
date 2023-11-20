@@ -1,6 +1,7 @@
 #include "core.h"
 
 #include "RenderTexture.h"
+#include "Log.h"
 #include <iostream>
 
 RenderTexture::RenderTexture() 
@@ -34,7 +35,7 @@ bool RenderTexture::Init(int width, int height) {
 
     // Check framebuffer completeness
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer is not complete!" << std::endl;
+        Console::Error("Framebuffer is not complete!");
         return false;
     }
 

@@ -65,7 +65,6 @@ public:
     static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
 protected:
-    // override this to add startup functionality
     virtual void Start() = 0;
 
     // override this to add functionality to the program loop

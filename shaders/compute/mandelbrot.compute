@@ -28,5 +28,5 @@ void main() {
   }
   float color = iter_diverge / float(max_iterations);
 
-  imageStore(image, gidx, vec4(color, uv.y, 0, 1.0f));
+  imageStore(image, gidx, vec4(color, 0, 0, 1.0f));
 }
