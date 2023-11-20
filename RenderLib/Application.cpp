@@ -59,6 +59,10 @@ bool Application::Init(const std::string& winname)
     glfwSetWindowSizeCallback(window, Application::WindowSizeCallback);
     glfwSetScrollCallback(window, Application::ScrollCallback);
 
+    // push ui layer
+    uiLayer = std::make_shared<ImGuiLayer>(this);
+    PushLayer(uiLayer);
+
     Start();
     return true;
 }
@@ -82,7 +86,7 @@ void Application::Run()
         glfwPollEvents();
         glClear(GL_COLOR_BUFFER_BIT);
 
-
+        // handle application updates
         for (ptr<ApplicationLayer> l : layers)
         {
             l->Update(GetTime() - lastTime);
@@ -90,10 +94,19 @@ void Application::Run()
 
         lastTime = GetTime();
 
+        // render graphics
         for (ptr<ApplicationLayer> l : layers)
         {
             l->Render();
         }
+
+        // render ui
+        uiLayer->ImGuiBegin();
+        for (ptr<ApplicationLayer> l : layers)
+        {
+            l->ImGuiRender();
+        }
+        uiLayer->ImGuiEnd();
 
         glfwSwapBuffers(window);
     }

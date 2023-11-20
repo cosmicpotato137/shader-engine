@@ -2,6 +2,8 @@
 #include "core.h"
 #include "Log.h"
 #include "Event.h"
+#include "imgui.h"
+
 
 #define HANDLE_EVENT_FN(type) virtual void HandleEvent(type& e) {}
 
@@ -12,6 +14,7 @@ public:
 
 	virtual void Update(double dt) {}
 	virtual void Render() {}
+	virtual void ImGuiRender() {}
 	
 
 	HANDLE_EVENT_FN(Event)

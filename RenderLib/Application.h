@@ -3,6 +3,7 @@
 #include "core.h"
 #include "Log.h"
 #include "ApplicationLayer.h"
+#include "ImGuiLayer.h"
 
 class Application {
 protected:
@@ -10,6 +11,7 @@ protected:
     int screenWidth, screenHeight;
 
     std::vector<ptr<ApplicationLayer>> layers;
+    ptr<ImGuiLayer> uiLayer;
 
 public:
     Application() : window(nullptr), screenWidth(0), screenHeight(0) {}
@@ -63,7 +65,6 @@ public:
     static void WindowSizeCallback(GLFWwindow* window, int width, int height);
 
 protected:
-    // override this to add startup functionality
     virtual void Start() = 0;
 
     // override this to add functionality to the program loop

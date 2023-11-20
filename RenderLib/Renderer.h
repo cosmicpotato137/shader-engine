@@ -9,6 +9,7 @@
 
 class Renderer {
 	GLFWwindow* context;
+
 	ptr<RenderTexture> renderTarget;
 	ptr<Mesh> screenQuad;
 	ptr<Material> postProcessing;

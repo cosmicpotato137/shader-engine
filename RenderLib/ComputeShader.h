@@ -17,5 +17,5 @@ public:
 
     bool InitFromSource(const std::string& computeSource) override;
 
-    void Use() const override;
+    void Use() override;
 };

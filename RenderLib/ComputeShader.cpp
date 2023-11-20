@@ -24,10 +24,12 @@ bool ComputeShader::InitFromSource(const std::string& computeSource)
         return false;
     }
 
+    FindUniforms();
+
     return true;
 }
 
-void ComputeShader::Use() const
+void ComputeShader::Use()
 {
     Shader::Use();
     glDispatchCompute(x, y, z);

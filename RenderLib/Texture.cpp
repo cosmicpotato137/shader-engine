@@ -34,7 +34,7 @@ bool Texture::Init(const std::string& filename)
     int channels;
     unsigned char* image = stbi_load(filename.c_str(), &width, &height, &channels, 4);
     if (!image) {
-        Console::Error("Failed to load texture image: %s", filename);
+        Console::Error("Failed to load texture image: %s", filename.c_str());
         return false;
     }
 
