@@ -8,8 +8,10 @@
 #include "Log.h"
 
 
-bool Shader::Init(const std::string & shaderPath)
+bool Shader::Init(const std::string& shaderPath)
 {
+    filepath = shaderPath;
+
     // Load shader source code from files
     std::string shaderSource;
     if (!LoadSource(shaderPath, shaderSource))
@@ -58,6 +60,8 @@ void Shader::Cleanup()
     {
         glDeleteProgram(program);
         program = 0;
+
+        uniforms.clear();
     }
 }
 
@@ -287,11 +291,11 @@ void Shader::ParseVertexAndFragment(const std::string& input, std::string& verte
 ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsizei size)
 {
     // check inspector hide/show
-    std::regex re("^_?((color)|(c_))[a-zA-Z]*$");
+    std::regex checkColor("^_?((color)|(c_))[a-zA-Z]*$");
 
     bool hidden = false;
-    std::regex re1("^_.*$");
-    if (std::regex_search(name, re1))
+    std::regex checkHide("^_.*$");
+    if (std::regex_search(name, checkHide))
         hidden = true;
 
     switch (type)
@@ -304,14 +308,14 @@ ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsi
     case GL_FLOAT_VEC3:     
     {
         UniformType t = Vec3;
-        if (std::regex_search(name, re))
+        if (std::regex_search(name, checkColor))
             t = Col3;
         return std::make_shared<Uniform>(std::string(name), location, glm::vec3(0), t, hidden);
     }
     case GL_FLOAT_VEC4:     
     {
         UniformType t = Vec4;
-        if (std::regex_search(name, re))
+        if (std::regex_search(name, checkColor))
             t = Col4;
         return std::make_shared<Uniform>(std::string(name), location, glm::vec4(0), t, hidden);
     }

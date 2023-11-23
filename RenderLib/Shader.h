@@ -43,6 +43,7 @@ ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsi
 class Shader {
 protected:
     GLuint program;
+    std::string filepath;
 
     std::map<std::string, GLuint> uniformLocations;
 
@@ -50,7 +51,7 @@ public:
     std::string name;
     std::unordered_map<std::string, ptr<Uniform>> uniforms;
 
-    Shader(const std::string& name) : program(0), name(name) {}
+    Shader(const std::string& name) : program(0), name(name), filepath("") {}
     ~Shader() { Cleanup(); }
 
     bool Init(const std::string & shaderPath);
@@ -66,8 +67,10 @@ public:
     GLint GetUniformLocation(const std::string& name);
 
     GLuint GetProgramID() const { return program; }
+    std::string GetFilePath() const { return filepath; }
     
     void SetUniform(const std::string& uniform_name, const uniform_types& value);
+    bool HasUniform(const std::string& uniformName) const { return uniforms.find(uniformName) != uniforms.end(); }
     std::unordered_map<std::string, ptr<Uniform>> GetUniforms();
 
 protected:

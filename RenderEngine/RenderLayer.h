@@ -25,6 +25,10 @@ class RenderLayer : public ApplicationLayer {
     ptr<ComputeShader> shader;
 
     // event vars
+    float elapsedTime = 0.0f;
+    bool pause = false;
+    bool reset = false;
+
     glm::vec2 lastMousePos = glm::vec2(0, 0);
     bool isDragging = false;
 
@@ -33,6 +37,10 @@ class RenderLayer : public ApplicationLayer {
 
     glm::vec2 imContentSize;
     glm::vec2 renderTargetSize;
+
+    // imgui vars
+    char* shaderFilePath = new char[256];
+    bool setShaderPath;
 
 public:
     RenderLayer(Application* app) : ApplicationLayer("main render layer"), app(app) {
@@ -58,16 +66,31 @@ public:
 
         shader = std::make_shared<ComputeShader>("shader");
         shader->Init(SHADER_DIR + "/compute/mandelbrot.compute");
+        shaderFilePath = strcpy(shaderFilePath, shader->GetFilePath().c_str());
     }
 
     virtual void Update(double dt) override {
+        if (!pause)
+            elapsedTime += dt;
     }
 
     virtual void Render() override {
 
         renderTarget->GetTexture()->BindCompute(0);
-        shader->SetUniform("center", centerPos);
-        shader->SetUniform("scale", zoom);
+        if (shader->HasUniform("_center"))
+            shader->SetUniform("_center", centerPos / renderTargetSize);
+        if (shader->HasUniform("_time"))
+            shader->SetUniform("_time", elapsedTime);
+        if (shader->HasUniform("_scale"))
+            shader->SetUniform("_scale", zoom);
+        if (shader->HasUniform("_max_iterations"))
+            shader->SetUniform("_max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
+        if (shader->HasUniform("_reset"))
+        {
+            shader->SetUniform("_reset", reset);
+            if (reset == true)
+                reset = false;
+        }
         shader->Use();
 
         renderTarget.swap(swapTarget);
@@ -99,7 +122,37 @@ public:
         ImGui::End();
         ImGui::PopStyleVar(3);
 
-        ImGui::Begin("Uniforms");
+        ImGui::Begin("Shader Info");
+
+        // get shader from file
+
+        ImGui::Text("Get shader from file");
+        ImGui::Spacing();
+        
+        ImGui::InputText("Input new path", shaderFilePath, 256);
+        if (ImGui::Button("Set shader path", ImVec2(150, 25)))
+        {
+            std::string oldPath = shader->GetFilePath();
+            shader->Drop();
+            shader->Cleanup();
+            if (!shader->Init(shaderFilePath))
+                shader->Init(oldPath);
+        }
+        ImGui::Text("Current shader path:");
+        ImGui::Text(shader->GetFilePath().c_str());
+
+        if (ImGui::Button("Recompile shader", ImVec2(150, 25)))
+        {
+            shader->Drop();
+            shader->Cleanup();
+            shader->Init(std::string(shaderFilePath));
+        }
+
+        // set uniforms with imgui
+
+        ImGui::Spacing();
+        ImGui::Text("Uniforms");
+        ImGui::Spacing();
 
         std::unordered_map<std::string, ptr<Uniform>> uniforms = shader->GetUniforms();
         for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter)
@@ -125,7 +178,7 @@ public:
                 }
                 void operator()(GLuint& value) {
                     int v = value;
-                    ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, -INT_MAX, INT_MAX);
+                    ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, 0, INT_MAX);
                     value = v;
                 }
                 void operator()(GLfloat& value) {
@@ -154,6 +207,11 @@ public:
             std::visit(Visitor(iter->second), value);
             iter->second->SetValue(value);
         }
+
+        if (shader->HasUniform("reset") && ImGui::Button("Reset simulation", ImVec2(150, 25)))
+        {
+            reset = true;
+        } 
 
         ImGui::End();
     }
@@ -200,6 +258,11 @@ public:
             cam->LookAt({ 0, 0, 0 });
             keyEvent.handled = true;
         }
+        if (key == GLFW_KEY_SPACE)
+        {
+            pause != pause;
+            Console::Log("pause/unpause");
+        }
 
     }
 
@@ -230,7 +293,7 @@ public:
     }
 
 private:
-    void HandleSceneMouseEvent() {
+    void HandleSceneMouseEvent()  {
 
         if (!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered())
         {
@@ -259,10 +322,9 @@ private:
             {
                 // Handle right mouse release
             }
+            float yoffset = io.MouseWheel;
             if (io.MouseWheel != 0.0f)
             {
-                float yoffset = io.MouseWheel;
-
                 float len = glm::length(cam->GetPosition());
                 cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
                 zoom += yoffset * zoom;

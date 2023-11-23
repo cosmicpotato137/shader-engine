@@ -2,9 +2,10 @@
 layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(rgba32f, binding = 0) uniform image2D image;
-uniform vec2 center;
-uniform float scale;
+uniform vec2 _center;
+uniform float _scale;
 uniform uint max_iterations;
+uniform vec3 color;
 
 vec2 cmult(vec2 z1, vec2 z2) {
   return vec2(z1.x*z2.x - z1.y*z2.y, z1.x*z2.y + z1.y*z2.x);
@@ -15,7 +16,7 @@ void main() {
   vec2 size = imageSize(image);
   vec2 uv = (2.0*gidx - size) / size.y; 
 
-  vec2 c = center + scale * uv;
+  vec2 c = _center + _scale * uv;
   vec2 z = vec2(0, 0);
 
   uint iter_diverge = max_iterations;
@@ -26,7 +27,7 @@ void main() {
       break;
     }
   }
-  float color = iter_diverge / float(max_iterations);
+  float brightness = iter_diverge / float(max_iterations);
 
-  imageStore(image, gidx, vec4(color, 0, 0, 1.0f));
+  imageStore(image, gidx, vec4(color * brightness, 1.0f));
 }

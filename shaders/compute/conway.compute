@@ -4,6 +4,8 @@ layout(local_size_x = 8, local_size_y = 8) in;
 layout(rgba32f, binding = 0) uniform image2D cells_in;
 layout(rgba32f, binding = 1) uniform image2D cells_out;
 
+uniform bool _reset;
+
 uint updateCell(ivec2 cell_idx) {
   uint current_status = uint(imageLoad(cells_in, cell_idx).x);
 
@@ -26,4 +28,17 @@ void main() {
   uint next_status = updateCell(gidx);
 
   imageStore(cells_out, gidx, uvec4(next_status));
+  
+  if (_reset)
+  {
+    float randomValue = rand(gidx);
+    
+    // Set pixel color based on the random value
+    vec3 color = (randomValue < 0.5) ? vec3(0.0) : vec3(1.0);
+    // Convert ivec2 to ivec4 for imageStore
+    ivec4 storeColor = ivec4(color * 255.0, 255);
+    
+    imageStore(cells_out, gidx, vec4(storeColor));
+
+  }
 }
