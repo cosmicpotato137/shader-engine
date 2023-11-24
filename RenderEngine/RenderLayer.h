@@ -77,6 +77,11 @@ public:
     virtual void Render() override {
 
         renderTarget->GetTexture()->BindCompute(0);
+        // bind swap target for feedback
+        if (shader->HasUniform("imageIn"))
+            swapTarget->GetTexture()->BindCompute(1);
+
+        // set default uniforms
         if (shader->HasUniform("_center"))
             shader->SetUniform("_center", centerPos / renderTargetSize);
         if (shader->HasUniform("_time"))
@@ -91,8 +96,11 @@ public:
             if (reset == true)
                 reset = false;
         }
+
+        // deploy shader
         shader->Use();
 
+        // swap
         renderTarget.swap(swapTarget);
     }
 
@@ -137,6 +145,8 @@ public:
             shader->Cleanup();
             if (!shader->Init(shaderFilePath))
                 shader->Init(oldPath);
+            else
+                Console::Log("Shader compiled sucessfully");
         }
         ImGui::Text("Current shader path:");
         ImGui::Text(shader->GetFilePath().c_str());
@@ -145,7 +155,9 @@ public:
         {
             shader->Drop();
             shader->Cleanup();
-            shader->Init(std::string(shaderFilePath));
+            if (shader->Init(std::string(shaderFilePath)))
+                Console::Log("Shader compiled sucessfully");
+
         }
 
         // set uniforms with imgui
@@ -208,10 +220,10 @@ public:
             iter->second->SetValue(value);
         }
 
-        if (shader->HasUniform("reset") && ImGui::Button("Reset simulation", ImVec2(150, 25)))
+        if (shader->HasUniform("_reset") && ImGui::Button("Reset simulation", ImVec2(150, 25)))
         {
             reset = true;
-        } 
+        }
 
         ImGui::End();
     }

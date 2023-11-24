@@ -1,44 +1,62 @@
 #version 460 core
 layout(local_size_x = 8, local_size_y = 8) in;
 
-layout(rgba32f, binding = 0) uniform image2D cells_in;
-layout(rgba32f, binding = 1) uniform image2D cells_out;
+layout(rgba32f, binding = 0) uniform image2D imageIn;
+layout(rgba32f, binding = 1) uniform image2D imageOut;
 
 uniform bool _reset;
 
+// Simple linear congruential generator
+float rand(inout uint seed) {
+    const uint a = 1664525u;
+    const uint c = 1013904223u;
+    seed = (a * seed + c);
+    return float(seed) / float(uint(0xFFFFFFFFu));
+}
+
 uint updateCell(ivec2 cell_idx) {
-  uint current_status = uint(imageLoad(cells_in, cell_idx).x);
+  uint current_status = uint(imageLoad(imageIn, cell_idx).x);
 
   uint alive_cells = 0;
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, -1)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, 0)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(-1, 1)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(0, -1)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(0, 1)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, -1)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, 0)).x);
-  alive_cells += uint(imageLoad(cells_in, cell_idx + ivec2(1, 1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(-1, -1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(-1, 0)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(-1, 1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(0, -1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(0, 1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(1, -1)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(1, 0)).x);
+  alive_cells += uint(imageLoad(imageIn, cell_idx + ivec2(1, 1)).x);
 
   return uint(current_status == 0 && alive_cells == 3) + uint(current_status == 1 && alive_cells > 1 && alive_cells < 4);
 }
 
 void main() {
-  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+  ivec2 pixelCoords = ivec2(gl_GlobalInvocationID.xy);
 
-  uint next_status = updateCell(gidx);
-
-  imageStore(cells_out, gidx, uvec4(next_status));
+  ivec2 resolution = imageSize(imageOut);
   
   if (_reset)
   {
-    float randomValue = rand(gidx);
-    
+    // Use pixel coordinates as the seed
+    uint seed = pixelCoords.x * resolution.x + pixelCoords.y;
+
+    // Generate a random value between 0 and 1
+    float randomValue = rand(seed);
+
     // Set pixel color based on the random value
     vec3 color = (randomValue < 0.5) ? vec3(0.0) : vec3(1.0);
+
     // Convert ivec2 to ivec4 for imageStore
     ivec4 storeColor = ivec4(color * 255.0, 255);
-    
-    imageStore(cells_out, gidx, vec4(storeColor));
 
+    // Output the color to the result image
+    imageStore(imageOut, pixelCoords, vec4(storeColor));
+    imageStore(imageIn, pixelCoords, vec4(storeColor));
+  }
+  else 
+  {
+    uint next_status = updateCell(pixelCoords);
+
+    imageStore(imageOut, pixelCoords, uvec4(next_status));
   }
 }
