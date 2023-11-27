@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "Renderer.h"
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -62,11 +63,25 @@ public:
 
         // make render target to swap into
         swapTarget = std::make_shared<RenderTexture>();
-        swapTarget->Init(screenWidth, screenHeight);
+        swapTarget->Init(screenWidth, screenHeight, GL_COLOR_ATTACHMENT1);
 
         shader = std::make_shared<ComputeShader>("shader");
-        shader->Init(SHADER_DIR + "/compute/mandelbrot.compute");
+        shader->Init(SHADER_DIR + "/compute/conway.compute");
         shaderFilePath = strcpy(shaderFilePath, shader->GetFilePath().c_str());
+
+
+    }
+
+    void BindRenderImages()
+    {
+        renderTarget->GetTexture()->BindCompute(0);
+        shader->SetUniform("imageOut", 0);
+        // bind swap target for iterative sims
+        if (shader->HasUniform("imageIn"))
+        {
+            shader->SetUniform("imageOut", 1);
+            swapTarget->GetTexture()->BindCompute(1);
+        }
     }
 
     virtual void Update(double dt) override {
@@ -76,10 +91,7 @@ public:
 
     virtual void Render() override {
 
-        renderTarget->GetTexture()->BindCompute(0);
-        // bind swap target for feedback
-        if (shader->HasUniform("imageIn"))
-            swapTarget->GetTexture()->BindCompute(1);
+        BindRenderImages();
 
         // set default uniforms
         if (shader->HasUniform("_center"))
@@ -91,21 +103,23 @@ public:
         if (shader->HasUniform("_max_iterations"))
             shader->SetUniform("_max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
         if (shader->HasUniform("_reset"))
-        {
             shader->SetUniform("_reset", reset);
-            if (reset == true)
-                reset = false;
+
+        if (!pause || reset)
+        {
+            // deploy shader
+            shader->Use();
+            
+            // swap
+            renderTarget.swap(swapTarget);
         }
 
-        // deploy shader
-        shader->Use();
-
-        // swap
-        renderTarget.swap(swapTarget);
+        reset = false;
     }
 
     virtual void ImGuiRender() override
     {
+        // scene window styling
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 3.0, 3.0 });
@@ -128,7 +142,23 @@ public:
         );
 
         ImGui::End();
+
+        // DEBUG SWAP TARGET WINDOW
+        //ImGui::Begin("Scene - debug swap target");
+        //
+        //pos = ImGui::GetCursorScreenPos();
+        //s = ImGui::GetContentRegionAvail();
+        //// render image to layer
+        //ImGui::GetWindowDrawList()->AddImage(
+        //    (void*)swap->GetTextureID(),
+        //    ImVec2(pos),
+        //    ImVec2(pos.x + s.x, pos.y + s.y),
+        //    ImVec2(0, 1), ImVec2(1, 0)
+        //);
+        //ImGui::End();
+
         ImGui::PopStyleVar(3);
+
 
         ImGui::Begin("Shader Info");
 
@@ -148,16 +178,12 @@ public:
             else
                 Console::Log("Shader compiled sucessfully");
         }
-        ImGui::Text("Current shader path:");
-        ImGui::Text(shader->GetFilePath().c_str());
 
         if (ImGui::Button("Recompile shader", ImVec2(150, 25)))
         {
-            shader->Drop();
-            shader->Cleanup();
             if (shader->Init(std::string(shaderFilePath)))
                 Console::Log("Shader compiled sucessfully");
-
+            BindRenderImages();
         }
 
         // set uniforms with imgui
@@ -220,10 +246,23 @@ public:
             iter->second->SetValue(value);
         }
 
-        if (shader->HasUniform("_reset") && ImGui::Button("Reset simulation", ImVec2(150, 25)))
+        if (shader->HasUniform("_scale"))
+        {
+            ImGui::Text("Zoom: %f", zoom);
+        }
+
+        if (ImGui::Button("Pause", ImVec2(150, 25)))
+        {
+            pause = !pause;
+        }
+
+        if ((shader->HasUniform("_reset") || shader->HasUniform("_time")) && 
+            ImGui::Button("Reset simulation", ImVec2(150, 25)))
         {
             reset = true;
+            elapsedTime = 0.0f;
         }
+
 
         ImGui::End();
     }
@@ -270,10 +309,21 @@ public:
             cam->LookAt({ 0, 0, 0 });
             keyEvent.handled = true;
         }
-        if (key == GLFW_KEY_SPACE)
+        if (key == GLFW_KEY_SPACE && action == 1)
         {
-            pause != pause;
-            Console::Log("pause/unpause");
+            pause = !pause;
+        }
+        if (pause && (key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
+        {
+            // swap
+            renderTarget.swap(swapTarget);
+            // deploy shader
+            shader->Use();
+ 
+            // deploy shader
+            shader->Use();
+            // swap
+            renderTarget.swap(swapTarget);
         }
 
     }
@@ -339,9 +389,7 @@ private:
             {
                 float len = glm::length(cam->GetPosition());
                 cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
-                zoom += yoffset * zoom;
-                zoom = std::max(zoom, 0.000001f);
-                zoom = std::min(zoom, 3.0f);
+                zoom += io.MouseWheel;
             }
         }
 
@@ -383,9 +431,9 @@ private:
         // resize textures
         renderTarget->Init(width, height);
         swapTarget->Init(width, height);
-
+ 
         // update shader work groups
-        shader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
+        shader->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);
         //mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
         //helloShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
     }

@@ -17,7 +17,7 @@ RenderTexture::~RenderTexture() {
     Cleanup();
 }
 
-bool RenderTexture::Init(int width, int height) {
+bool RenderTexture::Init(int width, int height, GLuint attachment) {
     this->width = width;
     this->height = height;
 
@@ -25,8 +25,7 @@ bool RenderTexture::Init(int width, int height) {
 
     // Create texture as render target
     texture->Init(width, height);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->GetTextureID(), 0);
-
+    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture->GetTextureID(), 0);
     // attach renderbuffer for depth testing
     glGenRenderbuffers(1, &renderbufferID);
     glBindRenderbuffer(GL_RENDERBUFFER, renderbufferID);

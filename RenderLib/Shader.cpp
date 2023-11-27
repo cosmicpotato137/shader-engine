@@ -109,7 +109,13 @@ void Shader::FindUniforms()
         char* name = new char[255];
         glGetActiveUniform(program, (GLuint)i, (GLsizei)255, &length, &size, &type, name);
 
-        uniforms[std::string(name)] = glToShaderUniform(name, glGetUniformLocation(program, name), type, size);
+
+        ptr<Uniform> u = glToShaderUniform(name, glGetUniformLocation(program, name), type, size);
+
+        if (uniforms.find(name) != uniforms.end() && u->GetType() == uniforms[name]->GetType())
+            continue;
+
+        uniforms[name] = u;
     }
 }
 
