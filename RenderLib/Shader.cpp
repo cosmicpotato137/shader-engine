@@ -8,8 +8,10 @@
 #include "Log.h"
 
 
-bool Shader::Init(const std::string & shaderPath)
+bool Shader::Init(const std::string& shaderPath)
 {
+    filepath = shaderPath;
+
     // Load shader source code from files
     std::string shaderSource;
     if (!LoadSource(shaderPath, shaderSource))
@@ -58,6 +60,8 @@ void Shader::Cleanup()
     {
         glDeleteProgram(program);
         program = 0;
+
+        uniforms.clear();
     }
 }
 
@@ -105,7 +109,13 @@ void Shader::FindUniforms()
         char* name = new char[255];
         glGetActiveUniform(program, (GLuint)i, (GLsizei)255, &length, &size, &type, name);
 
-        uniforms[std::string(name)] = glToShaderUniform(name, glGetUniformLocation(program, name), type, size);
+
+        ptr<Uniform> u = glToShaderUniform(name, glGetUniformLocation(program, name), type, size);
+
+        if (uniforms.find(name) != uniforms.end() && u->GetType() == uniforms[name]->GetType())
+            continue;
+
+        uniforms[name] = u;
     }
 }
 
@@ -113,6 +123,9 @@ void Shader::ApplyUniforms() {
     for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter)
     {
         const uniform_types value = iter->second->GetValue();
+
+        if (iter->second->GetType() == Error)
+            continue;
 
         // set value
         struct Visitor {
@@ -143,7 +156,7 @@ void Shader::ApplyUniforms() {
             }
             void operator()(GLuint value) {
                 bool typecheck = false;
-                typecheck |= uniform->GetType() == Int;
+                typecheck |= uniform->GetType() == UInt;
                 typecheck |= uniform->GetType() == Image2D;
                 typecheck |= uniform->GetType() == Texture2D;
                 if (!typecheck)
@@ -284,31 +297,31 @@ void Shader::ParseVertexAndFragment(const std::string& input, std::string& verte
 ptr<Uniform> glToShaderUniform(const char* name, int location, GLuint type, GLsizei size)
 {
     // check inspector hide/show
-    std::regex re("_?((color)|(c_))[a-zA-Z]*");
+    std::regex checkColor("^_?((color)|(c_))[a-zA-Z]*$");
 
     bool hidden = false;
-    std::regex re1("_.*");
-    if (std::regex_search(name, re1))
+    std::regex checkHide("^_.*$");
+    if (std::regex_search(name, checkHide))
         hidden = true;
 
     switch (type)
     {
     case GL_BOOL:           return std::make_shared<Uniform>(std::string(name), location, false, Bool, hidden);
     case GL_INT:            return std::make_shared<Uniform>(std::string(name), location, 0, Int, hidden);
-    case GL_UNSIGNED_INT:   return std::make_shared<Uniform>(std::string(name), location, 0, UInt, hidden);
+    case GL_UNSIGNED_INT:   return std::make_shared<Uniform>(std::string(name), location, (unsigned int)0, UInt, hidden);
     case GL_FLOAT:          return std::make_shared<Uniform>(std::string(name), location, 0.0f, Float, hidden);
     case GL_FLOAT_VEC2:     return std::make_shared<Uniform>(std::string(name), location, glm::vec2(0), Vec2, hidden);
     case GL_FLOAT_VEC3:     
     {
         UniformType t = Vec3;
-        if (std::regex_search(name, re))
+        if (std::regex_search(name, checkColor))
             t = Col3;
         return std::make_shared<Uniform>(std::string(name), location, glm::vec3(0), t, hidden);
     }
     case GL_FLOAT_VEC4:     
     {
         UniformType t = Vec4;
-        if (std::regex_search(name, re))
+        if (std::regex_search(name, checkColor))
             t = Col4;
         return std::make_shared<Uniform>(std::string(name), location, glm::vec4(0), t, hidden);
     }

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include "Renderer.h"
 #include "Shader.h"
 #include "ComputeShader.h"
@@ -13,7 +14,7 @@
 
 #include "re_core.h"
 
-class ShaderLayer : public ApplicationLayer {
+class RenderLayer : public ApplicationLayer {
     Application* app;
 
     // render vars
@@ -22,109 +23,34 @@ class ShaderLayer : public ApplicationLayer {
     ptr<RenderTexture> swapTarget;
     ptr<Camera> cam;
 
-    // meshes
-    ptr<Mesh> quad;
-    ptr<Mesh> box;
-
-    // shaders
-    ptr<Shader> postShader;
-    ptr<ComputeShader> helloShader;
-    ptr<ComputeShader> conwayShader;
-    ptr<ComputeShader> mandelbrotShader;
+    ptr<ComputeShader> shader;
 
     // event vars
+    float elapsedTime = 0.0f;
+    bool pause = false;
+    bool reset = false;
+
     glm::vec2 lastMousePos = glm::vec2(0, 0);
     bool isDragging = false;
-
 
     glm::vec2 centerPos = glm::vec2(0);
     float zoom = 1.0f;
 
-    float resetTime = 0.0f;
-
     glm::vec2 imContentSize;
     glm::vec2 renderTargetSize;
 
+    // imgui vars
+    char* shaderFilePath = new char[256];
+    bool setShaderPath;
+
 public:
-    ShaderLayer(Application* app) : ApplicationLayer("main render layer"), app(app) {
+    RenderLayer(Application* app) : ApplicationLayer("main render layer"), app(app) {
         // renderer settings
         ren.Init(app->GetWindow());
         cam = ren.GetMainCamera();
 
         ren.SetClearColor(.3, .3, .3);
         ren.Clear();
-
-        // post proceccing
-        postShader = std::make_shared<Shader>("postShader");
-        postShader->Init(SHADER_DIR + "/postProcessing/defaultPost.shader");
-        ren.SetPostProcess(std::make_shared<Material>(
-            "defaultPost",
-            postShader
-        ));
-
-        // compute shaders
-        helloShader = std::make_shared<ComputeShader>("hello");
-        helloShader->Init(SHADER_DIR + "/compute/hello.compute");
-        helloShader->SetUniform("color", glm::vec4(1, 1, 1, 1));
-
-        conwayShader = std::make_shared<ComputeShader>("conway");
-        conwayShader->Init(SHADER_DIR + "/compute/conway.compute");
-
-        mandelbrotShader = std::make_shared<ComputeShader>("mandelbrot");
-        mandelbrotShader->Init(SHADER_DIR + "/compute/mandelbrot.compute");
-
-        // materials
-        ptr<Shader> defaultShader;
-        defaultShader = ren.LoadShader("defaultShader", SHADER_DIR + "/default.shader");
-
-        ptr<Shader> testShader;
-        testShader = ren.LoadShader("test", SHADER_DIR + "/fun/test.shader");
-
-        ptr<Shader> texShader;
-        texShader = ren.LoadShader("texture", SHADER_DIR + "/texture.shader");
-
-        ptr<Shader> noiseShader = ren.LoadShader("noise", SHADER_DIR + "/fun/noise.shader");
-        ptr<Material> noiseMat = std::make_shared<Material>(
-            "noiseMat", noiseShader, ren.GetRenderTarget()->GetTexture()
-        );
-
-        // textures
-        ptr<Texture> tex;
-        tex = std::make_shared<Texture>();
-        tex->Init(TEXTURE_DIR + "/checkers-2.png");
-
-        // objects
-        quad = Mesh::Quad();
-        box = Mesh::Cube();
-
-        ptr<RenderObject> object = std::make_shared<RenderObject>(
-            std::make_shared<Transform>(
-                glm::vec3(0, 0, 0),
-                glm::vec3(45, 45, 45),
-                glm::vec3(2)
-            ),
-            Mesh::Sphere(50, 70),
-            std::make_shared<Material>("default", testShader, tex)
-        );
-        //ren.PushObject(object);
-
-        ptr<RenderObject> object2 = std::make_shared<RenderObject>(
-            std::make_shared<Transform>(
-                glm::vec3(0, -5, 0),
-                glm::vec3(-90, 0, 0),
-                glm::vec3(5)
-            ),
-            quad,
-            std::make_shared<Material>("default", texShader, tex)
-        );
-        //ren.PushObject(object2);
-
-        ptr<RenderObject> noiseQuad = std::make_shared<RenderObject>(
-            std::make_shared<Transform>(),
-            quad,
-            noiseMat
-        );
-        ren.PushObject(noiseQuad);
 
         glm::vec2 screenSize = renderTargetSize;
         int screenWidth = screenSize.x;
@@ -137,45 +63,63 @@ public:
 
         // make render target to swap into
         swapTarget = std::make_shared<RenderTexture>();
-        swapTarget->Init(screenWidth, screenHeight);
+        swapTarget->Init(screenWidth, screenHeight, GL_COLOR_ATTACHMENT1);
 
-        // set work groups to width and height of texture
-        conwayShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
-        mandelbrotShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
-        helloShader->SetWorkGroups(std::ceil(screenWidth / 8.0), std::ceil(screenHeight / 8.0), 1);
+        shader = std::make_shared<ComputeShader>("shader");
+        shader->Init(SHADER_DIR + "/compute/conway.compute");
+        shaderFilePath = strcpy(shaderFilePath, shader->GetFilePath().c_str());
 
-        // render objects in scene
-        //ren.Render();
+
+    }
+
+    void BindRenderImages()
+    {
+        renderTarget->GetTexture()->BindCompute(0);
+        shader->SetUniform("imageOut", 0);
+        // bind swap target for iterative sims
+        if (shader->HasUniform("imageIn"))
+        {
+            shader->SetUniform("imageOut", 1);
+            swapTarget->GetTexture()->BindCompute(1);
+        }
     }
 
     virtual void Update(double dt) override {
+        if (!pause)
+            elapsedTime += dt;
     }
 
     virtual void Render() override {
 
-        // Your OpenGL rendering code goes here
-        //hello world compute shader
-        renderTarget->GetTexture()->BindCompute(0);
-        helloShader->Use();
+        BindRenderImages();
 
-        // render conway's game of life
-        //renderTarget->GetTexture()->BindCompute(0);
-        //swapTarget->GetTexture()->BindCompute(1);
-        //conwayShader->Use();
-        //renderTarget.swap(swapTarget);
+        // set default uniforms
+        if (shader->HasUniform("_center"))
+            shader->SetUniform("_center", centerPos / renderTargetSize);
+        if (shader->HasUniform("_time"))
+            shader->SetUniform("_time", elapsedTime);
+        if (shader->HasUniform("_scale"))
+            shader->SetUniform("_scale", zoom);
+        if (shader->HasUniform("_max_iterations"))
+            shader->SetUniform("_max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
+        if (shader->HasUniform("_reset"))
+            shader->SetUniform("_reset", reset);
 
-        // render the mandelbrot fractal
-        //renderTarget->GetTexture()->BindCompute(0);
-        //mandelbrotShader->SetUniform("center", centerPos / renderTargetSize);
-        //mandelbrotShader->SetUniform("scale", zoom);
-        //mandelbrotShader->SetUniform("max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
-        //mandelbrotShader->Use();
+        if (!pause || reset)
+        {
+            // deploy shader
+            shader->Use();
+            
+            // swap
+            renderTarget.swap(swapTarget);
+        }
 
-        //ren.PostProcess();
+        reset = false;
     }
 
     virtual void ImGuiRender() override
     {
+        // scene window styling
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 3.0, 3.0 });
@@ -199,18 +143,62 @@ public:
 
         ImGui::End();
 
+        // DEBUG SWAP TARGET WINDOW
+        //ImGui::Begin("Scene - debug swap target");
+        //
+        //pos = ImGui::GetCursorScreenPos();
+        //s = ImGui::GetContentRegionAvail();
+        //// render image to layer
+        //ImGui::GetWindowDrawList()->AddImage(
+        //    (void*)swap->GetTextureID(),
+        //    ImVec2(pos),
+        //    ImVec2(pos.x + s.x, pos.y + s.y),
+        //    ImVec2(0, 1), ImVec2(1, 0)
+        //);
+        //ImGui::End();
+
         ImGui::PopStyleVar(3);
 
 
-        ImGui::Begin("Uniforms");
+        ImGui::Begin("Shader Info");
 
-        std::unordered_map<std::string, ptr<Uniform>> uniforms = helloShader->GetUniforms();
+        // get shader from file
+
+        ImGui::Text("Get shader from file");
+        ImGui::Spacing();
+        
+        ImGui::InputText("Input new path", shaderFilePath, 256);
+        if (ImGui::Button("Set shader path", ImVec2(150, 25)))
+        {
+            std::string oldPath = shader->GetFilePath();
+            shader->Drop();
+            shader->Cleanup();
+            if (!shader->Init(shaderFilePath))
+                shader->Init(oldPath);
+            else
+                Console::Log("Shader compiled sucessfully");
+        }
+
+        if (ImGui::Button("Recompile shader", ImVec2(150, 25)))
+        {
+            if (shader->Init(std::string(shaderFilePath)))
+                Console::Log("Shader compiled sucessfully");
+            BindRenderImages();
+        }
+
+        // set uniforms with imgui
+
+        ImGui::Spacing();
+        ImGui::Text("Uniforms");
+        ImGui::Spacing();
+
+        std::unordered_map<std::string, ptr<Uniform>> uniforms = shader->GetUniforms();
         for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter)
         {
             std::string name = iter->second->GetName();
             uniform_types value = iter->second->GetValue();
 
-            if (iter->second->GetHide())
+            if (iter->second->GetHide() || iter->second->GetType() == Error)
                 continue;
 
             struct Visitor {
@@ -228,7 +216,7 @@ public:
                 }
                 void operator()(GLuint& value) {
                     int v = value;
-                    ImGui::DragInt(uniform->GetName().c_str(), &v, 0, INT_MAX);
+                    ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, 0, INT_MAX);
                     value = v;
                 }
                 void operator()(GLfloat& value) {
@@ -258,6 +246,24 @@ public:
             iter->second->SetValue(value);
         }
 
+        if (shader->HasUniform("_scale"))
+        {
+            ImGui::Text("Zoom: %f", zoom);
+        }
+
+        if (ImGui::Button("Pause", ImVec2(150, 25)))
+        {
+            pause = !pause;
+        }
+
+        if ((shader->HasUniform("_reset") || shader->HasUniform("_time")) && 
+            ImGui::Button("Reset simulation", ImVec2(150, 25)))
+        {
+            reset = true;
+            elapsedTime = 0.0f;
+        }
+
+
         ImGui::End();
     }
 
@@ -281,11 +287,11 @@ public:
     }
 
     virtual void HandleEvent(KeyboardEvent& keyEvent) override {
-        //if (ImGui::GetIO().WantCaptureKeyboard)
-        //{
-        //    keyEvent.handled = true;
-        //    return;
-        //}
+        if (ImGui::GetIO().WantCaptureKeyboard)
+        {
+            keyEvent.handled = true;
+            return;
+        }
 
         int key = keyEvent.key;
         int scancode = keyEvent.scancode;
@@ -302,6 +308,22 @@ public:
             cam->SetPosition({ 0, 0, -5 });
             cam->LookAt({ 0, 0, 0 });
             keyEvent.handled = true;
+        }
+        if (key == GLFW_KEY_SPACE && action == 1)
+        {
+            pause = !pause;
+        }
+        if (pause && (key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
+        {
+            // swap
+            renderTarget.swap(swapTarget);
+            // deploy shader
+            shader->Use();
+ 
+            // deploy shader
+            shader->Use();
+            // swap
+            renderTarget.swap(swapTarget);
         }
 
     }
@@ -333,7 +355,7 @@ public:
     }
 
 private:
-    void HandleSceneMouseEvent() {
+    void HandleSceneMouseEvent()  {
 
         if (!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered())
         {
@@ -362,15 +384,12 @@ private:
             {
                 // Handle right mouse release
             }
+            float yoffset = io.MouseWheel;
             if (io.MouseWheel != 0.0f)
             {
-                float yoffset = io.MouseWheel;
-
                 float len = glm::length(cam->GetPosition());
                 cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
-                zoom += yoffset * zoom;
-                zoom = std::max(zoom, 0.000001f);
-                zoom = std::min(zoom, 3.0f);
+                zoom += io.MouseWheel;
             }
         }
 
@@ -412,10 +431,10 @@ private:
         // resize textures
         renderTarget->Init(width, height);
         swapTarget->Init(width, height);
-
+ 
         // update shader work groups
-        conwayShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
-        mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
-        helloShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
+        shader->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);
+        //mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
+        //helloShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
     }
 };

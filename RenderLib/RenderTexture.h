@@ -14,7 +14,7 @@ public:
     RenderTexture();
     ~RenderTexture();
 
-    bool Init(int width, int height);
+    bool Init(int width, int height, GLuint attachment = GL_COLOR_ATTACHMENT0);
     void Cleanup();
     void BeginRender();
     void EndRender();
