@@ -33,6 +33,11 @@ public:
         this->value = value;
     }
 
+    template <typename T>
+    T GetValue() const {
+        return std::get<T>(this->value);
+    }
+
     uniform_types GetValue() const {
         return this->value;
     }

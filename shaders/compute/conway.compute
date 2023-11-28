@@ -5,6 +5,7 @@ layout(rgba32f, binding = 0) uniform image2D imageIn;
 layout(rgba32f, binding = 1) uniform image2D imageOut;
 
 uniform float _time;
+uniform bool _pause;
 uniform bool _reset;
 uniform float _scale;
 uniform int gridSize;
@@ -30,74 +31,27 @@ uint updateCell(ivec2 cell_idx, int cell_size) {
   return uint(current_status == 0 && alive_cells == 3) + uint(current_status == 1 && alive_cells > 1 && alive_cells < 4);
 }
 
-uint conway(ivec2 position, int gridSize)
-{
-  // Using a tempoary variable for the output value for clarity.
-  // it is just passed to fragColor at the end of the function.
-  uint color = 0;
-
-  // Since each cell only should hold a value of either 0 (dead) or 1 (alive),
-  // the count yields an integer value, but since the
-  // texture sampling returns a float, we will use that instead.
-  float neighbors = 0.0;
-    
-  for(float i = -1.0; i <= 1.0; i += 1.0)
-  {
-      for( float j = -1.0; j <= 1.0; j += 1.0)
-      {
-        // Apply offset and sample
-        vec4 lookup = imageLoad(imageIn, ivec2(i, j) * gridSize + position);
-        // Accumulate the result
-        neighbors += uint(lookup.x);
-      }
-  }
-
-    
-    /*
-		This samples the pixel/cell in the previous frame. We use this along with the
-		neighbor count to determined whether the cell is alive or dead in this
-		iteration.
-		Note that we have now redundantly sampled this pixel twice (in the double for loop also!).
-		This is just for simplicity. If you wish, you can try to make the code more efficient :)
-	*/    
-    float cell = imageLoad(imageIn, position).x;
-    
-    
-    /*
-		Now we just need to apply the rules to calulate the state of the cell in this iteraton.
-		It's really simple: We have already initialized the cell of this iteration to 0,
-		We therefore just have to check if we need to change that by seeing whether the
-		conditions for being alive hold:
-		Cell alive and exactly 2 or 3 _other_ neighbors (3 or 4 in total)
-		OR
-		Cell dead and exactly 2 _other_ neighbors (3 in total)
-	*/
-    if(cell > 0.0) {
-        if(neighbors >= 3.0 && neighbors <= 4.0) {
-            color = 1;
-        }
-    } else if(neighbors > 2.0 && neighbors < 4.0) {
-    	color = 1;
-    }
-
-    return color;
-}
-
 void main() {
   ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
 
   ivec2 grid = gidx / gridSize;
 
-  if (_time < .0001)
+  vec4 color = imageLoad(imageIn, gidx);
+
+  if (_reset)
   {
-    vec4 col = vec4(0);
+    vec4 col = vec4(0, 0, 0, 1);
     if (random(grid) < .3)
     {
-      col = vec4(1);
+      col = vec4(1, 0, 0, 1);
     }
 
     imageStore(imageOut, gidx, col);
     imageStore(imageIn, gidx, col);
+  }
+  else if (_pause)
+  {
+    imageStore(imageOut, gidx, imageLoad(imageIn, gidx));
   }
   else 
   {
@@ -105,7 +59,7 @@ void main() {
     // uint next_status = conway(gidx, gridSize);
 
     // float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
-    imageStore(imageOut, gidx, uvec4(next_status));
+    imageStore(imageOut, gidx, uvec4(next_status, color.y, 0, 1));
   }
 
 }
