@@ -21,6 +21,7 @@ public:
 	void RecompileShader();
 
 	void Step();
+	void ToggleStop();
 	void Start();
 	void Stop();
 

@@ -8,6 +8,8 @@ class Texture {
     GLuint textureID;
     int width;
     int height;
+
+    char* image;
 public:
     Texture();
     ~Texture() { Cleanup(); }
@@ -15,6 +17,8 @@ public:
     // Initialize the texture from an image file
     bool Init(const std::string& filename);
     bool Init(int width, int height);
+
+    void WritePixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
 
     // Bind the texture for rendering
     void Bind() const;
@@ -31,6 +35,8 @@ public:
 
     // Get the texture height
     int GetHeight() const { return height; }
+
+    glm::vec2 GetSize() const { return glm::vec2(width, height); }
 
     // Get the texture ID
     int GetTextureID() { return textureID; }

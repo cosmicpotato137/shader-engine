@@ -1,6 +1,9 @@
 #include "Application.h"
+#include "Renderer.h"
 
 #include <functional>
+
+Application* Application::s_Instance = nullptr;
 
 static void glfwErrorCallback(int error, const char* description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -63,7 +66,9 @@ bool Application::Init(const std::string& winname)
     uiLayer = std::make_shared<ImGuiLayer>(this);
     PushLayer(uiLayer);
 
-    Start();
+    // initialize renderer
+    Renderer::Init(window);
+
     return true;
 }
 
@@ -116,7 +121,6 @@ void Application::Cleanup()
 {
     if (window) {
         glfwDestroyWindow(window);
-        window = nullptr;
     }
 
     glfwTerminate();

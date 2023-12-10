@@ -12,24 +12,24 @@
 #include "RenderTexture.h"
 #include "ApplicationLayer.h"
 #include "ComputeObject.h"
+#include "Simulation.h"
 
 #include "re_core.h"
 
-class RenderLayer : public ApplicationLayer {
+class SimulationLayer : public ApplicationLayer {
 
     // render vars
     Renderer ren;
     ptr<RenderTexture> renderTarget;
     ptr<RenderTexture> swapTarget;
-    ptr<Camera> cam;
 
-    ComputeObject computeInteract;
     ComputeObject computeObject;
 
     // event vars
     float elapsedTime = 0.0f;
     bool pause = false;
     bool reset = false;
+    bool step = false;
 
     ImVec2 windowPos = ImVec2(0, 0);
     glm::vec2 lastMousePos = glm::vec2(0, 0);
@@ -43,18 +43,14 @@ class RenderLayer : public ApplicationLayer {
     glm::vec2 imContentSize;
     glm::vec2 renderTargetSize;
 
+    // simulation!
+    Simulation sim;
+
 public:
-    RenderLayer() 
+    SimulationLayer()
         : ApplicationLayer("main render layer"),
-        computeObject("shader", SHADER_DIR + "/compute/conway.compute", renderTarget, swapTarget),
-        computeInteract("interact", SHADER_DIR + "/compute/conwayInteract.compute", renderTarget, swapTarget)
+        computeObject("shader", SHADER_DIR + "/compute/simulation/slime.compute", renderTarget, swapTarget)
     {
-        // renderer settings
-        cam = ren.GetMainCamera();
-
-        ren.SetClearColor(.3, .3, .3);
-        ren.Clear();
-
         glm::vec2 screenSize = renderTargetSize;
         int screenWidth = screenSize.x;
         int screenHeight = screenSize.y;
@@ -66,7 +62,11 @@ public:
 
         // make render target to swap into
         swapTarget = std::make_shared<RenderTexture>();
-        swapTarget->Init(screenWidth, screenHeight, GL_COLOR_ATTACHMENT1);
+        swapTarget->Init(screenWidth, screenHeight);
+
+        // simulation
+        sim.Init(renderTarget);
+        sim.AddAgent({ 50, 50 }, { 100, 100 });
     }
 
     void BindRenderImages(ptr<Shader> shader)
@@ -84,43 +84,35 @@ public:
     void SetShaderUniforms(ptr<Shader> shader)
     {
         // set default uniforms
-        if (shader->HasUniform("_center"))
-            shader->SetUniform("_center", centerPos / renderTargetSize);
         if (shader->HasUniform("_time"))
             shader->SetUniform("_time", elapsedTime);
-        if (shader->HasUniform("_scale"))
-            shader->SetUniform("_scale", zoom);
-        if (shader->HasUniform("_max_iterations"))
-            shader->SetUniform("_max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
-        if (shader->HasUniform("_mouse_position"))
-        {
-            glm::vec2 pos = glm::vec2(lastMousePos.x - windowPos.x, renderTargetSize.y - (lastMousePos.y - windowPos.y));
-            shader->SetUniform("_mouse_position", pos);
-        }
-        if (shader->HasUniform("_lmb_down"))
-            shader->SetUniform("_lmb_down", lmbDown);
-        if (shader->HasUniform("_rmb_down"))
-            shader->SetUniform("_rmb_down", rmbDown);
+        //if (shader->HasUniform("_mouse_position"))
+        //{
+        //    glm::vec2 pos = glm::vec2(lastMousePos.x - windowPos.x, renderTargetSize.y - (lastMousePos.y - windowPos.y));
+        //    shader->SetUniform("_mouse_position", pos);
+        //}
+        //if (shader->HasUniform("_lmb_down"))
+        //    shader->SetUniform("_lmb_down", lmbDown);
+        //if (shader->HasUniform("_rmb_down"))
+        //    shader->SetUniform("_rmb_down", rmbDown);
     }
 
     virtual void Update(double dt) override {
         if (!pause)
             elapsedTime += dt;
+        sim.Update(dt);
     }
 
     virtual void Render() override {
-        // render interaction layer
-        ptr<ComputeShader> interactShader = computeInteract.GetShader();
-        BindRenderImages(interactShader);
-        SetShaderUniforms(interactShader);
-        computeInteract.Render();
+        // render to render target
+        sim.Render();
 
         // render simulation layer
+        // this also copies renderTarget to swapTarget
         ptr<ComputeShader> shader = computeObject.GetShader();
         BindRenderImages(shader);
         SetShaderUniforms(shader);
         computeObject.Render();
-
 
         // swap
         renderTarget.swap(swapTarget);
@@ -130,10 +122,9 @@ public:
     {
         SceneWindow();
         computeObject.ImGuiRender();
-        computeInteract.ImGuiRender();
     }
 
-    void SceneWindow() 
+    void SceneWindow()
     {
         // scene window styling
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -176,25 +167,6 @@ public:
         ImGui::PopStyleVar(3);
     }
 
-    void RotateCamera(float xOffset, float yOffset) {
-        glm::vec3 pos = cam->GetPosition();
-        float len = glm::length(pos);
-
-        // find the new position for the camera
-        float rotspd = .05f * len;
-        glm::vec3 rightOffset = cam->GetRight() * -xOffset * rotspd;
-        glm::vec3 upOffset = cam->GetUp() * yOffset * rotspd;
-        glm::vec3 newPos = glm::normalize(pos + upOffset + rightOffset) * len;
-
-        // ensure there isn't flipping at the poles
-        float d = glm::dot(glm::normalize(newPos), glm::vec3(0, 1, 0));
-        if (1 - abs(d) > 0.01f)
-        {
-            cam->SetPosition(newPos);
-            cam->LookAt({ 0, 0, 0 });
-        }
-    }
-
     virtual void HandleEvent(KeyboardEvent& keyEvent) override {
         if (ImGui::GetIO().WantCaptureKeyboard)
         {
@@ -212,20 +184,13 @@ public:
             Application::GetInstance()->SetWindowShouldClose(true);
             keyEvent.handled = true;
         }
-        if (key == GLFW_KEY_R)
-        {
-            cam->SetPosition({ 0, 0, -5 });
-            cam->LookAt({ 0, 0, 0 });
-            keyEvent.handled = true;
-        }
         if (key == GLFW_KEY_SPACE && action == 1)
         {
             pause = !pause;
-            computeObject.ToggleStop();
         }
-        if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
+        if (pause && (key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
         {
-            computeObject.Step();
+            step = true;
         }
 
     }
@@ -257,7 +222,7 @@ public:
     }
 
 private:
-    void HandleSceneMouseEvent()  {
+    void HandleSceneMouseEvent() {
 
         // check if the mouse is hovering over the scene window
         ImGuiIO& io = ImGui::GetIO();
@@ -283,14 +248,12 @@ private:
             }
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
             {
-                rmbDown = true;
                 // Handle right mouse release
+                rmbDown = true;
             }
             float yoffset = io.MouseWheel;
             if (io.MouseWheel != 0.0f)
             {
-                float len = glm::length(cam->GetPosition());
-                cam->SetPosition(glm::normalize(cam->GetPosition()) * glm::clamp(len + -1.0f * (float)yoffset, 1.0f, 100.0f));
                 zoom += io.MouseWheel;
             }
         }
@@ -309,9 +272,6 @@ private:
             // Calculate the offset of the cursor from the last position
             float xOffset = xpos - lastMousePos.x;
             float yOffset = ypos - lastMousePos.y; // Invert Y-axis if needed
-
-            // Update the position of the dragged object (e.g., camera, object, etc.)
-            RotateCamera(xOffset, yOffset);
 
             centerPos.x -= xOffset * zoom * 2 * renderTargetSize.x / renderTargetSize.y;
             centerPos.y += yOffset * zoom * 2;
@@ -333,11 +293,11 @@ private:
         // resize textures
         renderTarget->Init(width, height);
         swapTarget->Init(width, height);
- 
+        //Renderer::SetViewport(windowPos.x, windowPos.y, width, height);
+
+        Console::Log("window size %f %f", Application::GetInstance()->GetWindowSize().x, Application::GetInstance()->GetWindowSize().y);
+        Console::Log("screen size %f %f", width, height);
         // Update shader work groups
         computeObject.GetShader()->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);
-        computeInteract.GetShader()->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);
-        //mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
-        //helloShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height / 8.0), 1);
     }
 };

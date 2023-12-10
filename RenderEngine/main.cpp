@@ -2,23 +2,16 @@
 
 // layers
 #include "RenderLayer.h"
-
-class MyApp : public Application {
-    void Start() override {
-        PushLayer(std::make_shared<RenderLayer>(this));
-    }
-
-    void Update(double dt) override {
-
-    }
-};
+#include "SimulationLayer.h"
 
 int main() {
-    MyApp app;
+    Application app;
     
 
     if (app.Init("Shader Ideas"))
     {
+        //app.PushLayer(std::make_shared<RenderLayer>());
+        app.PushLayer(std::make_shared<SimulationLayer>());
         app.Run();
         app.Cleanup();
     }

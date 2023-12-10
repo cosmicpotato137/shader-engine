@@ -20,6 +20,11 @@ public:
     void EndRender();
     void Bind();
     void Unbind();
+    void Clear();
+
+    int GetWidth() { return texture->GetWidth(); }
+    int GetHeight() { return texture->GetHeight(); }
+    glm::vec2 GetSize() { return texture->GetSize(); }
 
     bool SaveToImage(const char* filePath);
 

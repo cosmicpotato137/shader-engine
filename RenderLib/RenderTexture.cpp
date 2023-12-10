@@ -53,6 +53,11 @@ void RenderTexture::Cleanup()
 void RenderTexture::BeginRender() {
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
     glEnable(GL_DEPTH_TEST);
+}
+
+void RenderTexture::Clear()
+{
+    glBindBuffer(GL_FRAMEBUFFER, framebufferID);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

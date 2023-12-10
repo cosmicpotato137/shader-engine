@@ -44,8 +44,13 @@ void main() {
 }
 )";
 
+GLFWwindow* Renderer::context = nullptr;
+ptr<RenderTexture> Renderer::renderTarget = nullptr;
+ptr<Mesh> Renderer::screenQuad = nullptr;
+ptr<Material> Renderer::postProcessing = nullptr;
+ptr<Camera> Renderer::mainCamera = nullptr;
+
 Renderer::Renderer()
-    : context(nullptr), renderTarget(nullptr)
 {
 }
 
@@ -62,7 +67,7 @@ bool Renderer::Init(GLFWwindow* context)
         return false;
     }
 
-    this->context = context;
+    Renderer::context = context;
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK); // Specify which faces to cull (in this case, back faces
@@ -150,22 +155,27 @@ void Renderer::SetPostProcess(ptr<Material> post)
     this->postProcessing = post;
 }
 
-float Renderer::GetAspect() const
+void Renderer::SetViewport(int x, int y, int width, int height)
 {
-    auto app = (Application*)glfwGetWindowUserPointer(context);
+    glViewport(x, y, width, height);
+}
+
+float Renderer::GetAspect()
+{
+    Application* app = Application::GetInstance();
     return app->GetAspect();
 }
 
-float Renderer::GetTime() const
+float Renderer::GetTime()
 {
     auto app = (Application*)glfwGetWindowUserPointer(context);
     return app->GetTime();
 }
 
-glm::vec2 Renderer::GetContextSize() const
+glm::vec2 Renderer::GetContextSize()
 {
-        auto app = (Application*)glfwGetWindowUserPointer(context);
-        return app->GetWindowSize();
+    Application* app = Application::GetInstance();
+    return app->GetWindowSize();
 }
 
 void Renderer::PushObject(ptr<RenderObject> mesh)
@@ -179,4 +189,44 @@ ptr<Shader> Renderer::LoadShader(const std::string& name, const std::string & sh
     s->Init(shaderPath);
 
     return s;
+}
+
+// Function to draw a line between two glm::vec2 positions
+void Renderer::DrawLine(const glm::vec2& start, const glm::vec2& end) {
+    // Vertex data for the line
+    float vertices[] = {
+        start.x, start.y,
+        end.x, end.y
+    };
+
+    // Create Vertex Array Object (VAO)
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+
+    // Create Vertex Buffer Object (VBO)
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+
+    // Bind the VAO
+    glBindVertexArray(VAO);
+
+    // Bind and initialize the VBO with vertex data
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    // Bind and configure the vertex buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Draw the line
+    glDrawArrays(GL_LINES, 0, 2);
+
+    // Unbind VAO and VBO
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Delete VAO and VBO
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 }

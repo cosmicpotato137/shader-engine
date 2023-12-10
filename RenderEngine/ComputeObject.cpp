@@ -37,6 +37,11 @@ void ComputeObject::Step()
     step = true;
 }
 
+void ComputeObject::ToggleStop()
+{
+    pause = !pause;
+}
+
 void ComputeObject::Start()
 {
     pause = false;
@@ -109,7 +114,7 @@ void ComputeObject::ShaderInfoWindow()
             }
             void operator()(GLint& value) {
                 int v = value;
-                ImGui::DragInt(uniform->GetName().c_str(), &v, -INT_MAX, INT_MAX);
+                ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, -INT_MAX, INT_MAX);
                 value = v;
             }
             void operator()(GLuint& value) {
