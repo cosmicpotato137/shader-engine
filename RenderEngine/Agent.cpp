@@ -6,7 +6,7 @@ Agent::Agent(const glm::vec2& initialPosition, const glm::vec2& initialVelocity)
 // Update the agent's position based on its velocity
 void Agent::Update(float dt) {
     lastPosition = position;
-    position += velocity * dt;
+    position += velocity;
 }
 
 // Setters for position and velocity

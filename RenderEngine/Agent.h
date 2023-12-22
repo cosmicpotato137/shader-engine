@@ -8,12 +8,10 @@ public:
     // Update the agent's position based on its velocity
     void Update(float dt);
 
-    // Setters for position and velocity
     void SetPosition(const glm::vec2& newPosition);
 
     void SetVelocity(const glm::vec2& newVelocity);
 
-    // Getters for position and velocity
     const glm::vec2& GetPosition() const;
 
     const glm::vec2& GetVelocity() const;

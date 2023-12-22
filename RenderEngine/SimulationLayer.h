@@ -23,6 +23,9 @@ class SimulationLayer : public ApplicationLayer {
     ptr<RenderTexture> renderTarget;
     ptr<RenderTexture> swapTarget;
 
+    ptr<Mesh> quad;
+    ptr<Shader> colorShader;
+
     ComputeObject computeObject;
 
     // event vars
@@ -45,11 +48,12 @@ class SimulationLayer : public ApplicationLayer {
 
     // simulation!
     Simulation sim;
+    std::vector<Agent> startingAgents;
 
 public:
     SimulationLayer()
         : ApplicationLayer("main render layer"),
-        computeObject("shader", SHADER_DIR + "/compute/simulation/slime.compute", renderTarget, swapTarget)
+        computeObject("shader", SHADER_DIR + "/compute/simulation/slime.compute")
     {
         glm::vec2 screenSize = renderTargetSize;
         int screenWidth = screenSize.x;
@@ -57,16 +61,32 @@ public:
 
         // assign the render target texture to the compute shader's buffer
         renderTarget = std::make_shared<RenderTexture>();
-        renderTarget->Init(screenWidth, screenHeight);
-        ren.SetRenderTarget(renderTarget);
+        renderTarget->Init(screenWidth, screenHeight, false);
 
         // make render target to swap into
         swapTarget = std::make_shared<RenderTexture>();
-        swapTarget->Init(screenWidth, screenHeight);
+        swapTarget->Init(screenWidth, screenHeight, false);
+
+        // initialize mesh
+        quad = Mesh::Quad();
+
+        // initialize shader
+        colorShader = std::make_shared<Shader>("color2D");
+        colorShader->Init(SHADER_DIR + "/color2D.shader");
+        colorShader->SetUniform("color", glm::vec3(1, 0, 0));
 
         // simulation
-        sim.Init(renderTarget);
-        sim.AddAgent({ 50, 50 }, { 100, 100 });
+        for (int i = 0; i < 20; i += 1)
+        {
+            for (int j = 0; j < 20; j += 1)
+            {
+                startingAgents.push_back(Agent{ { 10 + i * 10, 10 + j * 10}, { 10, 5 } });
+            }
+        }
+
+        sim.Init(startingAgents);
+
+        Renderer::SetClearColor(0, 0, 0);
     }
 
     void BindRenderImages(ptr<Shader> shader)
@@ -76,7 +96,7 @@ public:
         // bind swap target for iterative sims
         if (shader->HasUniform("imageIn"))
         {
-            shader->SetUniform("imageOut", 1);
+            shader->SetUniform("imageIn", 1);
             swapTarget->GetTexture()->BindCompute(1);
         }
     }
@@ -98,30 +118,37 @@ public:
     }
 
     virtual void Update(double dt) override {
-        if (!pause)
+        if (!pause || step)
+        {
             elapsedTime += dt;
-        sim.Update(dt);
+            sim.Update(.1f);
+        }
     }
 
     virtual void Render() override {
-        // render to render target
-        sim.Render();
+        if (pause && !step)
+            return;
+
+        sim.Render(swapTarget);
 
         // render simulation layer
         // this also copies renderTarget to swapTarget
         ptr<ComputeShader> shader = computeObject.GetShader();
-        BindRenderImages(shader);
+        BindRenderImages(computeObject.GetShader());
         SetShaderUniforms(shader);
         computeObject.Render();
 
         // swap
         renderTarget.swap(swapTarget);
+
+        step = false;
     }
 
     virtual void ImGuiRender() override
     {
         SceneWindow();
         computeObject.ImGuiRender();
+        sim.ImGuiRender();
     }
 
     void SceneWindow()
@@ -154,12 +181,11 @@ public:
         //ImGui::Begin("Scene - debug swap target");
         //
         //windowPos = ImGui::GetCursorScreenPos();
-        //s = ImGui::GetContentRegionAvail();
         //// render image to layer
         //ImGui::GetWindowDrawList()->AddImage(
         //    (void*)swapTarget->GetTexture()->GetTextureID(),
         //    ImVec2(windowPos),
-        //    ImVec2(windowPos.x + s.x, windowPos.y + s.y),
+        //    ImVec2(windowPos.x + imContentSize.x, windowPos.y + imContentSize.y),
         //    ImVec2(0, 1), ImVec2(1, 0)
         //);
         //ImGui::End();
@@ -188,9 +214,14 @@ public:
         {
             pause = !pause;
         }
-        if (pause && (key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
+        if ((key == GLFW_KEY_RIGHT || key == GLFW_KEY_D) && action != 0)
         {
             step = true;
+            sim.Step();
+        }
+        if (key == GLFW_KEY_R && action == 1)
+        {
+            sim.Init(startingAgents);
         }
 
     }
@@ -237,8 +268,7 @@ private:
             lmbDown = false;
             rmbDown = false;
         }
-        else if (mousePos.x >= windowPos.x + contentMin.x && mousePos.x <= windowPos.x + contentMax.x &&
-            mousePos.y >= windowPos.y + contentMin.y && mousePos.y <= windowPos.y + contentMax.y)
+        else if (mousePos.x >= windowPos.x + contentMin.x && mousePos.x <= windowPos.x + contentMax.x && mousePos.y >= windowPos.y + contentMin.y && mousePos.y <= windowPos.y + contentMax.y)
         {
             // Mouse is inside the content area
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
@@ -291,13 +321,21 @@ private:
         float height = imContentSize.y;
 
         // resize textures
-        renderTarget->Init(width, height);
-        swapTarget->Init(width, height);
-        //Renderer::SetViewport(windowPos.x, windowPos.y, width, height);
+        renderTarget->Init(width, height, false);
+        renderTarget->Clear();
+        swapTarget->Init(width, height, false);
+        swapTarget->Clear();
+
+
+        Renderer::SetViewport(0, 0, width, height);
 
         Console::Log("window size %f %f", Application::GetInstance()->GetWindowSize().x, Application::GetInstance()->GetWindowSize().y);
         Console::Log("screen size %f %f", width, height);
         // Update shader work groups
         computeObject.GetShader()->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);
+
+        // resize simulation
+        sim.SetSize({ width, height });
+        sim.Init(startingAgents);
     }
 };

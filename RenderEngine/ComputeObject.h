@@ -14,7 +14,7 @@ class ComputeObject
 	bool pause = false, reset = false, step = false;
 public:
 	ComputeObject() = delete;
-	ComputeObject(const std::string& name, const std::string& shaderPath, ptr<RenderTexture> imageIn, ptr<RenderTexture> imageOut);
+	ComputeObject(const std::string& name, const std::string& shaderPath);
 
 	void SetShader(const std::string& shaderPath);
 	ptr<ComputeShader> GetShader() const { return shader; }
@@ -24,6 +24,7 @@ public:
 	void ToggleStop();
 	void Start();
 	void Stop();
+	bool IsReset() const { return reset; }
 
 	void Render();
 	void ImGuiRender();

@@ -3,8 +3,8 @@
 #include "imgui.h"
 #include "re_core.h"
 
-ComputeObject::ComputeObject(const std::string& name, const std::string& shaderPath, ptr<RenderTexture> imageIn, ptr<RenderTexture> imageOut)
-    : name(name), imageIn(imageIn), imageOut(imageOut)
+ComputeObject::ComputeObject(const std::string& name, const std::string& shaderPath)
+    : name(name)
 {
     shader = std::make_shared<ComputeShader>(name);
     this->shaderPath = strcpy(this->shaderPath, (SHADER_DIR + "/compute/hello.compute").c_str());
@@ -54,9 +54,6 @@ void ComputeObject::Stop()
 
 void ComputeObject::Render()
 {
-    //if (pause && !reset && !step)
-    //    return;
-
     if (shader->HasUniform("_reset"))
         shader->SetUniform("_reset", reset);
     if (shader->HasUniform("_pause"))
@@ -95,7 +92,7 @@ void ComputeObject::ShaderInfoWindow()
     ImGui::Text("Uniforms");
     ImGui::Spacing();
 
-    std::unordered_map<std::string, ptr<Uniform>> uniforms = shader->GetUniforms();
+    std::map<std::string, ptr<Uniform>> uniforms = shader->GetUniforms();
     for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter)
     {
         std::string name = iter->second->GetName();
@@ -110,42 +107,51 @@ void ComputeObject::ShaderInfoWindow()
             Visitor(ptr<Uniform> uniform) : uniform(uniform) {}
 
             void operator()(bool& value) {
-                ImGui::Checkbox(uniform->GetName().c_str(), &value);
+                ImGui::Checkbox(std::string("##" + uniform->GetName()).c_str(), &value);
             }
             void operator()(GLint& value) {
                 int v = value;
-                ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, -INT_MAX, INT_MAX);
+                ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f, -INT_MAX, INT_MAX);
                 value = v;
             }
             void operator()(GLuint& value) {
                 int v = value;
-                ImGui::DragInt(uniform->GetName().c_str(), &v, 1.0f, 0, INT_MAX);
+                ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f, 0, INT_MAX);
                 value = v;
             }
             void operator()(GLfloat& value) {
-                ImGui::DragFloat(uniform->GetName().c_str(), &(float)value, .1f, -FLT_MAX, FLT_MAX);
+                ImGui::DragFloat(std::string("##" + uniform->GetName()).c_str(), &(float)value, .1f, -FLT_MAX, FLT_MAX);
             }
             void operator()(glm::vec2& value) {
-                ImGui::DragFloat2(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+                ImGui::DragFloat2(std::string("##" + uniform->GetName()).c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
             }
             void operator()(glm::vec3& value) {
                 if (uniform->GetType() == Col3)
-                    ImGui::ColorEdit3(uniform->GetName().c_str(), glm::value_ptr(value));
+                    ImGui::ColorEdit3(std::string("##" + uniform->GetName()).c_str(), glm::value_ptr(value));
                 else
-                    ImGui::DragFloat3(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+                    ImGui::DragFloat3(std::string("##" + uniform->GetName()).c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
             }
             void operator()(glm::vec4& value) {
                 if (uniform->GetType() == Col4)
-                    ImGui::ColorEdit4(uniform->GetName().c_str(), glm::value_ptr(value));
+                    ImGui::ColorEdit4(std::string("##" + uniform->GetName()).c_str(), glm::value_ptr(value));
                 else
-                    ImGui::DragFloat4(uniform->GetName().c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+                    ImGui::DragFloat4(std::string("##" + uniform->GetName()).c_str(), glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
 
             }
             void operator()(const glm::mat4& value) {
             }
         };
 
+        // slider column
+        ImGui::Columns(2, 0, false);
+        ImGui::SetColumnWidth(0, 100.0f);
         std::visit(Visitor(iter->second), value);
+
+        // text column
+        ImGui::NextColumn();
+        ImGui::Text(name.c_str());
+        ImGui::Columns();
+
         iter->second->SetValue(value);
     }
 

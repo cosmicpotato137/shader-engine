@@ -5,22 +5,35 @@
 #include <glm/glm.hpp>
 
 #include "RenderTexture.h"
+#include "ComputeBuffer1D.h"
+#include "ComputeObject.h"
 
 class Simulation {
 protected:
-    std::vector<Agent> agents;
-    ptr<RenderTexture> canvas;
+    glm::vec2 simulationDimension;
+
+    ptr<ComputeBuffer1D<Agent>> agents;
+    ComputeObject simulation;
+
 public:
     Simulation();
 
-    void Init(ptr<RenderTexture> canvas);
+    void Init(const std::vector<Agent> agents);
 
     // Add an agent to the simulation
-    void AddAgent(const glm::vec2& initialPosition, const glm::vec2& initialVelocity);
+    //void AddAgent(const glm::vec2& initialPosition, const glm::vec2& initialVelocity);
 
     // Update the simulation state
     void Update(float deltaTime);
 
+    void Step() { simulation.Step(); }
+    void Stop() { simulation.Stop(); }
+    void Start() { simulation.Start(); }
+
     // Render the simulation to canvas
-    void Render();
+    void Render(ptr<RenderTexture> canvas);
+
+    void SetSize(glm::vec2 size) { simulationDimension = size; }
+
+    void ImGuiRender();
 };

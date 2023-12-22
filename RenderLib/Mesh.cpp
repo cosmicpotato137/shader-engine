@@ -10,10 +10,10 @@ Mesh::~Mesh()
     glDeleteVertexArrays(1, &VAO);
 }
 
-void Mesh::Draw()
+void Mesh::Draw(GLuint geometryType)
 {
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(geometryType, indices.size(), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 }
 
@@ -28,7 +28,7 @@ void Mesh::LoadMesh(const std::string& filePath)
     }
 
     ProcessNode(scene->mRootNode, scene);
-    SetupMesh();
+    SetGeometryBuffers(vertices, indices, VAO, VBO, EBO);
 }
 
 void Mesh::ProcessNode(aiNode* node, const aiScene* scene)
@@ -63,16 +63,16 @@ void Mesh::ProcessMesh(aiMesh* mesh, const aiScene* scene)
     }
 }
 
-void Mesh::SetupMesh()
+void Mesh::SetGeometryBuffers(std::vector<Vertex> vertices, std::vector<int> indices, GLuint& vao, GLuint& vbo, GLuint& ebo)
 {
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
+    glGenBuffers(1, &ebo);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(vao);
 
     // Bind and set up the vertex buffer for positions and UVs
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
     // Position attribute
@@ -84,10 +84,17 @@ void Mesh::SetupMesh()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
     glBindVertexArray(0);
+}
+
+void Mesh::DeleteGeometryBuffers(GLuint& vao, GLuint& vbo, GLuint& ebo)
+{
+    glDeleteBuffers(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteVertexArrays(1, &ebo);
 }
 
 
@@ -102,13 +109,9 @@ ptr<Mesh> Mesh::Quad()
     };
 
     // Index data for the square
-    std::vector<GLuint> indices = {
+    std::vector<int> indices = {
         0, 1, 2,  // First triangle
         2, 3, 0   // Second triangle
-    };
-
-    std::vector<GLfloat> uvs = {
-
     };
 
     return std::make_shared<Mesh>(vertices, indices);
@@ -153,7 +156,7 @@ ptr<Mesh> Mesh::Cube() {
         {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}}
     };
 
-    std::vector<unsigned int> indices = {
+    std::vector<int> indices = {
         // Front face (reversed)
         0, 2, 1,
         2, 0, 3,
@@ -187,7 +190,7 @@ ptr<Mesh> Mesh::Sphere(int rings, int segments)
 {
     // Function to create a vertex and index buffer for a sphere
     std::vector<Vertex> vertices;
-    std::vector<unsigned int> indices;
+    std::vector<int> indices;
 
     for (int i = 0; i <= rings; ++i) {
         float phi = i * glm::pi<float>() / rings;

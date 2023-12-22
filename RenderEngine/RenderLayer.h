@@ -46,8 +46,8 @@ class RenderLayer : public ApplicationLayer {
 public:
     RenderLayer() 
         : ApplicationLayer("main render layer"),
-        computeObject("shader", SHADER_DIR + "/compute/conway.compute", renderTarget, swapTarget),
-        computeInteract("interact", SHADER_DIR + "/compute/conwayInteract.compute", renderTarget, swapTarget)
+        computeObject("shader", SHADER_DIR + "/compute/conway.compute"),
+        computeInteract("interact", SHADER_DIR + "/compute/conwayInteract.compute")
     {
         // renderer settings
         cam = ren.GetMainCamera();
@@ -61,12 +61,12 @@ public:
 
         // assign the render target texture to the compute shader's buffer
         renderTarget = std::make_shared<RenderTexture>();
-        renderTarget->Init(screenWidth, screenHeight);
+        renderTarget->Init(screenWidth, screenHeight, true);
         ren.SetRenderTarget(renderTarget);
 
         // make render target to swap into
         swapTarget = std::make_shared<RenderTexture>();
-        swapTarget->Init(screenWidth, screenHeight, GL_COLOR_ATTACHMENT1);
+        swapTarget->Init(screenWidth, screenHeight, true);
     }
 
     void BindRenderImages(ptr<Shader> shader)
@@ -76,7 +76,7 @@ public:
         // bind swap target for iterative sims
         if (shader->HasUniform("imageIn"))
         {
-            shader->SetUniform("imageOut", 1);
+            shader->SetUniform("imageIn", 1);
             swapTarget->GetTexture()->BindCompute(1);
         }
     }
@@ -111,7 +111,6 @@ public:
     virtual void Render() override {
         // render interaction layer
         ptr<ComputeShader> interactShader = computeInteract.GetShader();
-        BindRenderImages(interactShader);
         SetShaderUniforms(interactShader);
         computeInteract.Render();
 
@@ -160,18 +159,18 @@ public:
         ImGui::End();
 
         // DEBUG SWAP TARGET WINDOW
-        //ImGui::Begin("Scene - debug swap target");
-        //
-        //windowPos = ImGui::GetCursorScreenPos();
-        //s = ImGui::GetContentRegionAvail();
-        //// render image to layer
-        //ImGui::GetWindowDrawList()->AddImage(
-        //    (void*)swapTarget->GetTexture()->GetTextureID(),
-        //    ImVec2(windowPos),
-        //    ImVec2(windowPos.x + s.x, windowPos.y + s.y),
-        //    ImVec2(0, 1), ImVec2(1, 0)
-        //);
-        //ImGui::End();
+        ImGui::Begin("Scene - debug swap target");
+        
+        windowPos = ImGui::GetCursorScreenPos();
+        s = ImGui::GetContentRegionAvail();
+        // render image to layer
+        ImGui::GetWindowDrawList()->AddImage(
+            (void*)swapTarget->GetTexture()->GetTextureID(),
+            ImVec2(windowPos),
+            ImVec2(windowPos.x + s.x, windowPos.y + s.y),
+            ImVec2(0, 1), ImVec2(1, 0)
+        );
+        ImGui::End();
 
         ImGui::PopStyleVar(3);
     }
@@ -331,8 +330,8 @@ private:
         float height = imContentSize.y;
 
         // resize textures
-        renderTarget->Init(width, height);
-        swapTarget->Init(width, height);
+        renderTarget->Init(width, height, true);
+        swapTarget->Init(width, height, true);
  
         // Update shader work groups
         computeObject.GetShader()->SetWorkGroups(std::ceil(width / 8), std::ceil(height / 8), 1);

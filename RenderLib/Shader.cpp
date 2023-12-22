@@ -92,7 +92,7 @@ void Shader::SetUniform(const std::string& name, const uniform_types& value)
     }
 }
 
-std::unordered_map<std::string, ptr<Uniform>> Shader::GetUniforms()
+std::map<std::string, ptr<Uniform>> Shader::GetUniforms()
 {
     return uniforms;
 }

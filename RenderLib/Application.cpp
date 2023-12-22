@@ -67,7 +67,7 @@ bool Application::Init(const std::string& winname)
     PushLayer(uiLayer);
 
     // initialize renderer
-    Renderer::Init(window);
+    Renderer::SetContext(window);
 
     return true;
 }
@@ -89,6 +89,7 @@ void Application::Run()
     while (!glfwWindowShouldClose(window)) {
         // Process input events (e.g., keyboard and mouse)
         glfwPollEvents();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // handle application updates

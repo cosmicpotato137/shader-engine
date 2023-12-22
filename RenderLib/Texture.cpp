@@ -40,9 +40,6 @@ bool Texture::Init(const std::string& filename)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // Free the image data after loading
-    stbi_image_free(image);
-
     // Unbind the texture
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -65,10 +62,9 @@ bool Texture::Init(int width, int height)
     // set a texture blank texture
     image = (char*)malloc(width * height * 4 * sizeof(char));
     for (int i = 0; i < width * height * 4; i++)
-        image[i] = (char)0;
+        image[i] = 0;
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    free(image);
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -142,5 +138,10 @@ void Texture::Cleanup()
     if (textureID != 0) {
         glDeleteTextures(1, &textureID);
         textureID = 0;
+    }
+    if (image != nullptr)
+    {
+        free(image);
+        image = nullptr;
     }
 }

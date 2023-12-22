@@ -17,7 +17,7 @@ RenderTexture::~RenderTexture() {
     Cleanup();
 }
 
-bool RenderTexture::Init(int width, int height, GLuint attachment) {
+bool RenderTexture::Init(int width, int height, bool attachDepthStencil) {
     this->width = width;
     this->height = height;
 
@@ -25,12 +25,16 @@ bool RenderTexture::Init(int width, int height, GLuint attachment) {
 
     // Create texture as render target
     texture->Init(width, height);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture->GetTextureID(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture->GetTextureID(), 0);
+
     // attach renderbuffer for depth testing
-    glGenRenderbuffers(1, &renderbufferID);
-    glBindRenderbuffer(GL_RENDERBUFFER, renderbufferID);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferID);
+    if (attachDepthStencil)
+    {
+        glGenRenderbuffers(1, &renderbufferID);
+        glBindRenderbuffer(GL_RENDERBUFFER, renderbufferID);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderbufferID);
+    }
 
     // Check framebuffer completeness
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -38,6 +42,7 @@ bool RenderTexture::Init(int width, int height, GLuint attachment) {
         return false;
     }
 
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind FBO
 
     return true;
@@ -46,19 +51,21 @@ bool RenderTexture::Init(int width, int height, GLuint attachment) {
 void RenderTexture::Cleanup()
 {
     texture->Cleanup();
-    glDeleteBuffers(1, &renderbufferID);
     glDeleteBuffers(1, &framebufferID);
+    glDeleteBuffers(1, &renderbufferID);
 }
 
-void RenderTexture::BeginRender() {
+void RenderTexture::BeginRender(bool clear) {
     glBindFramebuffer(GL_FRAMEBUFFER, framebufferID);
     glEnable(GL_DEPTH_TEST);
+    if (clear)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void RenderTexture::Clear()
 {
-    glBindBuffer(GL_FRAMEBUFFER, framebufferID);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    BeginRender();
+    EndRender();
 }
 
 void RenderTexture::EndRender() {
@@ -75,7 +82,7 @@ void RenderTexture::Unbind()
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-bool RenderTexture::SaveToImage(const char* filePath)
+bool RenderTexture::SaveToImage(const std::string& filePath)
 {
     return texture->SaveToImage(filePath);
 }
