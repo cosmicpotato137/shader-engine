@@ -1,7 +1,7 @@
 #include "Simulation.h"
 #include <iostream>
 
-Simulation::Simulation() : simulation("boids", SHADER_DIR + "/compute/simulation/boids.compute") 
+Simulation::Simulation() : simulation("boids", SHADER_DIR + "/compute/simulation/slime.compute") 
 {
     this->agents = std::make_shared<ComputeBuffer1D<Agent>>();
 }
@@ -110,28 +110,21 @@ void Simulation::Update(float deltaTime) {
     //}
 }
 
-void Simulation::Render(ptr<RenderTexture> canvas)
+void Simulation::Render(const Renderer& ren)
 {
-    //canvas->BeginRender(false);
-
-    //for (Agent& agent : agents) {
-    //    glm::vec2 pos = agent.GetPosition();
-
-    //    if (pos.x >= 0 && pos.x < canvas->GetWidth() &&
-    //        pos.y >= 0 && pos.y < canvas->GetHeight())
-    //    {
-    //        Renderer::DrawLine(
-    //            glm::vec3(agent.GetLastPosition() / canvas->GetSize() * 2.0f - glm::vec2(1), 0),
-    //            glm::vec3(pos / canvas->GetSize() * 2.0f - glm::vec2(1), 0));
-    //    }
-    //}
-    //canvas->EndRender();
-
-    auto shader = simulation.GetShader();
-    //shader->SetUniform("AgentBuffer", 0);
-    shader->SetUniform("imageOut", 0);
+    // bind agent buffer
     agents->BindCompute(0);
-    canvas->GetTexture()->BindCompute(0);
+
+    // bind swap target
+    auto shader = simulation.GetShader();
+    shader->SetUniform("imageOut", 0);
+    ren.GetSwapTarget()->GetTexture()->BindCompute(0);
+
+    // bind render target
+    shader->SetUniform("imageIn", 1);
+    ren.GetRenderTarget()->GetTexture()->BindCompute(1);
+
+    // render simulation
     simulation.Render();
 }
 

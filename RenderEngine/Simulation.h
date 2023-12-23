@@ -31,7 +31,7 @@ public:
     void Start() { simulation.Start(); }
 
     // Render the simulation to canvas
-    void Render(ptr<RenderTexture> canvas);
+    void Render(const Renderer& ren);
 
     void SetSize(glm::vec2 size) { simulationDimension = size; }
 

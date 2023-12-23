@@ -51,6 +51,8 @@ ptr<Camera> Renderer::mainCamera = nullptr;
 
 Renderer::Renderer()
 {
+    renderTarget = std::make_shared<RenderTexture>();
+    swapTarget = std::make_shared<RenderTexture>();
 }
 
 Renderer::~Renderer()
@@ -61,13 +63,10 @@ Renderer::~Renderer()
 bool Renderer::Init(int targetWidth, int targetHeight)
 {
     bool success = true;
-    // assign the render target texture to the compute shader's buffer
-    renderTarget = std::make_shared<RenderTexture>();
     success &= renderTarget->Init(targetWidth, targetHeight, false);
-
-    // make render target to swap into
-    swapTarget = std::make_shared<RenderTexture>();
     success &= swapTarget->Init(targetWidth, targetHeight, false);
+
+    glViewport(0, 0, targetWidth, targetHeight);
 
     return success;
     //if (!context)
@@ -161,10 +160,9 @@ void Renderer::SetViewport(int x, int y, int width, int height)
     glViewport(x, y, width, height);
 }
 
-float Renderer::GetAspect()
+const float Renderer::GetAspect()
 {
-    Application* app = Application::GetInstance();
-    return app->GetAspect();
+    return GetWidth() / GetHeight();
 }
 
 float Renderer::GetTime()

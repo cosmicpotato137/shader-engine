@@ -48,9 +48,13 @@ public:
 	void Clear();
 	void Cleanup();
 
+	const float GetWidth() { return renderTarget->GetWidth(); }
+	const float GetHeight() { return renderTarget->GetHeight(); }
+	const glm::vec2 GetSize() { return renderTarget->GetSize(); }
+	const float GetAspect();
+
 	static void SetClearColor(float r, float g, float b, float a = 1);
 	static void SetViewport(int x, int y, int width, int height);
-	static float GetAspect();
 	static float GetTime();
 	static glm::vec2 GetContextSize();
 
