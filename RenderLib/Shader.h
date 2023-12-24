@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include <variant>
-#include <unordered_map>
+#include <map>
 
 typedef std::variant<bool, GLint, GLuint, GLfloat, glm::vec2,
     glm::vec3, glm::vec4, glm::mat4> uniform_types;
@@ -33,6 +33,11 @@ public:
         this->value = value;
     }
 
+    template <typename T>
+    T GetValue() const {
+        return std::get<T>(this->value);
+    }
+
     uniform_types GetValue() const {
         return this->value;
     }
@@ -49,7 +54,7 @@ protected:
 
 public:
     std::string name;
-    std::unordered_map<std::string, ptr<Uniform>> uniforms;
+    std::map<std::string, ptr<Uniform>> uniforms;
 
     Shader(const std::string& name) : program(0), name(name), filepath("") {}
     ~Shader() { Cleanup(); }
@@ -71,7 +76,7 @@ public:
     
     void SetUniform(const std::string& uniform_name, const uniform_types& value);
     bool HasUniform(const std::string& uniformName) const { return uniforms.find(uniformName) != uniforms.end(); }
-    std::unordered_map<std::string, ptr<Uniform>> GetUniforms();
+    std::map<std::string, ptr<Uniform>> GetUniforms();
 
 protected:
     bool LoadSource(const std::string& filepath, std::string& shaderSource);

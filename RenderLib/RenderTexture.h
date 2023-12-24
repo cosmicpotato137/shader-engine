@@ -14,14 +14,19 @@ public:
     RenderTexture();
     ~RenderTexture();
 
-    bool Init(int width, int height, GLuint attachment = GL_COLOR_ATTACHMENT0);
+    bool Init(int width, int height, bool attachDepthStencil);
     void Cleanup();
-    void BeginRender();
+    void BeginRender(bool clear = true);
     void EndRender();
     void Bind();
     void Unbind();
+    void Clear();
 
-    bool SaveToImage(const char* filePath);
+    int GetWidth() { return texture->GetWidth(); }
+    int GetHeight() { return texture->GetHeight(); }
+    glm::vec2 GetSize() { return texture->GetSize(); }
+
+    bool SaveToImage(const std::string& filePath);
 
     ptr<Texture> GetTexture() const;
 

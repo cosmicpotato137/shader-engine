@@ -7,6 +7,8 @@
 
 class Application {
 protected:
+    static Application* s_Instance;
+
     GLFWwindow* window;
     int screenWidth, screenHeight;
 
@@ -14,8 +16,17 @@ protected:
     ptr<ImGuiLayer> uiLayer;
 
 public:
-    Application() : window(nullptr), screenWidth(0), screenHeight(0) {}
+    Application() : window(nullptr), screenWidth(0), screenHeight(0) {
+        if (s_Instance)
+        {
+            Console::Error("only one application instance allowed");
+            this->~Application();
+        }
+        s_Instance = this;
+    }
     ~Application() { Cleanup(); }
+
+    static Application* GetInstance() { return s_Instance; }
 
     // Initialize GLFW and GLEW
     bool Init(const std::string& winname);
@@ -63,12 +74,6 @@ public:
     static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
     static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void WindowSizeCallback(GLFWwindow* window, int width, int height);
-
-protected:
-    virtual void Start() = 0;
-
-    // override this to add functionality to the program loop
-    virtual void Update(double dt) = 0;
 };
 
 #define EVENT_FN(type) bool operator()(type& e) { layer->HandleEvent(e); return e.handled; }

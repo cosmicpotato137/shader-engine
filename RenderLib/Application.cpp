@@ -1,6 +1,9 @@
 #include "Application.h"
+#include "Renderer.h"
 
 #include <functional>
+
+Application* Application::s_Instance = nullptr;
 
 static void glfwErrorCallback(int error, const char* description) {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
@@ -63,7 +66,9 @@ bool Application::Init(const std::string& winname)
     uiLayer = std::make_shared<ImGuiLayer>(this);
     PushLayer(uiLayer);
 
-    Start();
+    // initialize renderer
+    Renderer::SetContext(window);
+
     return true;
 }
 
@@ -84,6 +89,7 @@ void Application::Run()
     while (!glfwWindowShouldClose(window)) {
         // Process input events (e.g., keyboard and mouse)
         glfwPollEvents();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
         // handle application updates
@@ -116,7 +122,6 @@ void Application::Cleanup()
 {
     if (window) {
         glfwDestroyWindow(window);
-        window = nullptr;
     }
 
     glfwTerminate();

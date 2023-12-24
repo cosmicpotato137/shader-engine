@@ -8,7 +8,7 @@
 #include <stb/stb_image_write.h>
 
 
-Texture::Texture() : textureID(0), width(0), height(0) {
+Texture::Texture() : textureID(0), width(0), height(0), image(nullptr) {
     // Generate and bind the texture
     glGenTextures(1, &textureID);
 }
@@ -16,7 +16,6 @@ Texture::Texture() : textureID(0), width(0), height(0) {
 bool Texture::Init(const std::string& filename)
 {
     // Generate and bind the texture
-    glGenTextures(1, &textureID);
     glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -32,7 +31,7 @@ bool Texture::Init(const std::string& filename)
 
     // using stb_image
     int channels;
-    unsigned char* image = stbi_load(filename.c_str(), &width, &height, &channels, 4);
+    image = (char*)stbi_load(filename.c_str(), &width, &height, &channels, 4);
     if (!image) {
         Console::Error("Failed to load texture image: %s", filename.c_str());
         return false;
@@ -40,9 +39,6 @@ bool Texture::Init(const std::string& filename)
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Free the image data after loading
-    stbi_image_free(image);
 
     // Unbind the texture
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -64,18 +60,32 @@ bool Texture::Init(int width, int height)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // set a texture blank texture
-    char* image = (char*)malloc(width * height * 4 * sizeof(char));
+    image = (char*)malloc(width * height * 4 * sizeof(char));
     for (int i = 0; i < width * height * 4; i++)
         image[i] = 0;
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    free(image);
 
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return true;
 }
+
+void Texture::WritePixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+    int index = (y * width + x) * 4; // Assuming RGBA format
+    image[index] = r;
+    image[index + 1] = g;
+    image[index + 2] = b;
+    image[index + 3] = a;
+
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, image + index);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
 
 void Texture::Bind() const
 {
@@ -128,5 +138,10 @@ void Texture::Cleanup()
     if (textureID != 0) {
         glDeleteTextures(1, &textureID);
         textureID = 0;
+    }
+    if (image != nullptr)
+    {
+        free(image);
+        image = nullptr;
     }
 }
