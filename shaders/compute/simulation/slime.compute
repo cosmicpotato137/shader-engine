@@ -1,5 +1,5 @@
 #version 460 core
-layout(local_size_x = 8, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
 struct Agent {
   vec2 position;
@@ -14,10 +14,18 @@ layout(binding = 0, std430) buffer AgentBuffer {
 layout(rgba32f, binding = 1) uniform image2D imageIn;
 layout(rgba32f, binding = 2) uniform image2D imageOut;
 
+uniform bool _pause;
+
+// reset to random values
+float random(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
 Agent bounce(Agent agent) {
   vec2 pos = agent.position;
   vec2 vel = agent.velocity;
   vec2 lastPos = agent.lastPosition;
+
   vec2 simulationDimension = imageSize(imageOut);
   // flip velocity if agent is at the edge of the texture
   if (pos.x < 0)
@@ -56,6 +64,29 @@ Agent bounce(Agent agent) {
   return agent;
 }
 
+Agent clamp(Agent agent) {
+  vec2 dim = imageSize(imageOut);
+
+  if (agent.position.x > dim.x)
+  {
+    agent.position.x = dim.x - 1;
+  }
+  if (agent.position.y > dim.y)
+  {
+    agent.position.y = dim.y - 1;
+  }
+  if (agent.position.x < 0)
+  {
+    agent.position.x = 0;
+  }
+  if (agent.position.y < 0)
+  {
+    agent.position.y = 0;
+  }
+
+  return agent;
+}
+
 void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
     ivec2 delta = abs(end - start);
     ivec2 step = ivec2(sign(end.x - start.x), sign(end.y - start.y));
@@ -88,9 +119,17 @@ void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
     }
 }
 
-float raySumPix(vec2 start, vec2 direction, float distance) {
+float raySumPix(vec2 start, vec2 direction, float distance, float stepSize) {
     // Normalize the direction vector
-    vec2 normalizedDirection = normalize(direction);
+    vec2 normalizedDirection = vec2(0);
+    if (length(direction) != 0)
+    {
+      normalizedDirection = normalize(direction);
+    }
+    else
+    {
+      return 0;
+    }
 
     // Initialize the current position to the start point
     vec2 currentPos = start;
@@ -99,7 +138,7 @@ float raySumPix(vec2 start, vec2 direction, float distance) {
     float sumX = 0.0;
 
     // Iterate along the ray up to the specified distance
-    for (float t = 0.0; t < distance; t += 1.0) {
+    for (float t = 2.0; t <= distance; t += stepSize) {
         // Sample the x-value of the current pixel (you may use texture2D for texture sampling)
         float pixelXValue = imageLoad(imageIn, ivec2(currentPos)).x;
 
@@ -115,44 +154,66 @@ float raySumPix(vec2 start, vec2 direction, float distance) {
 
 uniform float maxVelocity;
 uniform float weight;
+uniform float lookahead;
+uniform float stepSize;
 
 const float PI = 3.14159;
+const int steps = 7;
 
 Agent slime(Agent agent) {
   // drawLine(ivec2(agent.position), ivec2(agent.position + normalize(agent.velocity) * 15), vec4(0, 1, 0, 1), vec4(0, 1, 0, 1));
 
-  vec2 pos = agent.position;
   vec2 vel = agent.velocity;
 
   // turn towards neighbors
   vec2 sumRays = vec2(0);
-  int steps = 5;
-  for (int i = 1; i <= steps - 1; i++)
+  for (int i = 0; i <= steps; i++)
   {
-    float agentDir = acos(dot(normalize(vel), vec2(1, 0)));
-    vec2 rayDir = vec2(cos(PI * i / steps - agentDir), sin(PI * i / steps - agentDir));
+    vec2 rayDir = vec2(0);
 
-    float sumPix = raySumPix(agent.position, rayDir, 5.0f);
+    // check if agent is going somewhere
+    // if not, then look around to all directions
+    if (length(vel) > 0)
+    {
+      // find direction of the agent in radians
+      float sign = 1;
+      if (vel.y != 0)
+        sign = vel.y / abs(vel.y);
+      float agentDir = sign * acos(vel.x / sqrt(vel.x * vel.x + vel.y * vel.y));
+
+      // find ray direction relative to agent dir
+      float c = PI * i / steps - PI / 2;
+      rayDir = vec2(cos(agentDir + c), sin(agentDir + c));
+    }
+    else
+    {
+      float c = 2 * PI * i / steps;
+      rayDir = vec2(cos(c), sin(c));
+    }
+
+    float sumPix = raySumPix(agent.position, rayDir, lookahead, stepSize);
+
+    // debug line
     // drawLine(ivec2(agent.position), ivec2(agent.position + rayDir * 10), vec4(0, 0, 1, 1), vec4(0, 0, 1, 1));
-    if (sumPix != 0)
+    if (sumPix != 0 && length(rayDir) != 0)
     {
       vec2 d = normalize(rayDir) * sumPix;
       if (sumPix < 3)
+      {
         sumRays += d;
+      }
       else
+      {
         sumRays -= d;
+      }
     }
   }
-  if (length(sumRays) != 0)
+  if (length(sumRays) > 0)
+  {
     vel += normalize(sumRays) * weight;
-
-  // clamp velocity;
-  float maxLen = maxVelocity;
-  if (length(vel) > maxLen && length(vel) != 0)
-    vel = normalize(vel) * maxLen;
+  }
 
   agent.velocity = vel;
-  agent.position = pos;
   return agent;
 }
 
@@ -164,12 +225,20 @@ void main() {
   }
 
   Agent agent = agentBuffer[idx];
+  
+  // clamp velocity;
+  if (length(agent.velocity) > maxVelocity && length(agent.velocity) > 0)
+  {
+    agent.velocity = normalize(agent.velocity) * maxVelocity;
+  }
 
   agent.lastPosition = agent.position;
   agent.position += agent.velocity * .1f;
 
   agent = bounce(agent);
-  // agent = slime(agent);
+
+  if (!_pause)
+    agent = slime(agent);
 
   drawLine(ivec2(agent.position), ivec2(agent.lastPosition), vec4(1), vec4(1));
 

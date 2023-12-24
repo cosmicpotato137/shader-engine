@@ -55,11 +55,13 @@ public:
         ren.Init(size.x, size.y);
 
         // simulation
-        for (int i = 0; i < 20; i += 1)
+        int sep = 1;
+        int off = 10;
+        for (int i = 0; i < 1000; i += 1)
         {
-            for (int j = 0; j < 20; j += 1)
+            for (int j = 0; j < 400; j += 1)
             {
-                startingAgents.push_back(Agent{ { 10 + i * 20, 10 + j * 20}, { 10, 5 } });
+                startingAgents.push_back(Agent{ { off + i * sep, off + j * sep}, { 10, 0 } });
             }
         }
 

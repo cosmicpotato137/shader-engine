@@ -9,7 +9,7 @@ Simulation::Simulation() : simulation("boids", SHADER_DIR + "/compute/simulation
 void Simulation::Init(const std::vector<Agent> agents)
 {
     this->agents->InitFromVector(agents);
-    simulation.GetShader()->SetWorkGroups(std::ceil(agents.size() * sizeof(Agent) / 8), 1, 1);
+    simulation.GetShader()->SetWorkGroups(std::ceil(agents.size() * sizeof(Agent) / 256), 1, 1);
 }
 
 //void Simulation::AddAgent(const glm::vec2& initialPosition, const glm::vec2& initialVelocity) {
