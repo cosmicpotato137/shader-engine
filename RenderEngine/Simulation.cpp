@@ -12,8 +12,8 @@ void Simulation::Init(const std::vector<Agent> agents) {
       std::ceil(agents.size() * sizeof(Agent) / 256), 1, 1);
 }
 
-// void Simulation::AddAgent(const glm::vec2& initialPosition, const glm::vec2&
-// initialVelocity) {
+// Void Simulation::AddAgent(const glm::vec2& initialPosition, const glm::vec2&
+// InitialVelocity) {
 //    agents->PushBack(Agent{ initialPosition, initialVelocity });
 //    simulation.GetShader()->SetWorkGroups(std::ceil(agents->GetSize() *
 //    sizeof(Agent) / 8), 1, 1);
@@ -48,10 +48,10 @@ std::vector<Agent> FindKNearestNeighbors(const Agent &targetAgent,
 }
 
 void Simulation::Update(float deltaTime) {
-  // if (simulationDimension.y + simulationDimension.x == 0)
+  // If (simulationDimension.y + simulationDimension.x == 0)
   //    return;
 
-  // for (Agent& agent : agents) {
+  // For (Agent& agent : agents) {
   //    glm::vec2 pos = agent.GetPosition();
   //    glm::vec2 lastPos = agent.GetLastPosition();
   //    glm::vec2 vel = agent.GetVelocity();

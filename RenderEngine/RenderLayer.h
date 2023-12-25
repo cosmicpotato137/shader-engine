@@ -316,8 +316,8 @@ private:
                                              std::ceil(height / 8), 1);
     computeInteract.GetShader()->SetWorkGroups(std::ceil(width / 8),
                                                std::ceil(height / 8), 1);
-    // mandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height
+    // MandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height
     // / 8.0), 1); helloShader->SetWorkGroups(std::ceil(width / 8.0),
-    // std::ceil(height / 8.0), 1);
+    // Std::ceil(height / 8.0), 1);
   }
 };

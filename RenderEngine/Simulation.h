@@ -21,8 +21,8 @@ public:
   void Init(const std::vector<Agent> agents);
 
   // Add an agent to the simulation
-  // void AddAgent(const glm::vec2& initialPosition, const glm::vec2&
-  // initialVelocity);
+  // Void AddAgent(const glm::vec2& initialPosition, const glm::vec2&
+  // InitialVelocity);
 
   // Update the simulation state
   void Update(float deltaTime);

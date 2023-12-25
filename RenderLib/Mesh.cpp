@@ -63,9 +63,9 @@ void Mesh::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
         glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 
     // Todo: add code here to process other attributes like normals and texture
-    // coordinates
-    // vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y,
-    // mesh->mNormals[i].z);
+    // Coordinates
+    // Vertex.Normal = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y,
+    // Mesh->mNormals[i].z);
 
     vertices.push_back(vertex);
   }

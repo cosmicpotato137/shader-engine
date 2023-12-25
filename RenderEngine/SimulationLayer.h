@@ -141,7 +141,7 @@ public:
     // DEBUG SWAP TARGET WINDOW
     // ImGui::Begin("Scene - debug swap target");
     //
-    // windowPos = ImGui::GetCursorScreenPos();
+    // WindowPos = ImGui::GetCursorScreenPos();
     //// Render image to layer
     // ImGui::GetWindowDrawList()->AddImage(
     //    (void*)swapTarget->GetTexture()->GetTextureID(),

@@ -1,6 +1,6 @@
 #include "re_core.h"
 
-// layers
+// Layers
 #include "RenderLayer.h"
 #include "SimulationLayer.h"
 
@@ -8,7 +8,7 @@ int main() {
   Application app;
 
   if (app.Init("Shader Ideas")) {
-    // app.PushLayer(std::make_shared<RenderLayer>());
+    //app.PushLayer(std::make_shared<RenderLayer>());
     app.PushLayer(std::make_shared<SimulationLayer>());
     app.Run();
     app.Cleanup();
