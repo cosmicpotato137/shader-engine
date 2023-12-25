@@ -31,6 +31,7 @@ void Mesh::LoadMesh(const std::string &filePath) {
   const aiScene *scene =
       importer.ReadFile(filePath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
+  // Error checking
   if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
       !scene->mRootNode) {
     std::cerr << "Assimp: " << importer.GetErrorString() << std::endl;

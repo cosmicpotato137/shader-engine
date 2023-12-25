@@ -15,7 +15,7 @@ class RenderStep {
 public:
   RenderStep(std::function<void()> renderFunction)
       : renderFunction(renderFunction) {}
-
+  
   // Method to execute the lambda function
   void Execute() {
     if (renderFunction) {
@@ -40,8 +40,10 @@ public:
   Renderer();
   ~Renderer();
 
+  // Initialize renderer with render target width and height
   bool Init(int targetWidth, int targetHeight);
 
+  // Set the context (glfw window) for the renderer
   static void SetContext(GLFWwindow *context);
 
   void Render();
@@ -59,11 +61,12 @@ public:
   static float GetTime();
   static glm::vec2 GetContextSize();
 
-  // Render target
-  void SetRenderTarget(ptr<RenderTexture> source);
+  // Render target getter 
   ptr<RenderTexture> GetRenderTarget() const { return renderTarget; }
 
-  // Swap target
+  // Swap target getter and setter
+  
+  void SetRenderTarget(ptr<RenderTexture> source);
   ptr<RenderTexture> GetSwapTarget() const { return swapTarget; }
 
   void SetPostProcess(ptr<Material> post);
