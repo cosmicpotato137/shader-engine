@@ -1,8 +1,9 @@
 #pragma once
 
 // Graphics
-#include <GLFW/glfw3.h>
+// Note: must be included before glfw3.h
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 // Math
 #include <glm/glm.hpp>
