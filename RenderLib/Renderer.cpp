@@ -1,11 +1,11 @@
 #include <fstream>
-#include <sstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "Application.h"
-#include "Renderer.h"
 #include "Log.h"
+#include "Renderer.h"
 
 std::string postVert = R"(
 #vertex
@@ -24,7 +24,7 @@ void main() {
 #fragment
 #version 330 core
 
-// input and output
+// Input and output
 in vec2 TexCoord;
 out vec4 FragColor;
 
@@ -44,162 +44,134 @@ void main() {
 }
 )";
 
-GLFWwindow* Renderer::context = nullptr;
+GLFWwindow *Renderer::context = nullptr;
 ptr<Mesh> Renderer::screenQuad = nullptr;
 ptr<Material> Renderer::postProcessing = nullptr;
 ptr<Camera> Renderer::mainCamera = nullptr;
 
-Renderer::Renderer()
-{
-    renderTarget = std::make_shared<RenderTexture>();
-    swapTarget = std::make_shared<RenderTexture>();
+Renderer::Renderer() {
+  renderTarget = std::make_shared<RenderTexture>();
+  swapTarget = std::make_shared<RenderTexture>();
 }
 
-Renderer::~Renderer()
-{
-    Cleanup();
+Renderer::~Renderer() { Cleanup(); }
+
+bool Renderer::Init(int targetWidth, int targetHeight) {
+  bool success = true;
+  success &= renderTarget->Init(targetWidth, targetHeight, false);
+  success &= swapTarget->Init(targetWidth, targetHeight, false);
+
+  glViewport(0, 0, targetWidth, targetHeight);
+
+  return success;
+  // if (!context)
+  //{
+  //    Console::Error("Can't initialize Renderer without valid context");
+  //    return false;
+  //}
+
+  // Renderer::context = context;
+
+  // glEnable(GL_CULL_FACE);
+  // glCullFace(GL_BACK); // Specify which faces to cull (in this case, back
+  // faces
+
+  // glEnable(GL_DEPTH_TEST);
+  // glDepthFunc(GL_LESS); // Default depth comparison function
+
+  // mainCamera = std::make_shared<Camera>(
+  //    glm::vec3(0.0f, 0.0f, -5.0f),
+  //    glm::vec3(0.0f, 1.0f, 0.0f),
+  //    0.0f,
+  //    0.0f
+  //);
+  // mainCamera->LookAt({ 0, 0, 0 });
+
+  // screenQuad = Mesh::Quad();
+
+  // auto winSize = GetContextSize();
+  // renderTarget = std::make_shared<RenderTexture>();
+  // renderTarget->Init(winSize.x, winSize.y, true);
+
+  // auto defaultPost = std::make_shared<Shader>("Default Post");
+  // defaultPost->InitFromSource(postVert);
+  // postProcessing = std::make_shared<Material>("Default Post", defaultPost,
+  // renderTarget->GetTexture());
+
+  // return true;
 }
 
-bool Renderer::Init(int targetWidth, int targetHeight)
-{
-    bool success = true;
-    success &= renderTarget->Init(targetWidth, targetHeight, false);
-    success &= swapTarget->Init(targetWidth, targetHeight, false);
+void Renderer::SetContext(GLFWwindow *context) { Renderer::context = context; }
 
-    glViewport(0, 0, targetWidth, targetHeight);
+void Renderer::Render() {
+  for each (RenderStep step in renderStack) {
+    step.Execute();
+  }
 
-    return success;
-    //if (!context)
-    //{
-    //    Console::Error("Can't initialize Renderer without valid context");
-    //    return false;
-    //}
-
-    //Renderer::context = context;
-
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK); // Specify which faces to cull (in this case, back faces
-
-    //glEnable(GL_DEPTH_TEST);
-    //glDepthFunc(GL_LESS); // Default depth comparison function
-
-    //mainCamera = std::make_shared<Camera>(
-    //    glm::vec3(0.0f, 0.0f, -5.0f),
-    //    glm::vec3(0.0f, 1.0f, 0.0f),
-    //    0.0f,
-    //    0.0f
-    //);
-    //mainCamera->LookAt({ 0, 0, 0 });
-
-    //screenQuad = Mesh::Quad();
-
-    //auto winSize = GetContextSize();
-    //renderTarget = std::make_shared<RenderTexture>();
-    //renderTarget->Init(winSize.x, winSize.y, true);
-
-    //auto defaultPost = std::make_shared<Shader>("Default Post");
-    //defaultPost->InitFromSource(postVert);
-    //postProcessing = std::make_shared<Material>("Default Post", defaultPost, renderTarget->GetTexture());
-
-    //return true;
+  renderTarget.swap(swapTarget);
 }
 
-void Renderer::SetContext(GLFWwindow* context)
-{
-    Renderer::context = context;
+void Renderer::PostProcess() {
+  float time = GetTime();
+
+  glDisable(GL_DEPTH_TEST);
+  postProcessing->SetTexture(renderTarget->GetTexture());
+  postProcessing->Bind();
+  postProcessing->SetUniform("time", time);
+  screenQuad->Draw(GL_TRIANGLES);
 }
 
-void Renderer::Render()
-{
-    for each (RenderStep step in renderStack)
-    {
-        step.Execute();
-    }
+void Renderer::Clear() { renderTarget->Clear(); }
 
-    renderTarget.swap(swapTarget);
+void Renderer::Cleanup() {}
+
+void Renderer::SetClearColor(float r, float g, float b, float a) {
+  glClearColor(r, g, b, a);
 }
 
-void Renderer::PostProcess()
-{
-    float time = GetTime();
-
-    glDisable(GL_DEPTH_TEST);
-    postProcessing->SetTexture(renderTarget->GetTexture());
-    postProcessing->Bind();
-    postProcessing->SetUniform("time", time);
-    screenQuad->Draw(GL_TRIANGLES);
+void Renderer::SetRenderTarget(ptr<RenderTexture> source) {
+  this->renderTarget = source;
+  this->postProcessing->SetTexture(source->GetTexture());
 }
 
-void Renderer::Clear()
-{
-    renderTarget->Clear();
+void Renderer::SetPostProcess(ptr<Material> post) {
+  this->postProcessing = post;
 }
 
-void Renderer::Cleanup()
-{
+void Renderer::SetViewport(int x, int y, int width, int height) {
+  glViewport(x, y, width, height);
 }
 
-void Renderer::SetClearColor(float r, float g, float b, float a)
-{
-    glClearColor(r, g, b, a);
+const float Renderer::GetAspect() { return GetWidth() / GetHeight(); }
+
+float Renderer::GetTime() {
+  auto app = (Application *)glfwGetWindowUserPointer(context);
+  return app->GetTime();
 }
 
-void Renderer::SetRenderTarget(ptr<RenderTexture> source)
-{
-    this->renderTarget = source;
-    this->postProcessing->SetTexture(source->GetTexture());
+glm::vec2 Renderer::GetContextSize() {
+  Application *app = Application::GetInstance();
+  return app->GetWindowSize();
 }
 
-void Renderer::SetPostProcess(ptr<Material> post) 
-{
-    this->postProcessing = post;
-}
+ptr<Shader> Renderer::LoadShader(const std::string &name,
+                                 const std::string &shaderPath) {
+  ptr<Shader> s = std::make_shared<Shader>(name);
+  s->Init(shaderPath);
 
-void Renderer::SetViewport(int x, int y, int width, int height)
-{
-    glViewport(x, y, width, height);
-}
-
-const float Renderer::GetAspect()
-{
-    return GetWidth() / GetHeight();
-}
-
-float Renderer::GetTime()
-{
-    auto app = (Application*)glfwGetWindowUserPointer(context);
-    return app->GetTime();
-}
-
-glm::vec2 Renderer::GetContextSize()
-{
-    Application* app = Application::GetInstance();
-    return app->GetWindowSize();
-}
-
-ptr<Shader> Renderer::LoadShader(const std::string& name, const std::string & shaderPath)
-{
-    ptr<Shader> s = std::make_shared<Shader>(name);
-    s->Init(shaderPath);
-
-    return s;
+  return s;
 }
 
 // Function to draw a line between two glm::vec2 positions
-void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, GLenum usage) {
-    std::vector<Vertex> vertices = {
-        { a, { 0, 0 } },
-        { b, {1, 1} }
-    };
+void Renderer::DrawLine(const glm::vec3 &a, const glm::vec3 &b, GLenum usage) {
+  std::vector<Vertex> vertices = {{a, {0, 0}}, {b, {1, 1}}};
 
-    std::vector<int> indices = {
-        0, 1
-    };
+  std::vector<int> indices = {0, 1};
 
-    Mesh l = Mesh(vertices, indices);
-    l.Draw(GL_LINES);
+  Mesh l = Mesh(vertices, indices);
+  l.Draw(GL_LINES);
 }
-    
+
 //    // Vertex data for the line
 //    float vertices[] = {
 //        start.x, start.y,
@@ -223,8 +195,8 @@ void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, GLenum usage) {
 //
 //    // Bind and configure the vertex buffer
 //    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
+//    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float),
+//    (void*)0); glEnableVertexAttribArray(0);
 //
 //    // Draw the line
 //    shader->Use();

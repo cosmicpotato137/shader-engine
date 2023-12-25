@@ -13,20 +13,20 @@ uniform vec2 _mouse_position;
 uniform int gridSize;
 uniform int brushSize;
 
-// reset to random values
+// Reset to random values
 float random(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
 void main() {
-  // int correctedBrushSize = 1;
-  // if (brushSize > 0)
+  // Int correctedBrushSize = 1;
+  // If (brushSize > 0)
   // {
   //   correctedBrushSize = brushSize;
   // }
 
-  // int correctedGridSize = 1;
-  // if (gridSize > 0)
+  // Int correctedGridSize = 1;
+  // If (gridSize > 0)
   // {
   //   correctedGridSize = gridSize;
   // }

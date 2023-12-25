@@ -5,42 +5,49 @@
 #include <string>
 
 class Texture {
-    GLuint textureID;
-    int width;
-    int height;
+  GLuint textureID;
+  int width;
+  int height;
 
-    char* image;
+  char *image;
+
 public:
-    Texture();
-    ~Texture() { Cleanup(); }
+  Texture();
+  ~Texture() { Cleanup(); }
 
-    // Initialize the texture from an image file
-    bool Init(const std::string& filename);
-    bool Init(int width, int height);
+  // Initialize the texture from an image file
+  bool Init(const std::string &filename);
 
-    void WritePixel(int x, int y, unsigned char r, unsigned char g, unsigned char b, unsigned char a=255);
+  // Initialize the texture to black
+  bool Init(int width, int height);
 
-    // Bind the texture for rendering
-    void Bind() const;
-    void BindCompute(int binding) const;
+  // Set the pixel at (x, y) to the given color
+  void WritePixel(int x, int y, unsigned char r, unsigned char g,
+                  unsigned char b, unsigned char a = 255);
 
-    // Save texture to image
-    bool SaveToImage(const std::string& filePath);
+  // Bind the texture for rendering
+  void Bind() const;
 
-    // Unbind the currently bound texture
-    void Unbind() const;
+  // Bind the texture for compute rendering
+  void BindCompute(int binding) const;
 
-    // Get the texture width
-    int GetWidth() const { return width; }
+  // Save texture to image
+  bool SaveToImage(const std::string &filePath);
 
-    // Get the texture height
-    int GetHeight() const { return height; }
+  // Unbind the currently bound texture
+  void Unbind() const;
 
-    glm::vec2 GetSize() const { return glm::vec2(width, height); }
+  // Get the texture width
+  int GetWidth() const { return width; }
 
-    // Get the texture ID
-    int GetTextureID() { return textureID; }
+  // Get the texture height
+  int GetHeight() const { return height; }
 
-    // Clean up and release resources
-    void Cleanup();
+  glm::vec2 GetSize() const { return glm::vec2(width, height); }
+
+  // Get the texture ID
+  int GetTextureID() { return textureID; }
+
+  // Clean up and release resources
+  void Cleanup();
 };

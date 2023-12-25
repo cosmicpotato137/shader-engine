@@ -28,14 +28,14 @@ void main() {
   }
   else 
   {
-    // uint next_status = updateCell(grid * gridSize + gridSize / 2, gridSize);
-    // ivec2 pos = ivec2(floor(gidx.x / gridSize), floor(gidx.y / gridSize)) * gridSize;
-    // ivec2 pos = ivec2(floor(gidx.x / gridSize) * gridSize, gidx.y);
+    // Uint next_status = updateCell(grid * gridSize + gridSize / 2, gridSize);
+    // Ivec2 pos = ivec2(floor(gidx.x / gridSize), floor(gidx.y / gridSize)) * gridSize;
+    // Ivec2 pos = ivec2(floor(gidx.x / gridSize) * gridSize, gidx.y);
     uint next_status = uint(ceil(imageLoad(imageIn, gidx - ivec2(2, 2)).x));
 
-    // float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
+    // Float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
     imageStore(imageOut, gidx, uvec4(next_status));
-    // imageStore(imageIn, gidx, imageLoad(imageOut, gidx + ivec2(1, 1)));
+    // ImageStore(imageIn, gidx, imageLoad(imageOut, gidx + ivec2(1, 1)));
   }
 
 }

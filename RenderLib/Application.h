@@ -1,93 +1,112 @@
 #pragma once
 
-#include "core.h"
-#include "Log.h"
 #include "ApplicationLayer.h"
 #include "ImGuiLayer.h"
+#include "Log.h"
+#include "core.h"
 
 class Application {
 protected:
-    static Application* s_Instance;
+  static Application *s_Instance;
 
-    GLFWwindow* window;
-    int screenWidth, screenHeight;
+  GLFWwindow *window;
+  int screenWidth, screenHeight;
 
-    std::vector<ptr<ApplicationLayer>> layers;
-    ptr<ImGuiLayer> uiLayer;
+  std::vector<ptr<ApplicationLayer>> layers;
+  ptr<ImGuiLayer> uiLayer;
 
 public:
-    Application() : window(nullptr), screenWidth(0), screenHeight(0) {
-        if (s_Instance)
-        {
-            Console::Error("only one application instance allowed");
-            this->~Application();
-        }
-        s_Instance = this;
+  Application() : window(nullptr), screenWidth(0), screenHeight(0) {
+    // Only one application instance allowed
+    if (s_Instance) {
+      Console::Error("only one application instance allowed");
+      this->~Application();
     }
-    ~Application() { Cleanup(); }
+    s_Instance = this;
+  }
 
-    static Application* GetInstance() { return s_Instance; }
+  ~Application() { Cleanup(); }
 
-    // Initialize GLFW and GLEW
-    bool Init(const std::string& winname);
+  // Get the application instance
+  static Application *GetInstance() { return s_Instance; }
 
-    // add application layer
-    void PushLayer(ptr<ApplicationLayer> layer);
-    // remove application layer
-    void PopLayer();
+  // Initialize GLFW and GLEW
+  bool Init(const std::string &winname);
 
-    // Main program loop
-    void Run();
-    void SetWindowShouldClose(bool close) { glfwSetWindowShouldClose(window, close); }
+  // Add application layer
+  void PushLayer(ptr<ApplicationLayer> layer);
 
-    // Clean up GLFW and release resources
-    virtual void Cleanup();
+  // Remove application layer
+  void PopLayer();
 
-    // get the glfw context
-    GLFWwindow* GetWindow() const { return window; }
-    // get the aspect ratio of the window
-    float GetAspect() const { return (float)screenWidth / (float)screenHeight; }
-    // get window size
-    glm::vec2 GetWindowSize() { return { screenWidth, screenHeight }; }
+  // Main program loop
+  void Run();
 
-    // get current time in app
-    double GetTime() { return glfwGetTime(); }
-    // get the mouse position
-    glm::vec2 GetCursorPosition();
+  // Check if window should close
+  void SetWindowShouldClose(bool close) {
+    glfwSetWindowShouldClose(window, close);
+  }
 
-    // generic event callback
-    virtual bool OnEvent(event_types e);
+  // Clean up GLFW and release resources
+  virtual void Cleanup();
 
-    // key callback
-    virtual void OnKey(int key, int scancode, int action, int mods) {}
-    // mouse callback
-    virtual void OnMousePos(double xpos, double ypos) {}
-    // scroll callback
-    virtual void OnScroll(double xoffset, double yoffset) {}
-    // mouse button callback
-    virtual void OnMouseButton(int button, int action, int mods) {}
-    // window resize callback
-    virtual void OnWindowResize(int width, int height);
+  // Get the glfw context
+  GLFWwindow *GetWindow() const { return window; }
 
-    static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-    static void CursorPosCallback(GLFWwindow* window, double xpos, double ypos);
-    static void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-    static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void WindowSizeCallback(GLFWwindow* window, int width, int height);
+  // Get the aspect ratio of the window
+  float GetAspect() const { return (float)screenWidth / (float)screenHeight; }
+
+  // Get window size
+  glm::vec2 GetWindowSize() { return {screenWidth, screenHeight}; }
+
+  // Get current time in app
+  double GetTime() { return glfwGetTime(); }
+
+  // Get the mouse position
+  glm::vec2 GetCursorPosition();
+
+  // Generic event callback
+  virtual bool OnEvent(event_types e);
+
+  // Key callback
+  virtual void OnKey(int key, int scancode, int action, int mods) {}
+  // Mouse callback
+  virtual void OnMousePos(double xpos, double ypos) {}
+  // Scroll callback
+  virtual void OnScroll(double xoffset, double yoffset) {}
+  // Mouse button callback
+  virtual void OnMouseButton(int button, int action, int mods) {}
+  // Window resize callback
+  virtual void OnWindowResize(int width, int height);
+
+  // Window callbacks for glfw
+  static void MouseButtonCallback(GLFWwindow *window, int button, int action,
+                                  int mods);
+  static void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
+  static void ScrollCallback(GLFWwindow *window, double xoffset,
+                             double yoffset);
+  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
+                          int mods);
+  static void WindowSizeCallback(GLFWwindow *window, int width, int height);
 };
 
-#define EVENT_FN(type) bool operator()(type& e) { layer->HandleEvent(e); return e.handled; }
+// Event visitor for application layers
+#define EVENT_FN(type)       \
+  bool operator()(type &e) { \
+    layer->HandleEvent(e);   \
+    return e.handled;        \
+  }
 
 struct EventVisitor {
-    ptr<ApplicationLayer> layer;
+  ptr<ApplicationLayer> layer;
 
-    EventVisitor(ptr<ApplicationLayer> layer) : layer(layer) {}
+  EventVisitor(ptr<ApplicationLayer> layer) : layer(layer) {}
 
-    EVENT_FN(CursorMovedEvent)
-    EVENT_FN(MouseButtonEvent)
-    EVENT_FN(WindowResizeEvent)
-    EVENT_FN(ScrollEvent)
-    EVENT_FN(KeyboardEvent)
+  EVENT_FN(CursorMovedEvent)
+  EVENT_FN(MouseButtonEvent)
+  EVENT_FN(WindowResizeEvent)
+  EVENT_FN(ScrollEvent)
+  EVENT_FN(KeyboardEvent)
 };
 
 #undef EVENT_FN

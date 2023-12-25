@@ -4,21 +4,23 @@
 #include "Texture.h"
 #include <unordered_map>
 
+// Todo add uniform support for multiple textures
 class Material {
-    std::string name;
-    ptr<Shader> shader;
-    ptr<Texture> texture;
+  std::string name;
+  ptr<Shader> shader;
+  ptr<Texture> texture;
 
 public:
-    Material(const std::string& name, ptr<Shader> shader, ptr<Texture> tex = std::make_shared<Texture>()) : name(name), shader(shader), texture(tex) {}
+  Material(const std::string &name, ptr<Shader> shader,
+           ptr<Texture> tex = std::make_shared<Texture>())
+      : name(name), shader(shader), texture(tex) {}
 
-    void SetUniform(const std::string& name, const uniform_types& value) {
-        shader->SetUniform(name, value);
-    }
+  // Set value of shader
+  void SetUniform(const std::string &name, const uniform_types &value);
 
-    void SetTexture(ptr<Texture> tex) {
-        texture = tex;
-    }
+  // Set the texture for shading
+  void SetTexture(ptr<Texture> tex);
 
-    void Bind();
+  // Bind material for rendering
+  void Bind();
 };

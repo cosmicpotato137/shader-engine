@@ -16,7 +16,7 @@ layout(rgba32f, binding = 2) uniform image2D imageOut;
 
 uniform bool _pause;
 
-// reset to random values
+// Reset to random values
 float random(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -27,7 +27,7 @@ Agent bounce(Agent agent) {
   vec2 lastPos = agent.lastPosition;
 
   vec2 simulationDimension = imageSize(imageOut);
-  // flip velocity if agent is at the edge of the texture
+  // Flip velocity if agent is at the edge of the texture
   if (pos.x < 0)
   {
     float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
@@ -161,27 +161,27 @@ const float PI = 3.14159;
 const int steps = 7;
 
 Agent slime(Agent agent) {
-  // drawLine(ivec2(agent.position), ivec2(agent.position + normalize(agent.velocity) * 15), vec4(0, 1, 0, 1), vec4(0, 1, 0, 1));
+  // DrawLine(ivec2(agent.position), ivec2(agent.position + normalize(agent.velocity) * 15), vec4(0, 1, 0, 1), vec4(0, 1, 0, 1));
 
   vec2 vel = agent.velocity;
 
-  // turn towards neighbors
+  // Turn towards neighbors
   vec2 sumRays = vec2(0);
   for (int i = 0; i <= steps; i++)
   {
     vec2 rayDir = vec2(0);
 
-    // check if agent is going somewhere
-    // if not, then look around to all directions
+    // Check if agent is going somewhere
+    // If not, then look around to all directions
     if (length(vel) > 0)
     {
-      // find direction of the agent in radians
+      // Find direction of the agent in radians
       float sign = 1;
       if (vel.y != 0)
         sign = vel.y / abs(vel.y);
       float agentDir = sign * acos(vel.x / sqrt(vel.x * vel.x + vel.y * vel.y));
 
-      // find ray direction relative to agent dir
+      // Find ray direction relative to agent dir
       float c = PI * i / steps - PI / 2;
       rayDir = vec2(cos(agentDir + c), sin(agentDir + c));
     }
@@ -193,8 +193,8 @@ Agent slime(Agent agent) {
 
     float sumPix = raySumPix(agent.position, rayDir, lookahead, stepSize);
 
-    // debug line
-    // drawLine(ivec2(agent.position), ivec2(agent.position + rayDir * 10), vec4(0, 0, 1, 1), vec4(0, 0, 1, 1));
+    // Debug line
+    // DrawLine(ivec2(agent.position), ivec2(agent.position + rayDir * 10), vec4(0, 0, 1, 1), vec4(0, 0, 1, 1));
     if (sumPix != 0 && length(rayDir) != 0)
     {
       vec2 d = normalize(rayDir) * sumPix;
@@ -226,7 +226,7 @@ void main() {
 
   Agent agent = agentBuffer[idx];
   
-  // clamp velocity;
+  // Clamp velocity;
   if (length(agent.velocity) > maxVelocity && length(agent.velocity) > 0)
   {
     agent.velocity = normalize(agent.velocity) * maxVelocity;

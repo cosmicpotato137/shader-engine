@@ -96,7 +96,7 @@ Agent bounce(Agent agent) {
   vec2 vel = agent.velocity;
   vec2 lastPos = agent.lastPosition;
   vec2 simulationDimension = imageSize(imageOut);
-  // flip velocity if agent is at the edge of the texture
+  // Flip velocity if agent is at the edge of the texture
   if (pos.x < 0)
   {
     float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
@@ -133,20 +133,20 @@ Agent bounce(Agent agent) {
   return agent;
 }
 
-// particle mass
+// Particle mass
 uniform float mass;
 
-// maximum velocity
+// Maximum velocity
 uniform float maxVelocity;
 
-// weights and biases for attraction
+// Weights and biases for attraction
 uniform float attractDistance;
 uniform float directionAttractWeight;
 uniform float velocityAttractWeight;
 const float dab = 1;
 const float vab = 1;
 
-// weights and biases for repulsion
+// Weights and biases for repulsion
 uniform float repelDistance;
 uniform float directionRepelWeight;
 uniform float velocityRepelWeight;
@@ -157,7 +157,7 @@ Agent boid(Agent agent, int[k] neighbors) {
   vec2 pos = agent.position;
   vec2 vel = agent.velocity;
 
-  // turn towards neighbors
+  // Turn towards neighbors
   vec2 sumDir = vec2(0);
   vec2 sumVel = vec2(0);
   for (int i = 0; i < k; i++)
@@ -188,7 +188,7 @@ Agent boid(Agent agent, int[k] neighbors) {
     vel += normalize(sumVel);
   }
 
-  // clamp velocity;
+  // Clamp velocity;
   float maxLen = maxVelocity;
   if (length(vel) > maxLen)
     vel = normalize(vel) * maxLen;

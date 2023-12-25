@@ -79,7 +79,7 @@ void main() {
     FragColor = vec4(1, sin(time), 0, 1);
     
     // Check if the current pixel corresponds to the mouse position
-    // if (addCell && cell == mousePosition) {
+    // If (addCell && cell == mousePosition) {
     //     FragColor = vec4(1.0, 1.0, 1.0, 1.0); // Add a cell at the mouse position
     //     return;
     // }

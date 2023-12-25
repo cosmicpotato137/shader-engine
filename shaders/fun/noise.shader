@@ -27,7 +27,7 @@ uint xorshift32(uint state) {
 
 void main() {
     // Generate random colors using built-in GLSL functions
-    // vec3 randomColor = vec3(fract(sin(time + gl_FragCoord.x * 12.9898) * 43758.5453),
+    // Vec3 randomColor = vec3(fract(sin(time + gl_FragCoord.x * 12.9898) * 43758.5453),
     //                         fract(cos(time + gl_FragCoord.y * 34.1414) * 98765.4321),
     //                         fract(sin(time + gl_FragCoord.x * 12.9898) * cos(gl_FragCoord.y * 34.1414)));
 

@@ -10,7 +10,7 @@ uniform bool _reset;
 uniform float _scale;
 uniform int gridSize;
 
-// reset to random values
+// Reset to random values
 float random(vec2 co){
     return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
 }
@@ -56,9 +56,9 @@ void main() {
   else 
   {
     uint next_status = updateCell(grid * gridSize + gridSize / 2, gridSize);
-    // uint next_status = conway(gidx, gridSize);
+    // Uint next_status = conway(gidx, gridSize);
 
-    // float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
+    // Float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
     imageStore(imageOut, gidx, uvec4(next_status, color.y, 0, 1));
   }
 

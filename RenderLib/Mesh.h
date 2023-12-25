@@ -2,46 +2,50 @@
 #include "core.h"
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <vector>
+#include <assimp/scene.h>
 #include <string>
+#include <vector>
 
 struct Vertex {
-    glm::vec3 Position;
-    glm::vec2 TexCoords;
+  glm::vec3 Position;
+  glm::vec2 TexCoords;
 };
 
 class Mesh {
-    GLuint VAO, VBO, EBO;
-    std::vector<Vertex> vertices;
-    std::vector<int> indices;
+  GLuint VAO, VBO, EBO;
+  std::vector<Vertex> vertices;
+  std::vector<int> indices;
 
 public:
-    Mesh(const std::string& filePath) 
-        : VAO(0), VBO(0), EBO(0) 
-    {
-        LoadMesh(filePath);
-    }
-    Mesh(std::vector<Vertex> vertices, std::vector<int> indices) 
-        : vertices(vertices), indices(indices)
-    { 
-        SetGeometryBuffers(vertices, indices, VAO, VBO, EBO); 
-    }
+  // Load mesh from file
+  Mesh(const std::string &filePath);
 
-    ~Mesh();
-    void Draw(GLuint geometryType = GL_TRIANGLES);
+  // Load mesh from vertices and indices
+  Mesh(std::vector<Vertex> vertices, std::vector<int> indices);
 
-    static ptr<Mesh> Quad();
-    static ptr<Mesh> Cube();
-    static ptr<Mesh> Sphere(int rings, int segments);
+  ~Mesh();
 
-    static void SetGeometryBuffers(std::vector<Vertex> vertices, std::vector<int> indices, GLuint& vao, GLuint& vbo, GLuint& ebo);
-    static void DeleteGeometryBuffers(GLuint& vao, GLuint& vbo, GLuint& ebo);
+  // Draw mesh (calls glDrawElements)
+  void Draw(GLuint geometryType = GL_TRIANGLES);
+
+  // Get quad mesh
+  static ptr<Mesh> Quad();
+
+  // Get cube mesh
+  static ptr<Mesh> Cube();
+
+  // Get sphere mesh from the number of rings and segments
+  static ptr<Mesh> Sphere(int rings, int segments);
 
 private:
-    void LoadMesh(const std::string& filePath);
-    void ProcessNode(aiNode* node, const aiScene* scene);
-    void ProcessMesh(aiMesh* mesh, const aiScene* scene);
+  // Load mesh from file
+  void LoadMesh(const std::string &filePath);
 
+  void ProcessNode(aiNode *node, const aiScene *scene);
+  void ProcessMesh(aiMesh *mesh, const aiScene *scene);
+
+  void SetGeometryBuffers(std::vector<Vertex> vertices,
+                          std::vector<int> indices, GLuint &vao, GLuint &vbo,
+                          GLuint &ebo);
 };
