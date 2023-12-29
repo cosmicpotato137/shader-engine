@@ -43,8 +43,8 @@ template <typename T> void ComputeBuffer1D<T>::Init() {
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
 
   // Allocate storage for the buffer
-  glBufferData(GL_SHADER_STORAGE_BUFFER, size * sizeof(T), nullptr,
-               GL_DYNAMIC_DRAW);
+  glBufferData(
+      GL_SHADER_STORAGE_BUFFER, size * sizeof(T), nullptr, GL_DYNAMIC_DRAW);
 
   // Bind the buffer to a binding point (you can customize the binding point)
   glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, buffer);
@@ -63,8 +63,8 @@ template <typename T> void ComputeBuffer1D<T>::PushBack(T element) {
     InitFromData();
   else {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T),
-                    sizeof(T), &element);
+    glBufferSubData(
+        GL_SHADER_STORAGE_BUFFER, data.size() * sizeof(T), sizeof(T), &element);
   }
 }
 
@@ -91,6 +91,6 @@ template <typename T> void ComputeBuffer1D<T>::InitFromData() {
   Init();
 
   glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer);
-  glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, data.size() * sizeof(T),
-                  data.data());
+  glBufferSubData(
+      GL_SHADER_STORAGE_BUFFER, 0, data.size() * sizeof(T), data.data());
 }

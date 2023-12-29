@@ -6,7 +6,23 @@
 Application *Application::s_Instance = nullptr;
 
 static void glfwErrorCallback(int error, const char *description) {
-  fprintf(stderr, "Glfw Error %d: %s\n", error, description);
+  Console::Error("GLFW Error %d: %s\n", error, description);
+}
+
+Application *Application::GetInstance() {
+  // Only one application instance allowed
+  if (!s_Instance) {
+    s_Instance = new Application();
+  }
+  return s_Instance;
+}
+
+void Application::DestroyInstance() {
+  s_Instance->Cleanup();
+  if (s_Instance) {
+    delete s_Instance;
+    s_Instance = nullptr;
+  }
 }
 
 bool Application::Init(const std::string &winname) {
@@ -61,20 +77,25 @@ bool Application::Init(const std::string &winname) {
   glfwSetScrollCallback(window, Application::ScrollCallback);
 
   // Push ui layer
-  uiLayer = std::make_shared<ImGuiLayer>(this);
+  uiLayer = std::make_shared<ImGuiLayer>();
   PushLayer(uiLayer);
 
   // Initialize renderer
   Renderer::SetContext(window);
 
+  initialized = true;
   return true;
 }
 
 void Application::PushLayer(ptr<ApplicationLayer> layer) {
+  layer->Init();
   layers.push_back(layer);
 }
 
-void Application::PopLayer() { layers.pop_back(); }
+void Application::PopLayer() {
+  layers.back()->Cleanup();
+  layers.pop_back();
+}
 
 void Application::Run() {
   double lastTime = 0;
@@ -109,8 +130,22 @@ void Application::Run() {
 }
 
 void Application::Cleanup() {
+  if (!initialized)
+    return;
+
+  initialized = false;
+
+  // Cleanup imgui layers
+  for (ptr<ApplicationLayer> l : layers) {
+    l->Cleanup();
+  }
+  layers.clear();
+  uiLayer.reset();
+  uiLayer = nullptr;
+
   if (window) {
     glfwDestroyWindow(window);
+    window = nullptr;  // Nullify the window pointer
   }
 
   glfwTerminate();
@@ -140,8 +175,8 @@ void Application::OnWindowResize(int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-void Application::MouseButtonCallback(GLFWwindow *window, int button,
-                                      int action, int mods) {
+void Application::MouseButtonCallback(
+    GLFWwindow *window, int button, int action, int mods) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
   if (app) {
@@ -151,8 +186,8 @@ void Application::MouseButtonCallback(GLFWwindow *window, int button,
   }
 }
 
-void Application::CursorPosCallback(GLFWwindow *window, double xpos,
-                                    double ypos) {
+void Application::CursorPosCallback(
+    GLFWwindow *window, double xpos, double ypos) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
   if (app) {
@@ -162,8 +197,8 @@ void Application::CursorPosCallback(GLFWwindow *window, double xpos,
   }
 }
 
-void Application::ScrollCallback(GLFWwindow *window, double xoffset,
-                                 double yoffset) {
+void Application::ScrollCallback(
+    GLFWwindow *window, double xoffset, double yoffset) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
   if (app) {
@@ -173,8 +208,8 @@ void Application::ScrollCallback(GLFWwindow *window, double xoffset,
   }
 }
 
-void Application::KeyCallback(GLFWwindow *window, int key, int scancode,
-                              int action, int mods) {
+void Application::KeyCallback(
+    GLFWwindow *window, int key, int scancode, int action, int mods) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
   if (app) {
@@ -184,8 +219,8 @@ void Application::KeyCallback(GLFWwindow *window, int key, int scancode,
   }
 }
 
-void Application::WindowSizeCallback(GLFWwindow *window, int width,
-                                     int height) {
+void Application::WindowSizeCallback(
+    GLFWwindow *window, int width, int height) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
   if (app) {

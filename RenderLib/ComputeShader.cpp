@@ -1,7 +1,7 @@
 #include "ComputeShader.h"
 
-void ComputeShader::SetWorkGroups(int numGroupsX, int numGroupsY,
-                                  int numGroupsZ) {
+void ComputeShader::SetWorkGroups(
+    int numGroupsX, int numGroupsY, int numGroupsZ) {
   x = numGroupsX;
   y = numGroupsY;
   z = numGroupsZ;

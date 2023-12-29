@@ -35,8 +35,16 @@ bool Texture::Init(const std::string &filename) {
     return false;
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, image);
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA32F,
+      width,
+      height,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      image);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // Unbind the texture
@@ -62,8 +70,16 @@ bool Texture::Init(int width, int height) {
   for (int i = 0; i < width * height * 4; i++)
     image[i] = 0;
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, image);
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA32F,
+      width,
+      height,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      image);
 
   glGenerateMipmap(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -71,8 +87,9 @@ bool Texture::Init(int width, int height) {
   return true;
 }
 
-void Texture::WritePixel(int x, int y, unsigned char r, unsigned char g,
-                         unsigned char b, unsigned char a) {
+void Texture::WritePixel(
+    int x, int y, unsigned char r, unsigned char g, unsigned char b,
+    unsigned char a) {
   int index = (y * width + x) * 4;  // Assuming RGBA format
   image[index] = r;
   image[index + 1] = g;
@@ -80,16 +97,16 @@ void Texture::WritePixel(int x, int y, unsigned char r, unsigned char g,
   image[index + 3] = a;
 
   glBindTexture(GL_TEXTURE_2D, textureID);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                  image + index);
+  glTexSubImage2D(
+      GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, image + index);
   glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Texture::Bind() const { glBindTexture(GL_TEXTURE_2D, textureID); }
 
 void Texture::BindCompute(int binding) const {
-  glBindImageTexture(binding, textureID, 0, GL_FALSE, 0, GL_READ_WRITE,
-                     GL_RGBA32F);
+  glBindImageTexture(
+      binding, textureID, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 }
 
 bool Texture::SaveToImage(const std::string &filePath) {
@@ -110,8 +127,8 @@ bool Texture::SaveToImage(const std::string &filePath) {
   delete[] tempRow;
 
   // Save the corrected pixelData to an image file using stb_image_write
-  if (stbi_write_png(filePath.c_str(), width, height, 4, pixelData,
-                     width * 4) != 0) {
+  if (stbi_write_png(
+          filePath.c_str(), width, height, 4, pixelData, width * 4) != 0) {
     Console::Log("RenderTexture saved to: %s", filePath.c_str());
   } else {
     Console::Error("Failed to save RenderTexture to an image file");

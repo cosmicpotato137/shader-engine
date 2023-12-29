@@ -45,8 +45,8 @@ public:
   RenderLayer()
       : ApplicationLayer("main render layer"),
         computeObject("shader", SHADER_DIR + "/compute/conway.compute"),
-        computeInteract("interact",
-                        SHADER_DIR + "/compute/conwayInteract.compute") {
+        computeInteract(
+            "interact", SHADER_DIR + "/compute/conwayInteract.compute") {
     // Renderer settings
     cam = ren.GetMainCamera();
 
@@ -86,12 +86,12 @@ public:
     if (shader->HasUniform("_scale"))
       shader->SetUniform("_scale", zoom);
     if (shader->HasUniform("_max_iterations"))
-      shader->SetUniform("_max_iterations",
-                         unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
+      shader->SetUniform(
+          "_max_iterations", unsigned int(30 / std::pow(zoom, 1.0 / 3.0)));
     if (shader->HasUniform("_mouse_position")) {
-      glm::vec2 pos =
-          glm::vec2(lastMousePos.x - windowPos.x,
-                    renderTargetSize.y - (lastMousePos.y - windowPos.y));
+      glm::vec2 pos = glm::vec2(
+          lastMousePos.x - windowPos.x,
+          renderTargetSize.y - (lastMousePos.y - windowPos.y));
       shader->SetUniform("_mouse_position", pos);
     }
     if (shader->HasUniform("_lmb_down"))
@@ -144,9 +144,11 @@ public:
     // Render image to layer
     windowPos = ImGui::GetCursorScreenPos();
     ImGui::GetWindowDrawList()->AddImage(
-        (void *)renderTarget->GetTexture()->GetTextureID(), ImVec2(windowPos),
+        (void *)renderTarget->GetTexture()->GetTextureID(),
+        ImVec2(windowPos),
         ImVec2(windowPos.x + imContentSize.x, windowPos.y + imContentSize.y),
-        ImVec2(0, 1), ImVec2(1, 0));
+        ImVec2(0, 1),
+        ImVec2(1, 0));
 
     ImGui::End();
 
@@ -185,25 +187,25 @@ public:
     }
   }
 
-  virtual void HandleEvent(KeyboardEvent &keyEvent) override {
+  HANDLE_EVENT_FN(KeyboardEvent) override {
     if (ImGui::GetIO().WantCaptureKeyboard) {
-      keyEvent.handled = true;
+      e.handled = true;
       return;
     }
 
-    int key = keyEvent.key;
-    int scancode = keyEvent.scancode;
-    int action = keyEvent.action;
-    int mods = keyEvent.mods;
+    int key = e.key;
+    int scancode = e.scancode;
+    int action = e.action;
+    int mods = e.mods;
 
     if (key == GLFW_KEY_ESCAPE) {
       Application::GetInstance()->SetWindowShouldClose(true);
-      keyEvent.handled = true;
+      e.handled = true;
     }
     if (key == GLFW_KEY_R) {
       cam->SetPosition({0, 0, -5});
       cam->LookAt({0, 0, 0});
-      keyEvent.handled = true;
+      e.handled = true;
     }
     if (key == GLFW_KEY_SPACE && action == 1) {
       pause = !pause;
@@ -214,27 +216,27 @@ public:
     }
   }
 
-  virtual void HandleEvent(CursorMovedEvent &cursorMoved) override {
+  HANDLE_EVENT_FN(CursorMovedEvent) override {
     if (ImGui::GetIO().WantSetMousePos) {
-      cursorMoved.handled = true;
+      e.handled = true;
       return;
     }
   }
 
-  virtual void HandleEvent(MouseButtonEvent &mouseButton) override {
+  HANDLE_EVENT_FN(MouseButtonEvent) override {
     if (ImGui::GetIO().WantCaptureMouse) {
-      mouseButton.handled = true;
+      e.handled = true;
       return;
     }
   }
 
-  virtual void HandleEvent(ScrollEvent &scrollEvent) override {
+  HANDLE_EVENT_FN(ScrollEvent) override {
     if (ImGui::GetIO().WantCaptureMouse) {
-      scrollEvent.handled = true;
+      e.handled = true;
       return;
     }
 
-    scrollEvent.handled = true;
+    e.handled = true;
   }
 
 private:
@@ -250,10 +252,11 @@ private:
     if (!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered()) {
       lmbDown = false;
       rmbDown = false;
-    } else if (mousePos.x >= windowPos.x + contentMin.x &&
-               mousePos.x <= windowPos.x + contentMax.x &&
-               mousePos.y >= windowPos.y + contentMin.y &&
-               mousePos.y <= windowPos.y + contentMax.y) {
+    } else if (
+        mousePos.x >= windowPos.x + contentMin.x &&
+        mousePos.x <= windowPos.x + contentMax.x &&
+        mousePos.y >= windowPos.y + contentMin.y &&
+        mousePos.y <= windowPos.y + contentMax.y) {
       // Mouse is inside the content area
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         // Handle left mosue click
@@ -312,10 +315,10 @@ private:
     swapTarget->Init(width, height, true);
 
     // Update shader work groups
-    computeObject.GetShader()->SetWorkGroups(std::ceil(width / 8),
-                                             std::ceil(height / 8), 1);
-    computeInteract.GetShader()->SetWorkGroups(std::ceil(width / 8),
-                                               std::ceil(height / 8), 1);
+    computeObject.GetShader()->SetWorkGroups(
+        std::ceil(width / 8), std::ceil(height / 8), 1);
+    computeInteract.GetShader()->SetWorkGroups(
+        std::ceil(width / 8), std::ceil(height / 8), 1);
     // MandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height
     // / 8.0), 1); helloShader->SetWorkGroups(std::ceil(width / 8.0),
     // Std::ceil(height / 8.0), 1);

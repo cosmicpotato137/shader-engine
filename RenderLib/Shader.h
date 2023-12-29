@@ -4,8 +4,8 @@
 #include <map>
 #include <variant>
 
-typedef std::variant<bool, GLint, GLuint, GLfloat, glm::vec2, glm::vec3,
-                     glm::vec4, glm::mat4>
+typedef std::variant<
+    bool, GLint, GLuint, GLfloat, glm::vec2, glm::vec3, glm::vec4, glm::mat4>
     uniform_types;
 
 enum UniformType {
@@ -34,8 +34,9 @@ protected:
   uniform_types value;
 
 public:
-  Uniform(const std::string &name, int location, uniform_types value,
-          UniformType type = UniformType::Error, bool hide = false)
+  Uniform(
+      const std::string &name, int location, uniform_types value,
+      UniformType type = UniformType::Error, bool hide = false)
       : name(name), location(location), value(value), type(type), hide(hide) {}
 
   bool GetHide() const { return hide; }
@@ -50,8 +51,8 @@ public:
   uniform_types GetValue() const { return this->value; }
 };
 
-ptr<Uniform> glToShaderUniform(const char *name, int location, GLuint type,
-                               GLsizei size);
+ptr<Uniform>
+glToShaderUniform(const char *name, int location, GLuint type, GLsizei size);
 
 class Shader {
 protected:
@@ -99,7 +100,7 @@ protected:
   void ApplyUniforms();
 
 private:
-  void ParseVertexAndFragment(const std::string &input,
-                              std::string &vertexShader,
-                              std::string &fragmentShader);
+  void ParseVertexAndFragment(
+      const std::string &input, std::string &vertexShader,
+      std::string &fragmentShader);
 };

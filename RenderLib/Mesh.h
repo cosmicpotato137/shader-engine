@@ -45,7 +45,7 @@ private:
   void ProcessNode(aiNode *node, const aiScene *scene);
   void ProcessMesh(aiMesh *mesh, const aiScene *scene);
 
-  void SetGeometryBuffers(std::vector<Vertex> vertices,
-                          std::vector<int> indices, GLuint &vao, GLuint &vbo,
-                          GLuint &ebo);
+  void SetGeometryBuffers(
+      std::vector<Vertex> vertices, std::vector<int> indices, GLuint &vao,
+      GLuint &vbo, GLuint &ebo);
 };

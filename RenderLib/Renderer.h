@@ -15,7 +15,7 @@ class RenderStep {
 public:
   RenderStep(std::function<void()> renderFunction)
       : renderFunction(renderFunction) {}
-  
+
   // Method to execute the lambda function
   void Execute() {
     if (renderFunction) {
@@ -61,11 +61,11 @@ public:
   static float GetTime();
   static glm::vec2 GetContextSize();
 
-  // Render target getter 
+  // Render target getter
   ptr<RenderTexture> GetRenderTarget() const { return renderTarget; }
 
   // Swap target getter and setter
-  
+
   void SetRenderTarget(ptr<RenderTexture> source);
   ptr<RenderTexture> GetSwapTarget() const { return swapTarget; }
 
@@ -73,11 +73,11 @@ public:
   ptr<Material> GetPostProcess() const { return postProcessing; }
   ptr<Camera> GetMainCamera() const { return mainCamera; }
 
-  ptr<Shader> LoadShader(const std::string &name,
-                         const std::string &shaderPath);
+  ptr<Shader>
+  LoadShader(const std::string &name, const std::string &shaderPath);
 
-  static void DrawLine(const glm::vec3 &a, const glm::vec3 &b,
-                       GLenum usage = GL_STATIC_DRAW);
+  static void DrawLine(
+      const glm::vec3 &a, const glm::vec3 &b, GLenum usage = GL_STATIC_DRAW);
 
 private:
 };

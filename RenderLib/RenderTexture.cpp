@@ -22,16 +22,23 @@ bool RenderTexture::Init(int width, int height, bool attachDepthStencil) {
 
   // Create texture as render target
   texture->Init(width, height);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-                         texture->GetTextureID(), 0);
+  glFramebufferTexture2D(
+      GL_FRAMEBUFFER,
+      GL_COLOR_ATTACHMENT0,
+      GL_TEXTURE_2D,
+      texture->GetTextureID(),
+      0);
 
   // Attach renderbuffer for depth testing
   if (attachDepthStencil) {
     glGenRenderbuffers(1, &renderbufferID);
     glBindRenderbuffer(GL_RENDERBUFFER, renderbufferID);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                              GL_RENDERBUFFER, renderbufferID);
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER,
+        GL_DEPTH_STENCIL_ATTACHMENT,
+        GL_RENDERBUFFER,
+        renderbufferID);
   }
 
   // Check framebuffer completeness

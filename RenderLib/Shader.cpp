@@ -65,8 +65,8 @@ GLint Shader::GetUniformLocation(const std::string &name) {
   // Set the uniform if not found
   GLuint loc = glGetUniformLocation(program, name.c_str());
   if (loc == -1)
-    Console::Warning("%s: Uniform '%s' not found", this->name.c_str(),
-                     name.c_str());
+    Console::Warning(
+        "%s: Uniform '%s' not found", this->name.c_str(), name.c_str());
 
   uniformLocations.insert({name, loc});
   return loc;
@@ -76,8 +76,8 @@ void Shader::SetUniform(const std::string &name, const uniform_types &value) {
   if (uniforms.find(name) != uniforms.end())
     uniforms[name]->SetValue(value);
   else {
-    Console::Warning("%s: uniform '%s' not found", this->name.c_str(),
-                     name.c_str());
+    Console::Warning(
+        "%s: uniform '%s' not found", this->name.c_str(), name.c_str());
     uniforms[name] = std::make_shared<Uniform>(name, -1, 0);
   }
 }
@@ -92,8 +92,8 @@ void Shader::FindUniforms() {
     int length, size;
     GLuint type;
     char *name = new char[255];
-    glGetActiveUniform(program, (GLuint)i, (GLsizei)255, &length, &size, &type,
-                       name);
+    glGetActiveUniform(
+        program, (GLuint)i, (GLsizei)255, &length, &size, &type, name);
 
     ptr<Uniform> u = glToShaderUniform(
         name, glGetUniformLocation(program, name), type, size);
@@ -127,8 +127,10 @@ void Shader::ApplyUniforms() {
 
       void operator()(bool value) {
         if (uniform->GetType() != Bool)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform1i(program, location, value);
       }
       void operator()(GLint value) {
@@ -137,8 +139,10 @@ void Shader::ApplyUniforms() {
         typecheck |= uniform->GetType() == Image2D;
         typecheck |= uniform->GetType() == Texture2D;
         if (!typecheck)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform1i(program, location, value);
       }
       void operator()(GLuint value) {
@@ -147,20 +151,26 @@ void Shader::ApplyUniforms() {
         typecheck |= uniform->GetType() == Image2D;
         typecheck |= uniform->GetType() == Texture2D;
         if (!typecheck)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform1ui(program, location, value);
       }
       void operator()(GLfloat value) {
         if (uniform->GetType() != Float)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform1f(program, location, value);
       }
       void operator()(const glm::vec2 &value) {
         if (uniform->GetType() != Vec2)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform2fv(program, location, 1, glm::value_ptr(value));
       }
       void operator()(const glm::vec3 &value) {
@@ -168,8 +178,10 @@ void Shader::ApplyUniforms() {
         typecheck |= uniform->GetType() != Vec3;
         typecheck |= uniform->GetType() != Col3;
         if (!typecheck)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform3fv(program, location, 1, glm::value_ptr(value));
       }
       void operator()(const glm::vec4 &value) {
@@ -177,24 +189,28 @@ void Shader::ApplyUniforms() {
         typecheck |= uniform->GetType() != Vec4;
         typecheck |= uniform->GetType() != Col4;
         if (!typecheck)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
         glProgramUniform4fv(program, location, 1, glm::value_ptr(value));
       }
       void operator()(const glm::mat4 &value) {
         if (uniform->GetType() != Mat4)
-          Console::Error("%s: uniform '%s' assigned to the wrong type",
-                         programName.c_str(), uniform->GetName().c_str());
-        glProgramUniformMatrix4fv(program, location, 1, GL_FALSE,
-                                  glm::value_ptr(value));
+          Console::Error(
+              "%s: uniform '%s' assigned to the wrong type",
+              programName.c_str(),
+              uniform->GetName().c_str());
+        glProgramUniformMatrix4fv(
+            program, location, 1, GL_FALSE, glm::value_ptr(value));
       }
     };
     std::visit(Visitor(iter->second, program, this->name), value);
   }
 }
 
-bool Shader::LoadSource(const std::string &filepath,
-                        std::string &shaderSource) {
+bool Shader::LoadSource(
+    const std::string &filepath, std::string &shaderSource) {
   std::string fileContents;
   std::ifstream fileStream(filepath, std::ios::in);
 
@@ -227,8 +243,8 @@ GLuint Shader::Compile(GLenum shaderType, const char *shaderSource) {
     glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
     std::vector<GLchar> errorLog(maxLength);
     glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
-    Console::Error("%s: Shader compilation error: \n%s\n", name.c_str(),
-                   &errorLog[0]);
+    Console::Error(
+        "%s: Shader compilation error: \n%s\n", name.c_str(), &errorLog[0]);
     glDeleteShader(shader);
     return 0;
   }
@@ -257,9 +273,9 @@ GLuint Shader::Link(std::vector<GLuint> programs) {
   return program;
 }
 
-void Shader::ParseVertexAndFragment(const std::string &input,
-                                    std::string &vertexShader,
-                                    std::string &fragmentShader) {
+void Shader::ParseVertexAndFragment(
+    const std::string &input, std::string &vertexShader,
+    std::string &fragmentShader) {
   std::string vdelimiter =
       "#vertex\n";  // The tag indicating the start of the vertex shader
   size_t vertexPos = input.find(vdelimiter);
@@ -275,18 +291,18 @@ void Shader::ParseVertexAndFragment(const std::string &input,
     return;
   }
   if (fragmentPos < vertexPos) {
-    Console::Error("%s: Vertex shader must appear before fragment shader",
-                   name.c_str());
+    Console::Error(
+        "%s: Vertex shader must appear before fragment shader", name.c_str());
     return;
   }
 
-  vertexShader = input.substr(vertexPos + vdelimiter.length(),
-                              fragmentPos - vdelimiter.length() - 1);
+  vertexShader = input.substr(
+      vertexPos + vdelimiter.length(), fragmentPos - vdelimiter.length() - 1);
   fragmentShader = input.substr(fragmentPos + fdelimiter.length());
 }
 
-ptr<Uniform> glToShaderUniform(const char *name, int location, GLuint type,
-                               GLsizei size) {
+ptr<Uniform>
+glToShaderUniform(const char *name, int location, GLuint type, GLsizei size) {
   // Check inspector hide/show
   std::regex checkColor("^_?((color)|(c_))[a-zA-Z]*$");
 
@@ -297,45 +313,45 @@ ptr<Uniform> glToShaderUniform(const char *name, int location, GLuint type,
 
   switch (type) {
   case GL_BOOL:
-    return std::make_shared<Uniform>(std::string(name), location, false, Bool,
-                                     hidden);
+    return std::make_shared<Uniform>(
+        std::string(name), location, false, Bool, hidden);
   case GL_INT:
-    return std::make_shared<Uniform>(std::string(name), location, 0, Int,
-                                     hidden);
+    return std::make_shared<Uniform>(
+        std::string(name), location, 0, Int, hidden);
   case GL_UNSIGNED_INT:
-    return std::make_shared<Uniform>(std::string(name), location,
-                                     (unsigned int)0, UInt, hidden);
+    return std::make_shared<Uniform>(
+        std::string(name), location, (unsigned int)0, UInt, hidden);
   case GL_FLOAT:
-    return std::make_shared<Uniform>(std::string(name), location, 0.0f, Float,
-                                     hidden);
+    return std::make_shared<Uniform>(
+        std::string(name), location, 0.0f, Float, hidden);
   case GL_FLOAT_VEC2:
-    return std::make_shared<Uniform>(std::string(name), location, glm::vec2(0),
-                                     Vec2, hidden);
+    return std::make_shared<Uniform>(
+        std::string(name), location, glm::vec2(0), Vec2, hidden);
   case GL_FLOAT_VEC3:
     {
       UniformType t = Vec3;
       if (std::regex_search(name, checkColor))
         t = Col3;
-      return std::make_shared<Uniform>(std::string(name), location,
-                                       glm::vec3(0), t, hidden);
+      return std::make_shared<Uniform>(
+          std::string(name), location, glm::vec3(0), t, hidden);
     }
   case GL_FLOAT_VEC4:
     {
       UniformType t = Vec4;
       if (std::regex_search(name, checkColor))
         t = Col4;
-      return std::make_shared<Uniform>(std::string(name), location,
-                                       glm::vec4(0), t, hidden);
+      return std::make_shared<Uniform>(
+          std::string(name), location, glm::vec4(0), t, hidden);
     }
   case GL_FLOAT_MAT4:
-    return std::make_shared<Uniform>(std::string(name), location, glm::mat4(1),
-                                     Mat4, true);
+    return std::make_shared<Uniform>(
+        std::string(name), location, glm::mat4(1), Mat4, true);
   case GL_SAMPLER_2D:
-    return std::make_shared<Uniform>(std::string(name), location, 0, Texture2D,
-                                     true);
+    return std::make_shared<Uniform>(
+        std::string(name), location, 0, Texture2D, true);
   case GL_IMAGE_2D:
-    return std::make_shared<Uniform>(std::string(name), location, 0, Image2D,
-                                     true);
+    return std::make_shared<Uniform>(
+        std::string(name), location, 0, Image2D, true);
   default:
     Console::Error("GL type %u not found when creating uniform %s", type, name);
     assert(false);

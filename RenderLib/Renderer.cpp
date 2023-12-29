@@ -119,8 +119,8 @@ glm::vec2 Renderer::GetContextSize() {
   return app->GetWindowSize();
 }
 
-ptr<Shader> Renderer::LoadShader(const std::string &name,
-                                 const std::string &shaderPath) {
+ptr<Shader>
+Renderer::LoadShader(const std::string &name, const std::string &shaderPath) {
   ptr<Shader> s = std::make_shared<Shader>(name);
   s->Init(shaderPath);
 

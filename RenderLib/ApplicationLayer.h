@@ -3,15 +3,14 @@
 #include "Log.h"
 #include "core.h"
 
-#define HANDLE_EVENT_FN(type) \
-  virtual void HandleEvent(type &e) {}
+#define HANDLE_EVENT_FN(type) virtual void Handle##type(type &e)
 
 class ApplicationLayer {
+  friend class Application;
+
   std::string name;
 
 public:
-  ApplicationLayer(const std::string &name) : name(name) {}
-
   // Update layer
   virtual void Update(double dt) {}
 
@@ -22,12 +21,17 @@ public:
   virtual void ImGuiRender() {}
 
   // Event handling
-  HANDLE_EVENT_FN(Event)
-  HANDLE_EVENT_FN(ScrollEvent)
-  HANDLE_EVENT_FN(MouseButtonEvent)
-  HANDLE_EVENT_FN(KeyboardEvent)
-  HANDLE_EVENT_FN(CursorMovedEvent)
-  HANDLE_EVENT_FN(WindowResizeEvent)
-};
+  HANDLE_EVENT_FN(Event) {}
+  HANDLE_EVENT_FN(ScrollEvent) {}
+  HANDLE_EVENT_FN(MouseButtonEvent) {}
+  HANDLE_EVENT_FN(KeyboardEvent) {}
+  HANDLE_EVENT_FN(CursorMovedEvent) {}
+  HANDLE_EVENT_FN(WindowResizeEvent) {}
 
-#undef HANDLE_EVENT_FN
+protected:
+  ApplicationLayer(const std::string &name) : name(name) {}
+
+  // Called when adding layer to application
+  virtual bool Init() { return true; }
+  virtual void Cleanup() {}
+};

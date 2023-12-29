@@ -1,11 +1,11 @@
 #include "ImGuiLayer.h"
 #include "Application.h"
 
-ImGuiLayer::ImGuiLayer(Application *app)
-    : ApplicationLayer("imgui layer"), app(app) {
+ImGuiLayer::ImGuiLayer() : ApplicationLayer("ImGui layer") {}
 
+bool ImGuiLayer::Init() {
   // Assign the render target texture to the compute shader's buffer
-  glm::vec2 screenSize = app->GetWindowSize();
+  glm::vec2 screenSize = Application::GetInstance()->GetWindowSize();
   int screenWidth = screenSize.x;
   int screenHeight = screenSize.y;
 
@@ -21,10 +21,19 @@ ImGuiLayer::ImGuiLayer(Application *app)
   ImGui::StyleColorsDark();
 
   // Initialize ImGui for GLFW
-  ImGui_ImplGlfw_InitForOpenGL(app->GetWindow(), true);
+  ImGui_ImplGlfw_InitForOpenGL(Application::GetInstance()->GetWindow(), true);
 
   // Initialize ImGui for OpenGL
   ImGui_ImplOpenGL3_Init("#version 460 core");
+
+  return true;
+}
+
+void ImGuiLayer::Cleanup() {
+  // Cleanup imgui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 }
 
 void ImGuiLayer::ImGuiBegin() {
@@ -49,6 +58,7 @@ void ImGuiLayer::ImGuiEnd() {
   }
 }
 
+// Render dockspace
 void ImGuiLayer::ImGuiRender() {
   // Styling and setup for the dockspace
   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
@@ -91,6 +101,6 @@ void ImGuiLayer::ImGuiRender() {
   ImGui::PopStyleVar(3);
 }
 
-void ImGuiLayer::HandleEvent(MouseButtonEvent &e) {
+void ImGuiLayer::HandleMouseButtonEvent(MouseButtonEvent &e) {
   e.handled = ImGui::GetIO().WantCaptureMouse;
 }

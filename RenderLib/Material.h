@@ -11,8 +11,9 @@ class Material {
   ptr<Texture> texture;
 
 public:
-  Material(const std::string &name, ptr<Shader> shader,
-           ptr<Texture> tex = std::make_shared<Texture>())
+  Material(
+      const std::string &name, ptr<Shader> shader,
+      ptr<Texture> tex = std::make_shared<Texture>())
       : name(name), shader(shader), texture(tex) {}
 
   // Set value of shader

@@ -31,9 +31,10 @@ struct WindowResizeEvent : public Event {
   int width, height;
 };
 
-typedef std::variant<std::reference_wrapper<CursorMovedEvent>,
-                     std::reference_wrapper<MouseButtonEvent>,
-                     std::reference_wrapper<ScrollEvent>,
-                     std::reference_wrapper<WindowResizeEvent>,
-                     std::reference_wrapper<KeyboardEvent>>
+typedef std::variant<
+    std::reference_wrapper<CursorMovedEvent>,
+    std::reference_wrapper<MouseButtonEvent>,
+    std::reference_wrapper<ScrollEvent>,
+    std::reference_wrapper<WindowResizeEvent>,
+    std::reference_wrapper<KeyboardEvent>>
     event_types;

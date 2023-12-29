@@ -22,8 +22,9 @@ public:
   bool Init(int width, int height);
 
   // Set the pixel at (x, y) to the given color
-  void WritePixel(int x, int y, unsigned char r, unsigned char g,
-                  unsigned char b, unsigned char a = 255);
+  void WritePixel(
+      int x, int y, unsigned char r, unsigned char g, unsigned char b,
+      unsigned char a = 255);
 
   // Bind the texture for rendering
   void Bind() const;

@@ -134,7 +134,8 @@ public:
         (void *)ren.GetRenderTarget()->GetTexture()->GetTextureID(),
         ImVec2(windowPos),
         ImVec2(windowPos.x + imContentSize.x, windowPos.y + imContentSize.y),
-        ImVec2(0, 1), ImVec2(1, 0));
+        ImVec2(0, 1),
+        ImVec2(1, 0));
 
     ImGui::End();
 
@@ -154,20 +155,20 @@ public:
     ImGui::PopStyleVar(3);
   }
 
-  virtual void HandleEvent(KeyboardEvent &keyEvent) override {
+  HANDLE_EVENT_FN(KeyboardEvent) override {
     if (ImGui::GetIO().WantCaptureKeyboard) {
-      keyEvent.handled = true;
+      e.handled = true;
       return;
     }
 
-    int key = keyEvent.key;
-    int scancode = keyEvent.scancode;
-    int action = keyEvent.action;
-    int mods = keyEvent.mods;
+    int key = e.key;
+    int scancode = e.scancode;
+    int action = e.action;
+    int mods = e.mods;
 
     if (key == GLFW_KEY_ESCAPE) {
       Application::GetInstance()->SetWindowShouldClose(true);
-      keyEvent.handled = true;
+      e.handled = true;
     }
     if (key == GLFW_KEY_SPACE && action == 1) {
       pause = !pause;
@@ -181,27 +182,27 @@ public:
     }
   }
 
-  virtual void HandleEvent(CursorMovedEvent &cursorMoved) override {
+  HANDLE_EVENT_FN(CursorMovedEvent) override {
     if (ImGui::GetIO().WantSetMousePos) {
-      cursorMoved.handled = true;
+      e.handled = true;
       return;
     }
   }
 
-  virtual void HandleEvent(MouseButtonEvent &mouseButton) override {
+  HANDLE_EVENT_FN(MouseButtonEvent) override {
     if (ImGui::GetIO().WantCaptureMouse) {
-      mouseButton.handled = true;
+      e.handled = true;
       return;
     }
   }
 
-  virtual void HandleEvent(ScrollEvent &scrollEvent) override {
+  HANDLE_EVENT_FN(ScrollEvent) override {
     if (ImGui::GetIO().WantCaptureMouse) {
-      scrollEvent.handled = true;
+      e.handled = true;
       return;
     }
 
-    scrollEvent.handled = true;
+    e.handled = true;
   }
 
 private:
@@ -217,10 +218,11 @@ private:
     if (!ImGui::IsWindowFocused() && !ImGui::IsWindowHovered()) {
       lmbDown = false;
       rmbDown = false;
-    } else if (mousePos.x >= windowPos.x + contentMin.x &&
-               mousePos.x <= windowPos.x + contentMax.x &&
-               mousePos.y >= windowPos.y + contentMin.y &&
-               mousePos.y <= windowPos.y + contentMax.y) {
+    } else if (
+        mousePos.x >= windowPos.x + contentMin.x &&
+        mousePos.x <= windowPos.x + contentMax.x &&
+        mousePos.y >= windowPos.y + contentMin.y &&
+        mousePos.y <= windowPos.y + contentMax.y) {
       // Mouse is inside the content area
       if (ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
         // Handle left mosue click
@@ -275,8 +277,8 @@ private:
     swapTarget->Clear();*/
 
     // Update shader work groups
-    computeObject.GetShader()->SetWorkGroups(std::ceil(width / 8),
-                                             std::ceil(height / 8), 1);
+    computeObject.GetShader()->SetWorkGroups(
+        std::ceil(width / 8), std::ceil(height / 8), 1);
 
     // Resize simulation
     sim.SetSize({width, height});

@@ -3,8 +3,8 @@
 #include "imgui.h"
 #include "re_core.h"
 
-ComputeObject::ComputeObject(const std::string &name,
-                             const std::string &shaderPath)
+ComputeObject::ComputeObject(
+    const std::string &name, const std::string &shaderPath)
     : name(name) {
   shader = std::make_shared<ComputeShader>(name);
   this->shaderPath =
@@ -91,39 +91,65 @@ void ComputeObject::ShaderInfoWindow() {
       }
       void operator()(GLint &value) {
         int v = value;
-        ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f,
-                       -INT_MAX, INT_MAX);
+        ImGui::DragInt(
+            std::string("##" + uniform->GetName()).c_str(),
+            &v,
+            1.0f,
+            -INT_MAX,
+            INT_MAX);
         value = v;
       }
       void operator()(GLuint &value) {
         int v = value;
-        ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f,
-                       0, INT_MAX);
+        ImGui::DragInt(
+            std::string("##" + uniform->GetName()).c_str(),
+            &v,
+            1.0f,
+            0,
+            INT_MAX);
         value = v;
       }
       void operator()(GLfloat &value) {
-        ImGui::DragFloat(std::string("##" + uniform->GetName()).c_str(),
-                         &(float)value, .1f, -FLT_MAX, FLT_MAX);
+        ImGui::DragFloat(
+            std::string("##" + uniform->GetName()).c_str(),
+            &(float)value,
+            .1f,
+            -FLT_MAX,
+            FLT_MAX);
       }
       void operator()(glm::vec2 &value) {
-        ImGui::DragFloat2(std::string("##" + uniform->GetName()).c_str(),
-                          glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+        ImGui::DragFloat2(
+            std::string("##" + uniform->GetName()).c_str(),
+            glm::value_ptr(value),
+            .1f,
+            -FLT_MAX,
+            FLT_MAX);
       }
       void operator()(glm::vec3 &value) {
         if (uniform->GetType() == Col3)
-          ImGui::ColorEdit3(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value));
+          ImGui::ColorEdit3(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value));
         else
-          ImGui::DragFloat3(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+          ImGui::DragFloat3(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value),
+              .1f,
+              -FLT_MAX,
+              FLT_MAX);
       }
       void operator()(glm::vec4 &value) {
         if (uniform->GetType() == Col4)
-          ImGui::ColorEdit4(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value));
+          ImGui::ColorEdit4(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value));
         else
-          ImGui::DragFloat4(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+          ImGui::DragFloat4(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value),
+              .1f,
+              -FLT_MAX,
+              FLT_MAX);
       }
       void operator()(const glm::mat4 &value) {}
     };
