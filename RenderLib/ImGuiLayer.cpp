@@ -1,11 +1,11 @@
 #include "ImGuiLayer.h"
 #include "Application.h"
 
-ImGuiLayer::ImGuiLayer(Application *app)
-    : ApplicationLayer("imgui layer"), app(app) {
+ImGuiLayer::ImGuiLayer() : ApplicationLayer("ImGui layer") {}
 
+bool ImGuiLayer::Init() {
   // Assign the render target texture to the compute shader's buffer
-  glm::vec2 screenSize = app->GetWindowSize();
+  glm::vec2 screenSize = Application::GetInstance()->GetWindowSize();
   int screenWidth = screenSize.x;
   int screenHeight = screenSize.y;
 
@@ -21,10 +21,19 @@ ImGuiLayer::ImGuiLayer(Application *app)
   ImGui::StyleColorsDark();
 
   // Initialize ImGui for GLFW
-  ImGui_ImplGlfw_InitForOpenGL(app->GetWindow(), true);
+  ImGui_ImplGlfw_InitForOpenGL(Application::GetInstance()->GetWindow(), true);
 
   // Initialize ImGui for OpenGL
   ImGui_ImplOpenGL3_Init("#version 460 core");
+
+  return true;
+}
+
+void ImGuiLayer::Cleanup() {
+  // Cleanup imgui
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
 }
 
 void ImGuiLayer::ImGuiBegin() {
@@ -49,6 +58,7 @@ void ImGuiLayer::ImGuiEnd() {
   }
 }
 
+// Render dockspace
 void ImGuiLayer::ImGuiRender() {
   // Styling and setup for the dockspace
   ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
@@ -91,6 +101,45 @@ void ImGuiLayer::ImGuiRender() {
   ImGui::PopStyleVar(3);
 }
 
-void ImGuiLayer::HandleEvent(MouseButtonEvent &e) {
+void ImGuiLayer::HandleMouseButtonEvent(MouseButtonEvent &e) {
   e.handled = ImGui::GetIO().WantCaptureMouse;
+}
+
+void ImGuiLayer::ConsoleWindow() {
+  // ImGui::Begin("Console");
+
+  // static char inputBuffer[256] = "";
+
+  // if (ImGui::InputText(
+  //         "Input",
+  //         inputBuffer,
+  //         sizeof(inputBuffer),
+  //         ImGuiInputTextFlags_EnterReturnsTrue)) {
+  //   // Process the input command
+  //   std::string command(inputBuffer);
+  //   std::cout << "Command: " << command << std::endl;
+
+  //   // Clear the input buffer
+  //   memset(inputBuffer, 0, sizeof(inputBuffer));
+  // }
+
+  // ImGui::End();
+}
+
+void ImGuiLayer::OutputWindow() {
+  // ImGui::Begin("Output");
+
+  // // Iterate through the console logs and display them in the output window
+  // for (const auto &log : consoleLogs) {
+  //   // Check if the log is an error, warning, or regular log
+  //   if (log.find("ERROR::") != std::string::npos) {
+  //     ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "%s", log.c_str());
+  //   } else if (log.find("WARNING::") != std::string::npos) {
+  //     ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "%s", log.c_str());
+  //   } else {
+  //     ImGui::Text("%s", log.c_str());
+  //   }
+  // }
+
+  // ImGui::End();
 }

@@ -1,5 +1,10 @@
 #include "Camera.h"
 
+Camera::Camera()
+    : Camera(
+          glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0f, 0.0f), 0.0f, 0.0f) {
+}
+
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : forward(glm::vec3(0.0f, 0.0f, -1.0f)), zoom(45.0f), fov(45.0f),
       nearPlane(0.1f), farPlane(100.0f) {
@@ -50,8 +55,19 @@ void Camera::SetNearPlane(float nearPlane) { this->nearPlane = nearPlane; }
 
 void Camera::SetFarPlane(float farPlane) { this->farPlane = farPlane; }
 
-float Camera::GetZoom() const { return zoom; }
+float Camera::GetFov() const { return this->fov; }
 
+float Camera::GetNearPlane() const { return this->nearPlane; }
+
+float Camera::GetFarPlane() const { return this->farPlane; }
+
+float Camera::GetRoll() const { return this->roll; }
+
+float Camera::GetYaw() const { return this->yaw; }
+
+float Camera::GetPitch() const { return this->pitch; }
+
+float Camera::GetZoom() const { return this->zoom; }
 void Camera::UpdateCameraVectors() {
   glm::vec3 newFront;
   newFront.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));

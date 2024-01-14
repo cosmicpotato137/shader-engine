@@ -13,3 +13,6 @@ add_library(RenderLib ${SOURCES} ${HEADERS} ${SHADERS})
 target_include_directories(RenderLib PRIVATE ${CMAKE_SOURCE_DIR}/vendor/include)
 target_link_directories(RenderLib PUBLIC ${CMAKE_SOURCE_DIR}/vendor/lib)
 target_link_libraries(RenderLib imgui imgui_glfw_opengl3 ${CORE})
+
+# testing
+add_subdirectory(Test)

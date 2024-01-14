@@ -3,12 +3,13 @@
 #include "imgui.h"
 #include "re_core.h"
 
-ComputeObject::ComputeObject(const std::string &name,
-                             const std::string &shaderPath)
+ComputeObject::ComputeObject(
+    const std::string &name, const std::string &shaderPath)
     : name(name) {
   shader = std::make_shared<ComputeShader>(name);
-  this->shaderPath =
-      strcpy(this->shaderPath, (SHADER_DIR + "/compute/hello.compute").c_str());
+  this->shaderPath = strcpy(
+      this->shaderPath,
+      (std::string(SHADER_DIR) + "/compute/hello.compute").c_str());
   SetShader(shaderPath);
 }
 
@@ -53,6 +54,20 @@ void ComputeObject::Render() {
 
 void ComputeObject::ImGuiRender() { ShaderInfoWindow(); }
 
+void ComputeObject::Serialize(std::ofstream &ofs) {
+  ofs << name << std::endl;
+  ofs << shaderPath << std::endl;
+  ofs << *shader << std::endl;
+}
+
+void ComputeObject::Deserialize(std::ifstream &ifs) {
+  std::string name, shaderPath;
+  getline(ifs, name);
+  getline(ifs, shaderPath);
+  ifs >> *shader;
+  SetShader(shaderPath);
+}
+
 void ComputeObject::ShaderInfoWindow() {
   ImGui::Begin((name + " Shader Info").c_str());
 
@@ -73,7 +88,7 @@ void ComputeObject::ShaderInfoWindow() {
   ImGui::Text("Uniforms");
   ImGui::Spacing();
 
-  std::map<std::string, ptr<Uniform>> uniforms = shader->GetUniforms();
+  std::map<std::string, ptr<Uniform>> uniforms = shader->uniforms;
   for (auto iter = uniforms.begin(); iter != uniforms.end(); ++iter) {
     std::string name = iter->second->GetName();
     uniform_types value = iter->second->GetValue();
@@ -91,39 +106,65 @@ void ComputeObject::ShaderInfoWindow() {
       }
       void operator()(GLint &value) {
         int v = value;
-        ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f,
-                       -INT_MAX, INT_MAX);
+        ImGui::DragInt(
+            std::string("##" + uniform->GetName()).c_str(),
+            &v,
+            1.0f,
+            -INT_MAX,
+            INT_MAX);
         value = v;
       }
       void operator()(GLuint &value) {
         int v = value;
-        ImGui::DragInt(std::string("##" + uniform->GetName()).c_str(), &v, 1.0f,
-                       0, INT_MAX);
+        ImGui::DragInt(
+            std::string("##" + uniform->GetName()).c_str(),
+            &v,
+            1.0f,
+            0,
+            INT_MAX);
         value = v;
       }
       void operator()(GLfloat &value) {
-        ImGui::DragFloat(std::string("##" + uniform->GetName()).c_str(),
-                         &(float)value, .1f, -FLT_MAX, FLT_MAX);
+        ImGui::DragFloat(
+            std::string("##" + uniform->GetName()).c_str(),
+            (float *)&value,
+            .1f,
+            -FLT_MAX,
+            FLT_MAX);
       }
       void operator()(glm::vec2 &value) {
-        ImGui::DragFloat2(std::string("##" + uniform->GetName()).c_str(),
-                          glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+        ImGui::DragFloat2(
+            std::string("##" + uniform->GetName()).c_str(),
+            glm::value_ptr(value),
+            .1f,
+            -FLT_MAX,
+            FLT_MAX);
       }
       void operator()(glm::vec3 &value) {
         if (uniform->GetType() == Col3)
-          ImGui::ColorEdit3(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value));
+          ImGui::ColorEdit3(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value));
         else
-          ImGui::DragFloat3(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+          ImGui::DragFloat3(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value),
+              .1f,
+              -FLT_MAX,
+              FLT_MAX);
       }
       void operator()(glm::vec4 &value) {
         if (uniform->GetType() == Col4)
-          ImGui::ColorEdit4(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value));
+          ImGui::ColorEdit4(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value));
         else
-          ImGui::DragFloat4(std::string("##" + uniform->GetName()).c_str(),
-                            glm::value_ptr(value), .1f, -FLT_MAX, FLT_MAX);
+          ImGui::DragFloat4(
+              std::string("##" + uniform->GetName()).c_str(),
+              glm::value_ptr(value),
+              .1f,
+              -FLT_MAX,
+              FLT_MAX);
       }
       void operator()(const glm::mat4 &value) {}
     };
@@ -142,10 +183,9 @@ void ComputeObject::ShaderInfoWindow() {
   }
 
   if (shader->HasUniform("_scale"))
-    ImGui::Text("Zoom: %f", shader->GetUniforms()["_scale"]->GetValue<float>());
+    ImGui::Text("Zoom: %f", shader->uniforms["_scale"]->GetValue<float>());
   if (shader->HasUniform("_mouse_position")) {
-    glm::vec2 pos =
-        shader->GetUniforms()["_mouse_position"]->GetValue<glm::vec2>();
+    glm::vec2 pos = shader->uniforms["_mouse_position"]->GetValue<glm::vec2>();
     pos = glm::vec2(roundf(pos.x * 100), roundf(pos.y * 100)) /
           100.0f; /* Result: 37.78 */
     ImGui::Text("MousePosition: (%f, %f)", pos.x, pos.y);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -25,4 +27,7 @@ public:
   glm::vec3 GetPosition() const;
   glm::vec3 GetRotation() const;
   glm::vec3 GetScale() const;
+
+  friend std::ostream &operator<<(std::ostream &os, const Transform &t);
+  friend std::istream &operator>>(std::istream &is, Transform &t);
 };

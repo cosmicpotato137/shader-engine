@@ -10,39 +10,33 @@ glob("{./RenderEngine,./RenderLib}/**/*.{h,cpp}", (err, files) => {
 
   // run clang-format on each file
   files.forEach((file) => {
-    exec(`clang-format -i ${file}`, (err, stdout, stderr) => {
+    // Read the file before formatting
+    fs.readFile(file, "utf8", (err, originalData) => {
       if (err) {
-        console.error(`Error formatting file ${file}: ${err}`);
+        console.error(`Error reading file ${file}: ${err}`);
         return;
       }
 
-      // Read the file
-      fs.readFile(file, "utf8", (err, data) => {
+      exec(`clang-format -i ${file}`, (err, stdout, stderr) => {
         if (err) {
-          console.error(`Error reading file ${file}: ${err}`);
+          console.error(`Error formatting file ${file}: ${err}`);
           return;
         }
 
-        // Replace comments that start with a lowercase letter
-        const newData = data.replace(/\/\/ [a-z]/g, (match) =>
-          match.toUpperCase()
-        );
+        // Read the file after formatting
+        fs.readFile(file, "utf8", (err, formattedData) => {
+          if (err) {
+            console.error(`Error reading file ${file}: ${err}`);
+            return;
+          }
 
-        // Check if the file content has been changed
-        if (newData === data) {
-          console.log(`No changes made to ${file}`);
-        } else {
-          // Write the new data back to the file
-          fs.writeFile(file, newData, "utf8", (err) => {
-            if (err) {
-              console.error(`Error writing to file ${file}: ${err}`);
-            } else {
-              console.log(
-                `Successfully formatted and updated comments in ${file}`
-              );
-            }
-          });
-        }
+          // Check if the file content has been changed
+          if (originalData !== formattedData) {
+            console.log(`Changes made to ${file}`);
+          } else {
+            console.log(`No changes made to ${file}`);
+          }
+        });
       });
     });
   });

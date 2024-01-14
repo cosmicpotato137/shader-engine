@@ -8,11 +8,13 @@
 #include <stb/stb_image_write.h>
 
 Texture::Texture() : textureID(0), width(0), height(0), image(nullptr) {
-  // Generate and bind the texture
+  // Generate the texture
   glGenTextures(1, &textureID);
 }
 
 bool Texture::Init(const std::string &filename) {
+  this->filename = filename;
+
   // Generate and bind the texture
   glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
   glBindTexture(GL_TEXTURE_2D, textureID);
@@ -35,8 +37,16 @@ bool Texture::Init(const std::string &filename) {
     return false;
   }
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, image);
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA32F,
+      width,
+      height,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      image);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   // Unbind the texture
@@ -46,6 +56,13 @@ bool Texture::Init(const std::string &filename) {
 }
 
 bool Texture::Init(int width, int height) {
+  if (width <= 0 || height <= 0) {
+    Console::Error("Invalid texture dimensions: %d x %d", width, height);
+    this->width = 0;
+    this->height = 0;
+    return false;
+  }
+
   this->width = width;
   this->height = height;
 
@@ -62,8 +79,16 @@ bool Texture::Init(int width, int height) {
   for (int i = 0; i < width * height * 4; i++)
     image[i] = 0;
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-               GL_UNSIGNED_BYTE, image);
+  glTexImage2D(
+      GL_TEXTURE_2D,
+      0,
+      GL_RGBA32F,
+      width,
+      height,
+      0,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      image);
 
   glGenerateMipmap(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -71,8 +96,15 @@ bool Texture::Init(int width, int height) {
   return true;
 }
 
-void Texture::WritePixel(int x, int y, unsigned char r, unsigned char g,
-                         unsigned char b, unsigned char a) {
+void Texture::WritePixel(
+    int x, int y, unsigned char r, unsigned char g, unsigned char b,
+    unsigned char a) {
+  if (!image || x < 0 || x >= width || y < 0 || y >= height) {
+    Console::Error("Invalid pixel coordinates: (%d, %d)", x, y);
+    Console::Assert(width > 0 && height > 0, "Texture not initialized");
+    return;
+  }
+
   int index = (y * width + x) * 4;  // Assuming RGBA format
   image[index] = r;
   image[index + 1] = g;
@@ -80,22 +112,34 @@ void Texture::WritePixel(int x, int y, unsigned char r, unsigned char g,
   image[index + 3] = a;
 
   glBindTexture(GL_TEXTURE_2D, textureID);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
-                  image + index);
+  glTexSubImage2D(
+      GL_TEXTURE_2D, 0, x, y, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, image + index);
   glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+glm::vec4 Texture::GetPixel(int x, int y) {
+  int index = (y * width + x) * 4;  // Assuming RGBA format
+
+  // get values from texture
+  GetImageData();
+
+  unsigned char r = image[index];
+  unsigned char g = image[index + 1];
+  unsigned char b = image[index + 2];
+  unsigned char a = image[index + 3];
+
+  return glm::vec4(r, g, b, a);
 }
 
 void Texture::Bind() const { glBindTexture(GL_TEXTURE_2D, textureID); }
 
 void Texture::BindCompute(int binding) const {
-  glBindImageTexture(binding, textureID, 0, GL_FALSE, 0, GL_READ_WRITE,
-                     GL_RGBA32F);
+  glBindImageTexture(
+      binding, textureID, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 }
 
 bool Texture::SaveToImage(const std::string &filePath) {
-  glBindTexture(GL_TEXTURE_2D, textureID);
-  unsigned char *pixelData = new unsigned char[4 * width * height];
-  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+  GetImageData();
 
   // Reverse the rows in pixelData to fix the orientation
   int rowSize = 4 * width;
@@ -103,21 +147,20 @@ bool Texture::SaveToImage(const std::string &filePath) {
   for (int i = 0; i < height / 2; i++) {
     int rowIndex1 = i * rowSize;
     int rowIndex2 = (height - 1 - i) * rowSize;
-    memcpy(tempRow, pixelData + rowIndex1, rowSize);
-    memcpy(pixelData + rowIndex1, pixelData + rowIndex2, rowSize);
-    memcpy(pixelData + rowIndex2, tempRow, rowSize);
+    memcpy(tempRow, image + rowIndex1, rowSize);
+    memcpy(image + rowIndex1, image + rowIndex2, rowSize);
+    memcpy(image + rowIndex2, tempRow, rowSize);
   }
   delete[] tempRow;
 
-  // Save the corrected pixelData to an image file using stb_image_write
-  if (stbi_write_png(filePath.c_str(), width, height, 4, pixelData,
-                     width * 4) != 0) {
+  // Save the corrected image to an image file using stb_image_write
+  if (stbi_write_png(filePath.c_str(), width, height, 4, image, width * 4) !=
+      0) {
     Console::Log("RenderTexture saved to: %s", filePath.c_str());
   } else {
     Console::Error("Failed to save RenderTexture to an image file");
   }
 
-  delete[] pixelData;
   return true;  // Replace with proper error handling
 }
 
@@ -132,4 +175,33 @@ void Texture::Cleanup() {
     free(image);
     image = nullptr;
   }
+}
+
+void Texture::GetImageData() {
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+}
+
+std::ostream &operator<<(std::ostream &os, const Texture &texture) {
+  os << texture.filename << '\n';
+  os << texture.width << '\n';
+  os << texture.height << '\n';
+
+  return os;
+}
+
+std::istream &operator>>(std::istream &is, Texture &texture) {
+  // Read object data
+  getline(is, texture.filename);
+  is >> texture.width;
+  is >> texture.height;
+
+  // Initialize the texture with the filepath
+  if (texture.filename != "") {
+    texture.Init(texture.filename);
+  } else {
+    texture.Init(texture.width, texture.height);
+  }
+
+  return is;
 }

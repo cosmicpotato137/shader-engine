@@ -4,34 +4,27 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include <format>
+#include <sstream>
+
+#include <streambuf>
+
+#include <functional>
+
+class Application;
 
 // Debugging macros that print to the console;
-class Console {
+class Console : public std::streambuf {
+  static std::function<void(const std::string &)> handleOutput;
+
 public:
-  static void Log(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    printf("LOG::");
-    vprintf(format, args);
-    printf("\n");
-    va_end(args);
-  }
+  static void SetCallback(std::function<void(const std::string &)> callback);
 
-  static void Warning(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    fprintf(stderr, "WARNING::");
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-  }
+  static void Log(const char *format, ...);
 
-  static void Error(const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    fprintf(stderr, "ERROR::");
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
-    va_end(args);
-  }
+  static void Warning(const char *format, ...);
+
+  static void Error(const char *format, ...);
+
+  static void Assert(bool condition, const char *format, ...);
 };

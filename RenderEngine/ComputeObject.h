@@ -2,8 +2,9 @@
 
 #include "ComputeShader.h"
 #include "RenderTexture.h"
+#include "Object.h"
 
-class ComputeObject {
+class ComputeObject : public Object {
   std::string name;
   ptr<ComputeShader> shader;
   char *shaderPath = new char[256];
@@ -13,7 +14,6 @@ class ComputeObject {
   bool pause = false, reset = false, step = false;
 
 public:
-  ComputeObject() = delete;
   ComputeObject(const std::string &name, const std::string &shaderPath);
 
   void SetShader(const std::string &shaderPath);
@@ -28,6 +28,10 @@ public:
 
   void Render();
   void ImGuiRender();
+
+protected:
+  void Serialize(std::ofstream &ofs) override;
+  void Deserialize(std::ifstream &ifs) override;
 
 private:
   void ShaderInfoWindow();

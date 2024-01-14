@@ -6,8 +6,11 @@
 #include "core.h"
 
 class Application {
-protected:
+  friend class ApplicationTest;
+
   static Application *s_Instance;
+
+  bool initialized;
 
   GLFWwindow *window;
   int screenWidth, screenHeight;
@@ -15,23 +18,17 @@ protected:
   std::vector<ptr<ApplicationLayer>> layers;
   ptr<ImGuiLayer> uiLayer;
 
+  Application()
+      : initialized(false), window(nullptr), screenWidth(0), screenHeight(0) {}
+  ~Application() = default;
+
 public:
-  Application() : window(nullptr), screenWidth(0), screenHeight(0) {
-    // Only one application instance allowed
-    if (s_Instance) {
-      Console::Error("only one application instance allowed");
-      this->~Application();
-    }
-    s_Instance = this;
-  }
-
-  ~Application() { Cleanup(); }
-
   // Get the application instance
-  static Application *GetInstance() { return s_Instance; }
+  static Application *GetInstance();
+  static void DestroyInstance();
 
   // Initialize GLFW and GLEW
-  bool Init(const std::string &winname);
+  bool Init(const std::string &winname, int width = 800, int height = 600);
 
   // Add application layer
   void PushLayer(ptr<ApplicationLayer> layer);
@@ -43,9 +40,7 @@ public:
   void Run();
 
   // Check if window should close
-  void SetWindowShouldClose(bool close) {
-    glfwSetWindowShouldClose(window, close);
-  }
+  void SetWindowShouldClose(bool close);
 
   // Clean up GLFW and release resources
   virtual void Cleanup();
@@ -80,13 +75,13 @@ public:
   virtual void OnWindowResize(int width, int height);
 
   // Window callbacks for glfw
-  static void MouseButtonCallback(GLFWwindow *window, int button, int action,
-                                  int mods);
+  static void
+  MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
   static void CursorPosCallback(GLFWwindow *window, double xpos, double ypos);
-  static void ScrollCallback(GLFWwindow *window, double xoffset,
-                             double yoffset);
-  static void KeyCallback(GLFWwindow *window, int key, int scancode, int action,
-                          int mods);
+  static void
+  ScrollCallback(GLFWwindow *window, double xoffset, double yoffset);
+  static void
+  KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
   static void WindowSizeCallback(GLFWwindow *window, int width, int height);
 };
 

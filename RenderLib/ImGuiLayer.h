@@ -11,10 +11,8 @@
 class Application;
 
 class ImGuiLayer : public ApplicationLayer {
-  Application *app;
-
 public:
-  ImGuiLayer(Application *app);
+  ImGuiLayer();
 
   ~ImGuiLayer() {}
 
@@ -24,11 +22,27 @@ public:
   // End application dockspace
   void ImGuiEnd();
 
+  // Render dockspace
   void ImGuiRender() override;
 
-  void HandleEvent(MouseButtonEvent &e) override;
+  void Render() override {}
 
-  void HandleEvent(WindowResizeEvent &e) override {}
+  void Update(double dt) override {}
 
-  void HandleEvent(KeyboardEvent &e) override {}
+  // Event handling
+  HANDLE_EVENT_FN(MouseButtonEvent) override;
+
+  HANDLE_EVENT_FN(WindowResizeEvent) override {}
+
+  HANDLE_EVENT_FN(KeyboardEvent) override {}
+
+  static void ConsoleWindow();
+  static void OutputWindow();
+
+protected:
+  // Called when layer is added to the application
+  bool Init() override;
+
+  // Called when layer is removed from the application
+  void Cleanup() override;
 };

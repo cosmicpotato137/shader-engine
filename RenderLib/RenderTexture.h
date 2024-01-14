@@ -26,6 +26,8 @@ public:
   int GetHeight() { return texture->GetHeight(); }
   glm::vec2 GetSize() { return texture->GetSize(); }
 
+  unsigned int GetFramebufferID() const { return framebufferID; }
+
   bool SaveToImage(const std::string &filePath);
 
   ptr<Texture> GetTexture() const;

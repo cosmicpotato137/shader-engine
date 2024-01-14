@@ -20,20 +20,30 @@ class Camera {
   float farPlane;
 
 public:
+  Camera();
   Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch);
 
   glm::mat4 GetViewMatrix();
   glm::mat4 GetProjectionMatrix(float aspect, bool perspective = true);
-  void SetPosition(const glm::vec3 &newPosition);
-  void SetOrientation(float yaw, float pitch);
   void LookAt(const glm::vec3 &target);
 
+  // Setters
+  void SetPosition(const glm::vec3 &newPosition);
+  void SetOrientation(float yaw, float pitch);
   void SetZoom(float newZoom);
   void SetFov(float fov);
   void SetNearPlane(float nearPlane);
   void SetFarPlane(float farPlane);
 
+  // Getters
+  float GetFov() const;
+  float GetNearPlane() const;
+  float GetFarPlane() const;
+  float GetRoll() const;
+  float GetYaw() const;
+  float GetPitch() const;
   float GetZoom() const;
+
   glm::vec3 GetUp() const {
     return glm::normalize(glm::cross(GetRight(), GetForward()));
   }

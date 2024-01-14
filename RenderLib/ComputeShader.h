@@ -3,6 +3,8 @@
 #include "core.h"
 
 class ComputeShader : public Shader {
+  friend class ComputeShaderTest;
+
   GLuint computeShaderID;
   int x, y, z;
   GLuint memBarrier;

@@ -1,7 +1,7 @@
 #pragma once
 
 // Graphics
-// Note: must be included before glfw3.h
+// Note: must include glad before glfw3.h
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -18,5 +18,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <filesystem>
+#include <fstream>
 
 template <typename T> using ptr = std::shared_ptr<T>;

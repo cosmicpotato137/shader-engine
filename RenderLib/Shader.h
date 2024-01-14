@@ -1,57 +1,7 @@
 #pragma once
 
 #include "core.h"
-#include <map>
-#include <variant>
-
-typedef std::variant<bool, GLint, GLuint, GLfloat, glm::vec2, glm::vec3,
-                     glm::vec4, glm::mat4>
-    uniform_types;
-
-enum UniformType {
-  Error = -1,
-  Bool = 0,
-  Float,
-  Int,
-  UInt,
-  Vec2,
-  Vec3,
-  Col3,
-  Vec4,
-  Col4,
-  Mat4,
-  Texture2D,
-  Image2D
-};
-
-class Uniform {
-protected:
-  std::string name;
-  GLuint location;
-  UniformType type;
-  bool hide;
-
-  uniform_types value;
-
-public:
-  Uniform(const std::string &name, int location, uniform_types value,
-          UniformType type = UniformType::Error, bool hide = false)
-      : name(name), location(location), value(value), type(type), hide(hide) {}
-
-  bool GetHide() const { return hide; }
-  std::string GetName() const { return name; }
-  int GetLocation() const { return location; }
-  UniformType GetType() const { return type; }
-
-  void SetValue(const uniform_types &value) { this->value = value; }
-
-  template <typename T> T GetValue() const { return std::get<T>(this->value); }
-
-  uniform_types GetValue() const { return this->value; }
-};
-
-ptr<Uniform> glToShaderUniform(const char *name, int location, GLuint type,
-                               GLsizei size);
+#include "ShaderUniform.h"
 
 class Shader {
 protected:
@@ -64,6 +14,7 @@ public:
   std::string name;
   std::map<std::string, ptr<Uniform>> uniforms;
 
+  Shader() : program(0), name(""), filepath("") {}
   Shader(const std::string &name) : program(0), name(name), filepath("") {}
   ~Shader() { Cleanup(); }
 
@@ -76,17 +27,24 @@ public:
 
   void Cleanup();
 
-  // Find the location of a uniform
+  // Find the integer location of a uniform
   GLint GetUniformLocation(const std::string &name);
 
-  GLuint GetProgramID() const { return program; }
-  std::string GetFilePath() const { return filepath; }
+  GLuint GetProgramID() const;
+  std::string GetFilePath() const;
 
-  void SetUniform(const std::string &uniform_name, const uniform_types &value);
-  bool HasUniform(const std::string &uniformName) const {
-    return uniforms.find(uniformName) != uniforms.end();
-  }
-  std::map<std::string, ptr<Uniform>> GetUniforms();
+  // Set a uniform value
+  void SetUniform(const std::string &uniformName, const uniform_types &value);
+  // Get a uniform
+  ptr<Uniform> GetUniform(const std::string &uniformName);
+  // Check if a uniform exists
+  bool HasUniform(const std::string &uniformName) const;
+
+  // Serialization
+  friend std::ostream &operator<<(std::ostream &os, const Shader &shader);
+
+  // Deserialization
+  friend std::istream &operator>>(std::istream &is, Shader &shader);
 
 protected:
   bool LoadSource(const std::string &filepath, std::string &shaderSource);
@@ -99,7 +57,7 @@ protected:
   void ApplyUniforms();
 
 private:
-  void ParseVertexAndFragment(const std::string &input,
-                              std::string &vertexShader,
-                              std::string &fragmentShader);
+  void ParseVertexAndFragment(
+      const std::string &input, std::string &vertexShader,
+      std::string &fragmentShader);
 };

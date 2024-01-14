@@ -384,7 +384,6 @@ distribute, and modify this file as you see fit.
 // and only if iPhone convert-to-rgb processing is on).
 //
 
-
 #ifndef STBI_NO_STDIO
 #include <stdio.h>
 #endif // STBI_NO_STDIO
@@ -576,6 +575,11 @@ STBIDEF int   stbi_zlib_decode_noheader_buffer(char *obuffer, int olen, const ch
 #define STBI_ASSERT(x) assert(x)
 #endif
 
+// Hide warning C4312 on MSVC
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4312)
+#endif
 
 #ifndef _MSC_VER
    #ifdef __cplusplus
@@ -6293,6 +6297,12 @@ STBIDEF int stbi_info_from_callbacks(stbi_io_callbacks const *c, void *user, int
 }
 
 #endif // STB_IMAGE_IMPLEMENTATION
+
+// Unhide warning C4312
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 
 /*
    revision history:

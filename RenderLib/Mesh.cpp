@@ -58,8 +58,8 @@ void Mesh::ProcessNode(aiNode *node, const aiScene *scene) {
 void Mesh::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
   for (GLuint i = 0; i < mesh->mNumVertices; ++i) {
     Vertex vertex;
-    vertex.Position = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y,
-                                mesh->mVertices[i].z);
+    vertex.Position = glm::vec3(
+        mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
     vertex.TexCoords =
         glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y);
 
@@ -80,9 +80,9 @@ void Mesh::ProcessMesh(aiMesh *mesh, const aiScene *scene) {
 }
 
 // Creates the vao, vbo, ebo for the mesh
-void Mesh::SetGeometryBuffers(std::vector<Vertex> vertices,
-                              std::vector<int> indices, GLuint &vao,
-                              GLuint &vbo, GLuint &ebo) {
+void Mesh::SetGeometryBuffers(
+    std::vector<Vertex> vertices, std::vector<int> indices, GLuint &vao,
+    GLuint &vbo, GLuint &ebo) {
   glGenVertexArrays(1, &vao);
   glGenBuffers(1, &vbo);
   glGenBuffers(1, &ebo);
@@ -91,23 +91,28 @@ void Mesh::SetGeometryBuffers(std::vector<Vertex> vertices,
 
   // Bind and set up the vertex buffer for positions and UVs
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0],
-               GL_STATIC_DRAW);
+  glBufferData(
+      GL_ARRAY_BUFFER,
+      vertices.size() * sizeof(Vertex),
+      &vertices[0],
+      GL_STATIC_DRAW);
 
   // Position attribute
   glEnableVertexAttribArray(0);
-  //                 index, number of, type, norm?, bytes between, starting
-  //                 offset
+  //            index, number of, type, norm?, bytes between, starting offset
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)0);
 
   // UV attribute
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                        (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(
+      1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3 * sizeof(float)));
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint),
-               &indices[0], GL_STATIC_DRAW);
+  glBufferData(
+      GL_ELEMENT_ARRAY_BUFFER,
+      indices.size() * sizeof(GLuint),
+      &indices[0],
+      GL_STATIC_DRAW);
 
   glBindVertexArray(0);
 }
@@ -123,8 +128,12 @@ ptr<Mesh> Mesh::Quad() {
 
   // Index data for the square
   std::vector<int> indices = {
-      0, 1, 2,  // First triangle
-      2, 3, 0   // Second triangle
+      0,
+      1,
+      2,  // First triangle
+      2,
+      3,
+      0  // Second triangle
   };
 
   return std::make_shared<Mesh>(vertices, indices);
@@ -168,22 +177,52 @@ ptr<Mesh> Mesh::Cube() {
                                   {{0.5f, -0.5f, -0.5f}, {1.0f, 0.0f}}};
 
   std::vector<int> indices = {// Front face (reversed)
-                              0, 2, 1, 2, 0, 3,
+                              0,
+                              2,
+                              1,
+                              2,
+                              0,
+                              3,
 
                               // Back face (reversed)
-                              4, 5, 6, 6, 7, 4,
+                              4,
+                              5,
+                              6,
+                              6,
+                              7,
+                              4,
 
                               // Left face (reversed)
-                              8, 9, 10, 10, 11, 8,
+                              8,
+                              9,
+                              10,
+                              10,
+                              11,
+                              8,
 
                               // Right face (reversed)
-                              12, 14, 13, 14, 12, 15,
+                              12,
+                              14,
+                              13,
+                              14,
+                              12,
+                              15,
 
                               // Top face (reversed)
-                              16, 18, 17, 18, 16, 19,
+                              16,
+                              18,
+                              17,
+                              18,
+                              16,
+                              19,
 
                               // Bottom face (reversed)
-                              20, 21, 22, 22, 23, 20};
+                              20,
+                              21,
+                              22,
+                              22,
+                              23,
+                              20};
 
   return std::make_shared<Mesh>(vertices, indices);
 }

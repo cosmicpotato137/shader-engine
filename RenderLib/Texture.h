@@ -9,6 +9,8 @@ class Texture {
   int width;
   int height;
 
+  std::string filename;
+
   char *image;
 
 public:
@@ -22,8 +24,12 @@ public:
   bool Init(int width, int height);
 
   // Set the pixel at (x, y) to the given color
-  void WritePixel(int x, int y, unsigned char r, unsigned char g,
-                  unsigned char b, unsigned char a = 255);
+  void WritePixel(
+      int x, int y, unsigned char r, unsigned char g, unsigned char b,
+      unsigned char a = 255);
+
+  // Get the pixel at (x, y)
+  glm::vec4 GetPixel(int x, int y);
 
   // Bind the texture for rendering
   void Bind() const;
@@ -50,4 +56,13 @@ public:
 
   // Clean up and release resources
   void Cleanup();
+
+  // Serialization
+  friend std::ostream &operator<<(std::ostream &os, const Texture &texture);
+
+  // Deserialization
+  friend std::istream &operator>>(std::istream &is, Texture &texture);
+
+private:
+  void GetImageData();
 };

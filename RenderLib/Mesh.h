@@ -1,5 +1,6 @@
 #pragma once
 #include "core.h"
+#include "Log.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -38,6 +39,13 @@ public:
   // Get sphere mesh from the number of rings and segments
   static ptr<Mesh> Sphere(int rings, int segments);
 
+  friend std::ostream &operator<<(std::ostream &os, const Mesh &m) {
+    Console::Assert(false, "Not implemented");
+  }
+  friend std::istream &operator>>(std::istream &is, Mesh &m) {
+    Console::Assert(false, "Not implemented");
+  }
+
 private:
   // Load mesh from file
   void LoadMesh(const std::string &filePath);
@@ -45,7 +53,7 @@ private:
   void ProcessNode(aiNode *node, const aiScene *scene);
   void ProcessMesh(aiMesh *mesh, const aiScene *scene);
 
-  void SetGeometryBuffers(std::vector<Vertex> vertices,
-                          std::vector<int> indices, GLuint &vao, GLuint &vbo,
-                          GLuint &ebo);
+  void SetGeometryBuffers(
+      std::vector<Vertex> vertices, std::vector<int> indices, GLuint &vao,
+      GLuint &vbo, GLuint &ebo);
 };

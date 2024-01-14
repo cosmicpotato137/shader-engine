@@ -1,4 +1,6 @@
 #include "Transform.h"
+#include "core.h"
+#include "glm_helpers.h"
 
 glm::mat4 Transform::GetWorldMatrix() const {
   // Calculate the world position matrix
@@ -27,3 +29,19 @@ glm::vec3 Transform::GetPosition() const { return position; }
 glm::vec3 Transform::GetRotation() const { return rotation; }
 
 glm::vec3 Transform::GetScale() const { return scale; }
+
+std::ostream &operator<<(std::ostream &os, const Transform &t) {
+  os << t.position;
+  os << t.rotation;
+  os << t.scale;
+
+  return os;
+}
+
+std::istream &operator>>(std::istream &is, Transform &t) {
+  is >> t.position;
+  is >> t.rotation;
+  is >> t.scale;
+
+  return is;
+}

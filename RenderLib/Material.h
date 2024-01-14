@@ -1,3 +1,4 @@
+#pragma once
 #include "core.h"
 
 #include "Shader.h"
@@ -11,8 +12,9 @@ class Material {
   ptr<Texture> texture;
 
 public:
-  Material(const std::string &name, ptr<Shader> shader,
-           ptr<Texture> tex = std::make_shared<Texture>())
+  Material(
+      const std::string &name, ptr<Shader> shader,
+      ptr<Texture> tex = std::make_shared<Texture>())
       : name(name), shader(shader), texture(tex) {}
 
   // Set value of shader
@@ -23,4 +25,10 @@ public:
 
   // Bind material for rendering
   void Bind();
+
+  // Serialization
+  friend std::ostream &operator<<(std::ostream &os, const Material &material);
+
+  // Deserialization
+  friend std::istream &operator>>(std::istream &is, Material &material);
 };

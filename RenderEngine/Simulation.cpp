@@ -2,7 +2,9 @@
 #include <iostream>
 
 Simulation::Simulation()
-    : simulation("boids", SHADER_DIR + "/compute/simulation/slime.compute") {
+    : simulation(
+          "boids",
+          std::string(SHADER_DIR) + "/compute/simulation/slime.compute") {
   this->agents = std::make_shared<ComputeBuffer1D<Agent>>();
 }
 
@@ -20,9 +22,8 @@ void Simulation::Init(const std::vector<Agent> agents) {
 //}
 
 // Function to find k-nearest neighbors for a given agent in a list of agents
-std::vector<Agent> FindKNearestNeighbors(const Agent &targetAgent,
-                                         const std::vector<Agent> &agentList,
-                                         int k) {
+std::vector<Agent> FindKNearestNeighbors(
+    const Agent &targetAgent, const std::vector<Agent> &agentList, int k) {
   // Create a vector to store distances and corresponding agents
   std::vector<std::pair<float, Agent>> distancesAndAgents;
 
@@ -35,7 +36,8 @@ std::vector<Agent> FindKNearestNeighbors(const Agent &targetAgent,
 
   // Sort the vector based on distances
   std::sort(
-      distancesAndAgents.begin(), distancesAndAgents.end(),
+      distancesAndAgents.begin(),
+      distancesAndAgents.end(),
       [](const auto &lhs, const auto &rhs) { return lhs.first < rhs.first; });
 
   // Extract the k-nearest neighbors
