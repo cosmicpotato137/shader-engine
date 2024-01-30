@@ -3,12 +3,14 @@
 // Layers
 #include "RenderLayer.h"
 #include "SimulationLayer.h"
+#include "OutputLayer.h"
 
 int main() {
   Application *app = Application::GetInstance();
 
   if (app->Init("Shader Ideas")) {
     // App.PushLayer(std::make_shared<RenderLayer>());
+    app->PushLayer(std::make_shared<OutputLayer>());
     app->PushLayer(std::make_shared<SimulationLayer>());
     app->Run();
 

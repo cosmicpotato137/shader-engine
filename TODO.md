@@ -11,7 +11,7 @@
 
 - [x] generic scene object class
 - [x] look at warnings
-- [ ] create log window/layer
-- [ ] serialization THIS IS COMPLICATED:
+- [x] create log window/layer
+- [x] serialization THIS IS COMPLICATED:
   - [x] need each instance of each object to be serialized separately
   - [x] objects that use other resources (shaders and textures) need those resources to be loaded and uniforms joined appropriately

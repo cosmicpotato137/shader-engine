@@ -36,9 +36,6 @@ public:
 
   HANDLE_EVENT_FN(KeyboardEvent) override {}
 
-  static void ConsoleWindow();
-  static void OutputWindow();
-
 protected:
   // Called when layer is added to the application
   bool Init() override;
