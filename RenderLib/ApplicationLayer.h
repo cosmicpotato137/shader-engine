@@ -22,7 +22,9 @@ public:
   virtual void ImGuiRender() {}
 
   // Event handling
-  HANDLE_EVENT_FN(Event) {}
+  HANDLE_EVENT_FN(Event) {
+    Console::Log("Generic event handled, something is probably wrong.");
+  }
   HANDLE_EVENT_FN(ScrollEvent) {}
   HANDLE_EVENT_FN(MouseButtonEvent) {}
   HANDLE_EVENT_FN(KeyboardEvent) {}

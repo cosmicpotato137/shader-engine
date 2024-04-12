@@ -8,8 +8,6 @@ class ComputeObject : public Object {
   std::string name;
   ptr<ComputeShader> shader;
   char *shaderPath = new char[256];
-  ptr<RenderTexture> imageIn;
-  ptr<RenderTexture> imageOut;
 
   bool pause = false, reset = false, step = false;
 

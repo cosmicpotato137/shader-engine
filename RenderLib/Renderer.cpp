@@ -76,6 +76,8 @@ void Renderer::Render(bool clear) {
   renderTarget.swap(swapTarget);
 }
 
+void Renderer::Swap() { renderTarget.swap(swapTarget); }
+
 void Renderer::Clear() { renderTarget->Clear(); }
 
 void Renderer::Cleanup() {

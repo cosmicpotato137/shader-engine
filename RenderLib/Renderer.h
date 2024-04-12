@@ -45,6 +45,7 @@ public:
   void PopRenderStep() { renderStack.pop_back(); }
 
   void Render(bool clear = true);
+  void Swap();
   void Clear();
   void Cleanup();
 

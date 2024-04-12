@@ -57,16 +57,17 @@ public:
       Object::Load(computeObject, "data/simulation.dat");
 
     // Simulation
-    int sep = 1;
+    int sep = 3;
     int off = 10;
-    for (int i = 0; i < 1000; i += 1) {
-      for (int j = 0; j < 400; j += 1) {
+    for (int i = 0; i < 100; i += 1) {
+      for (int j = 0; j < 100; j += 1) {
         startingAgents.push_back(
             Agent{{off + i * sep, off + j * sep}, {10, 0}});
       }
     }
 
     sim.Init(startingAgents);
+    sim.Render(ren);
 
     Renderer::SetClearColor(0, 0, 0);
   }
@@ -100,22 +101,22 @@ public:
   }
 
   virtual void Render() override {
-    if (pause && !step)
-      return;
+    // if (pause && !step)
+    //   return;
 
-    sim.Render(ren);
+    // sim.Render(ren);
 
-    // Render simulation layer
-    // This also copies renderTarget to swapTarget
-    ptr<ComputeShader> shader = computeObject.GetShader();
-    BindRenderImages(computeObject.GetShader());
-    SetShaderUniforms(shader);
-    computeObject.Render();
+    // // Render simulation layer
+    // // This also copies renderTarget to swapTarget
+    // ptr<ComputeShader> shader = computeObject.GetShader();
+    // BindRenderImages(computeObject.GetShader());
+    // SetShaderUniforms(shader);
+    // computeObject.Render();
 
-    // Swaps buffers
-    ren.Render();
+    // // Swaps buffers
+    // ren.Render();
 
-    step = false;
+    // step = false;
   }
 
   virtual void ImGuiRender() override {
@@ -288,5 +289,6 @@ private:
     // Resize simulation
     sim.SetSize({width, height});
     sim.Init(startingAgents);
+    sim.Render(ren);
   }
 };

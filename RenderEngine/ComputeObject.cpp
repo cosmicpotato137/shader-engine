@@ -17,6 +17,7 @@ void ComputeObject::SetShader(const std::string &shaderPath) {
   std::string oldPath = this->shaderPath;
   shader->Drop();
   shader->Cleanup();
+  // todo: this string handling is wack
   if (!shader->Init(shaderPath))
     shader->Init(oldPath);
   else {

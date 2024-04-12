@@ -128,5 +128,6 @@
       "pattern": "**/*Test.exe"
     }
   ],
-  "cmake.ctestEnabled": false
+  "cmake.ctestEnabled": false,
+  "cmake.configureOnOpen": true
 }

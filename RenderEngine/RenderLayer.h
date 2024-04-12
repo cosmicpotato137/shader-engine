@@ -17,8 +17,6 @@ class RenderLayer : public ApplicationLayer {
 
   // Render vars
   Renderer ren;
-  ptr<RenderTexture> renderTarget;
-  ptr<RenderTexture> swapTarget;
   ptr<Camera> cam;
 
   ComputeObject computeInteract;
@@ -39,7 +37,6 @@ class RenderLayer : public ApplicationLayer {
 
   // Imgui vars
   glm::vec2 imContentSize;
-  glm::vec2 renderTargetSize;
 
 public:
   RenderLayer()
@@ -49,39 +46,27 @@ public:
         computeInteract(
             "interact",
             std::string(SHADER_DIR) + "/compute/conwayInteract.compute") {
-    // Renderer settings
-
-    ren.SetClearColor(.3, .3, .3);
-    ren.Clear();
-
-    glm::vec2 screenSize = renderTargetSize;
-    int screenWidth = screenSize.x;
-    int screenHeight = screenSize.y;
-
-    // Assign the render target texture to the compute shader's buffer
-    renderTarget = std::make_shared<RenderTexture>();
-    renderTarget->Init(screenWidth, screenHeight, true);
-    ren.SetRenderTarget(renderTarget);
-
-    // Make render target to swap into
-    swapTarget = std::make_shared<RenderTexture>();
-    swapTarget->Init(screenWidth, screenHeight, true);
+    // Initialize renderer
+    auto app = Application::GetInstance();
+    glm::vec2 size = app->GetWindowSize();
+    ren.Init(size.x, size.y);
   }
 
   void BindRenderImages(ptr<Shader> shader) {
-    renderTarget->GetTexture()->BindCompute(0);
+    ren.GetRenderTarget()->GetTexture()->BindCompute(0);
     shader->SetUniform("imageOut", 0);
     // Bind swap target for iterative sims
     if (shader->HasUniform("imageIn")) {
       shader->SetUniform("imageIn", 1);
-      swapTarget->GetTexture()->BindCompute(1);
+      ren.GetSwapTarget()->GetTexture()->BindCompute(1);
     }
   }
 
   void SetShaderUniforms(ptr<Shader> shader) {
     // Set default uniforms
     if (shader->HasUniform("_center"))
-      shader->SetUniform("_center", centerPos / renderTargetSize);
+      shader->SetUniform(
+          "_center", centerPos / ren.GetRenderTarget()->GetSize());
     if (shader->HasUniform("_time"))
       shader->SetUniform("_time", elapsedTime);
     if (shader->HasUniform("_scale"))
@@ -92,7 +77,7 @@ public:
     if (shader->HasUniform("_mouse_position")) {
       glm::vec2 pos = glm::vec2(
           lastMousePos.x - windowPos.x,
-          renderTargetSize.y - (lastMousePos.y - windowPos.y));
+          ren.GetRenderTarget()->GetSize().y - (lastMousePos.y - windowPos.y));
       shader->SetUniform("_mouse_position", pos);
     }
     if (shader->HasUniform("_lmb_down"))
@@ -118,8 +103,8 @@ public:
     SetShaderUniforms(shader);
     computeObject.Render();
 
-    // Swap
-    renderTarget.swap(swapTarget);
+    // Swap the render targets
+    ren.Swap();
   }
 
   virtual void ImGuiRender() override {
@@ -135,15 +120,14 @@ public:
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {3.0, 3.0});
 
     ImGui::Begin("Scene");
+    ImVec2 s = ImGui::GetContentRegionAvail();
+    imContentSize = {s.x, s.y};
 
     HandleSceneWindowResize();
     HandleSceneMouseEvent();
 
-    ImVec2 s = ImGui::GetContentRegionAvail();
-    imContentSize = {s.x, s.y};
-
     // Get the texture ID
-    int textureID = renderTarget->GetTexture()->GetTextureID();
+    int textureID = ren.GetRenderTarget()->GetTexture()->GetTextureID();
 
     // Render image to layer
     windowPos = ImGui::GetCursorScreenPos();
@@ -295,8 +279,8 @@ private:
       float yOffset = ypos - lastMousePos.y;  // Invert Y-axis if needed
 
       // Update the position of the dragged object (e.g., camera, object, etc.)
-      RotateCamera(xOffset, yOffset);
-
+      // RotateCamera(xOffset, yOffset);
+      glm::vec2 renderTargetSize = ren.GetRenderTarget()->GetSize();
       centerPos.x -=
           xOffset * zoom * 2 * renderTargetSize.x / renderTargetSize.y;
       centerPos.y += yOffset * zoom * 2;
@@ -307,24 +291,19 @@ private:
   }
 
   void HandleSceneWindowResize() {
-    if (renderTargetSize == imContentSize)
+    if (ren.GetRenderTarget()->GetSize() == imContentSize)
       return;
 
-    renderTargetSize = imContentSize;
     float width = imContentSize.x;
     float height = imContentSize.y;
 
     // Resize textures
-    renderTarget->Init(width, height, true);
-    swapTarget->Init(width, height, true);
+    ren.Init(width, height);
 
     // Update shader work groups
     computeObject.GetShader()->SetWorkGroups(
         std::ceil(width / 8), std::ceil(height / 8), 1);
     computeInteract.GetShader()->SetWorkGroups(
         std::ceil(width / 8), std::ceil(height / 8), 1);
-    // MandelbrotShader->SetWorkGroups(std::ceil(width / 8.0), std::ceil(height
-    // / 8.0), 1); helloShader->SetWorkGroups(std::ceil(width / 8.0),
-    // Std::ceil(height / 8.0), 1);
   }
 };

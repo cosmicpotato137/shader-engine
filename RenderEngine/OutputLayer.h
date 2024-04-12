@@ -7,6 +7,9 @@
 class OutputLayer : public ApplicationLayer {
   std::vector<std::string> consoleLogs;
 
+  bool autoScroll = true;
+  int lastLogCount = 0;
+
 public:
   OutputLayer();
 

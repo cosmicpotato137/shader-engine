@@ -86,9 +86,11 @@ public:
 };
 
 // Event visitor for application layers
+// Remember to name your event handling
+// functions with the same name as the event
 #define EVENT_FN(type)       \
   bool operator()(type &e) { \
-    layer->HandleEvent(e);   \
+    layer->Handle##type(e);   \
     return e.handled;        \
   }
 
