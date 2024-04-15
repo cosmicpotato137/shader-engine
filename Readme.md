@@ -55,6 +55,11 @@ cmake ..
 
 ## Examples
 
+### GLSL Files
+
+All shader examples can be found [here](./shaders). 
+
+### C++ Files
 Most changes that you might want to make to this project before you build are likely either in these files:
 
 - `RenderEngine/RenderLayer.cpp`:
