@@ -21,8 +21,8 @@ Shader Engine only supports windows for now, I do have vague plans to get it run
   - Error console
   - Scene view
   - File dialog
-- Realtime shader uniform updates
-- Uniform serialization
+- Realtime shader uniform editing
+- Shader uniform serialization
 - Event system for handling user input
 
 ## Building the Project
