@@ -22,8 +22,11 @@ find_library(GLFW NAMES glfw3 PATHS vendor/lib)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
 set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
 
+# generic includes for all projects
 include_directories(${CMAKE_SOURCE_DIR}/vendor
                     ${CMAKE_SOURCE_DIR}/vendor/include)
+
+link_directories(${CMAKE_SOURCE_DIR}/vendor/include/ImGui-FileDialog)
 
 # resource dirs
 add_definitions(-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/shaders\")

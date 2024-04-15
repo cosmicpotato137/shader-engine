@@ -12,6 +12,7 @@ uniform bool _rmb_down;
 uniform vec2 _mouse_position;
 
 uniform int filterSize;
+uniform float blurAmount;
 uniform float darken;
 
 vec4 blur() {
@@ -47,7 +48,8 @@ void main() {
   }
   else
   {
-    color = blur() * darken;
+    color = blur() * blurAmount + color * (1 - blurAmount);
+    color *= darken;
     color.w = 1;
     imageStore(imageOut, gidx, color);
   }
