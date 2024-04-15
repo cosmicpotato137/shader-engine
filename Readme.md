@@ -64,9 +64,9 @@ Most changes that you might want to make to this project before you build are li
 
 - `RenderEngine/RenderLayer.cpp`:
   This file contains an example of Conway's Game of Life, with scalable pixel size and a brush to create your own automata.
-- `RenderEngine/SimulationLayer.cpp`
+- `RenderEngine/SimulationLayer.cpp`:
   This file contains a particle system that is run using either a boid or a slime shader to update the agent positions.
-- `RenderEngine/main.cpp`
+- `RenderEngine/main.cpp`:
   There is no way to switch the examples at runtime (yet) but layers can be added or removed in main by commenting any of these lines:
 
 ```cpp
