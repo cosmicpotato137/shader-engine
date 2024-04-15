@@ -7,7 +7,6 @@
 3. [Building the Project](#building-the-project)
 4. [Usage Examples](#usage-examples)
 5. [Contributing](#contributing)
-6. [License](./LISCENCE)
 
 ## Introduction
 
