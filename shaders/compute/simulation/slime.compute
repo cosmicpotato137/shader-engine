@@ -99,6 +99,13 @@ void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
         float t = length(current - start) / length(end - start);
         vec4 interpolatedColor = mix(startColor, endColor, t);
 
+        // Get current color from the image
+        vec4 currentColor = imageLoad(imageOut, current);
+
+        // Alpha blend the colors
+        interpolatedColor = currentColor + (1-currentColor) * .37 * interpolatedColor;
+
+        // Write the color to the image
         imageStore(imageOut, current, interpolatedColor);
 
         if (current.x == end.x && current.y == end.y) {
@@ -160,7 +167,7 @@ uniform float stepSize;
 const float PI = 3.14159;
 const int steps = 7;
 
-Agent slime(Agent agent) {
+Agent slime(Agent agent, float threshold) {
   // DrawLine(ivec2(agent.position), ivec2(agent.position + normalize(agent.velocity) * 15), vec4(0, 1, 0, 1), vec4(0, 1, 0, 1));
 
   vec2 vel = agent.velocity;
@@ -225,20 +232,21 @@ void main() {
   }
 
   Agent agent = agentBuffer[idx];
-  
+
   // Clamp velocity;
   if (length(agent.velocity) > maxVelocity && length(agent.velocity) > 0)
   {
     agent.velocity = normalize(agent.velocity) * maxVelocity;
   }
 
-  agent.lastPosition = agent.position;
-  agent.position += agent.velocity * .1f;
-
-  agent = bounce(agent);
-
   if (!_pause)
+  {
+    agent.lastPosition = agent.position;
+    agent.position += agent.velocity * .1f;
+
+    agent = bounce(agent);
     agent = slime(agent);
+  }
 
   drawLine(ivec2(agent.position), ivec2(agent.lastPosition), vec4(1), vec4(1));
 
