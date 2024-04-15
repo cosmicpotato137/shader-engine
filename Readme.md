@@ -11,9 +11,9 @@
 
 ## Introduction
 
-This project is a rendering pipeline for compiling GLSL shaders. It provides a lightweight framework for loading, editing and serializing shaders with options for user interaction. Currently, Shader Engine is designed for experimenting learning with shaders, but it can also be modified to support materials systems and mesh rendering.
+This project is a rendering pipeline for compiling GLSL shaders. It provides a lightweight framework for loading, editing and serializing compute shaders with options for user interaction. Currently, Shader Engine is designed for experimenting learning with shaders, but it can also be modified to support materials systems and mesh rendering.
 
-Shader engine only supports windows for now, I do have vague plans to get it running on linux. Until then, PRs are welcome!
+Shader Engine only supports windows for now, I do have vague plans to get it running on linux. Until then, PRs are welcome!
 
 ## Features
 
