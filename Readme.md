@@ -5,7 +5,7 @@
 1. [Introduction](#introduction)
 2. [Features](#features)
 3. [Building the Project](#building-the-project)
-4. [Usage](#examples)
+4. [Examples](#examples)
 5. [Contributing](#contributing)
 
 ## Introduction
