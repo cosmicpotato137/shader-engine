@@ -9,8 +9,8 @@ int main() {
   Application *app = Application::GetInstance();
 
   if (app->Init("Shader Ideas")) {
-    app->PushLayer(std::make_shared<RenderLayer>());
-    // app->PushLayer(std::make_shared<SimulationLayer>());
+    // app->PushLayer(std::make_shared<RenderLayer>());
+    app->PushLayer(std::make_shared<SimulationLayer>());
     app->PushLayer(std::make_shared<OutputLayer>());
     app->Run();
 

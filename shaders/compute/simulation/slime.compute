@@ -122,7 +122,7 @@ void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
 float raySumPix(vec2 start, vec2 direction, float distance, float stepSize) {
     // Normalize the direction vector
     vec2 normalizedDirection = vec2(0);
-    if (length(direction) != 0 && distance > 0)
+    if (length(direction) != 0 && distance > 0 && stepSize > 0)
     {
       normalizedDirection = normalize(direction);
     }
@@ -243,16 +243,4 @@ void main() {
   drawLine(ivec2(agent.position), ivec2(agent.lastPosition), vec4(1), vec4(1));
 
   agentBuffer[idx] = agent;
-
-  // draw 10x10 square at the bottom left corner
-  if (idx == 0)
-  {
-    for (int i = 0; i < 10; i++)
-    {
-      for (int j = 0; j < 10; j++)
-      {
-        imageStore(imageOut, ivec2(i, j), vec4(1, 0, 0, 1));
-      }
-    }
-  }
 }

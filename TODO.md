@@ -9,6 +9,8 @@
 
 ## RenderEngine
 
+- [ ] file dialogue for shaders
+- [ ] scene imgui window class to abstract some layer code
 - [x] generic scene object class
 - [x] look at warnings
 - [x] create log window/layer
