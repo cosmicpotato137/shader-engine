@@ -3,11 +3,14 @@
 #include "ComputeShader.h"
 #include "RenderTexture.h"
 #include "Object.h"
+#include "ImGuiFileDialog/ImGuiFileDialog.h"
 
 class ComputeObject : public Object {
   std::string name;
   ptr<ComputeShader> shader;
   char *shaderPath = new char[256];
+  IGFD::FileDialogConfig config;
+  IGFD::FileDialog fileDialog;
 
   bool pause = false, reset = false, step = false;
 

@@ -77,9 +77,24 @@ void ComputeObject::ShaderInfoWindow() {
   ImGui::Text("Get shader from file");
   ImGui::Spacing();
 
-  ImGui::InputText("Input new path", shaderPath, 256);
-  if (ImGui::Button("Set shader path", ImVec2(150, 25)))
-    SetShader(shaderPath);
+  // open Dialog Simple
+  if (ImGui::Button("Load Shader")) {
+    config.path = ".";
+    fileDialog.OpenDialog(
+        "ChooseFileDlgKey", "Choose File", ".shader,.compute", config);
+  }
+  // display
+  if (fileDialog.Display("ChooseFileDlgKey")) {
+    if (fileDialog.IsOk()) {  // action if OK
+      std::string filePathName = fileDialog.GetFilePathName();
+      std::string filePath = fileDialog.GetCurrentPath();
+
+      SetShader(filePathName);
+    }
+
+    // close
+    fileDialog.Close();
+  }
 
   if (ImGui::Button("Recompile shader", ImVec2(150, 25)))
     RecompileShader();

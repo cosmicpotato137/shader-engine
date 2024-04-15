@@ -14,3 +14,8 @@ target_link_libraries(imgui_glfw_opengl3 imgui)
 target_link_libraries(imgui_glfw_opengl3 glad)
 target_link_libraries(imgui_glfw_opengl3 ${GLFW})
 target_include_directories(imgui_glfw_opengl3 SYSTEM PUBLIC imgui/backends)
+
+# imgui file dialog
+add_library(imgui_file_dialog ImGuiFileDialog/ImGuiFileDialog.cpp)
+target_link_libraries(imgui_file_dialog imgui)
+target_include_directories(imgui_file_dialog SYSTEM PUBLIC ImGuiFileDialog)
