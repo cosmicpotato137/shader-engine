@@ -1,17 +1,5 @@
-# Include FetchContent module
-include(FetchContent)
-
-# Declare GoogleTest as a content to fetch
-FetchContent_Declare(
-	googletest
-	URL https://github.com/google/googletest/archive/refs/heads/master.zip
-	DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/vendor/googletest
-	BINARY_DIR ${CMAKE_SOURCE_DIR}/vendor/googletest
-)
-
-# Fetch GoogleTest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+# GoogleTest is added as a submodule at vendor/googletest
+add_subdirectory(${CMAKE_SOURCE_DIR}/vendor/googletest ${CMAKE_BINARY_DIR}/vendor/googletest)
 
 file(GLOB SOURCES ./*.cpp)
 file(GLOB HEADERS ./*.h)
@@ -34,5 +22,5 @@ target_link_libraries(
 target_include_directories(
 	RenderLibTest PRIVATE 
 	${PROJECT_SOURCE_DIR}/RenderLib
-	${googletest_SOURCE_DIR}/googletest/include
+	${PROJECT_SOURCE_DIR}/vendor/googletest/googletest/include
 )
