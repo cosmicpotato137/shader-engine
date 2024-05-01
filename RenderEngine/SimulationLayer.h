@@ -55,8 +55,8 @@ public:
 
     // Simulation
     int sep = 3;
-    int off = 10;
-    for (int i = 0; i < 100; i += 1) {
+    int off = 2;
+    for (int i = 0; i < 1000; i += 1) {
       for (int j = 0; j < 100; j += 1) {
         startingAgents.push_back(
             Agent{{off + i * sep, off + j * sep}, {10, 0}});

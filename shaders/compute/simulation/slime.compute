@@ -156,6 +156,7 @@ uniform float maxVelocity;
 uniform float weight;
 uniform float lookahead;
 uniform float stepSize;
+uniform float fov;
 
 const float PI = 3.14159;
 const int steps = 7;
@@ -182,7 +183,8 @@ Agent slime(Agent agent) {
       float agentDir = sign * acos(vel.x / sqrt(vel.x * vel.x + vel.y * vel.y));
 
       // Find ray direction relative to agent dir
-      float c = PI * i / steps - PI / 2;
+      float angle = fov * PI / 180.0;
+      float c = angle * i / steps - angle / 2;
       rayDir = vec2(cos(agentDir + c), sin(agentDir + c));
     }
     else
