@@ -10,5 +10,5 @@ void main() {
 
   vec4 color = vec4(uv, 0.0, 1.0); // RGB color based on uv coordinates
 
-  imageStore(imageOut, gidx, vec4(1,1,1,1));
+  imageStore(imageOut, gidx, color);
 }
