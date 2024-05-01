@@ -1,0 +1,10 @@
+^C:\USERS\IMACS\DOCUMENTS\CODE\SHADER-ENGINE\BUILD\_DEPS\GOOGLETEST-SRC\GOOGLEMOCK\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/imacs/Documents/Code/shader-engine -BC:/Users/imacs/Documents/Code/shader-engine/build --check-stamp-file C:/Users/imacs/Documents/Code/shader-engine/vendor/googletest/googlemock/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
