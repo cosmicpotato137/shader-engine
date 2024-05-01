@@ -9,6 +9,7 @@
 ./vs/
 /out/
 
+# Using FetchContent instead of submodules
 /vendor/googletest/
 
 # User-specific files
