@@ -9,6 +9,8 @@
 ./vs/
 /out/
 
+/vendor/googletest/
+
 # User-specific files
 *.rsuser
 *.suo
