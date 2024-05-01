@@ -19,5 +19,5 @@ target_link_libraries(
 target_include_directories(
 	RenderLibTest PRIVATE 
 	${PROJECT_SOURCE_DIR}/RenderLib
-	${googletest_SOURCE_DIR}/googletest/include
+	${PROJECT_SOURCE_DIR}/vendor/googletest/googletest/include
 )
