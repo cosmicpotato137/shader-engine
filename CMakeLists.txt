@@ -26,7 +26,8 @@ set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
 include_directories(${CMAKE_SOURCE_DIR}/vendor
                     ${CMAKE_SOURCE_DIR}/vendor/include)
 
-link_directories(${CMAKE_SOURCE_DIR}/vendor/include/ImGui-FileDialog)
+# ImGui File Dialog
+# link_directories(${CMAKE_SOURCE_DIR}/vendor/include/ImGui-FileDialog)
 
 # resource dirs
 add_definitions(-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/shaders\")
@@ -37,30 +38,13 @@ add_definitions(-DTEXTURE_DIR=\"${CMAKE_SOURCE_DIR}/res/textures\")
 add_definitions(-DIMGUI_DEFINE_MATH_OPERATORS)
 
 # Include sub-projects.
-add_subdirectory("RenderLib")
-add_subdirectory("RenderEngine")
+add_subdirectory("ShaderEngine")
+add_subdirectory("ShaderSandbox")
 
 # include external libs
 add_subdirectory("vendor")
 
-# Fetch testing environment
-# Include FetchContent module
-include(FetchContent)
-
-# Declare GoogleTest as a content to fetch
-FetchContent_Declare(
-	googletest
-	URL https://github.com/google/googletest/archive/refs/heads/master.zip
-	DOWNLOAD_DIR ${CMAKE_SOURCE_DIR}/vendor/googletest
-	BINARY_DIR ${CMAKE_SOURCE_DIR}/vendor/googletest
-    DOWNLOAD_EXTRACT_TIMESTAMP true
-)
-
-# Fetch GoogleTest
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
 # Enable testing
 enable_testing()
 
-add_test(NAME RenderLibTest COMMAND ${CMAKE_SOURCE_DIR}/bin/RenderLibTest.exe)
+add_test(NAME ShaderEngineTest COMMAND ${CMAKE_SOURCE_DIR}/bin/ShaderEngineTest.exe)

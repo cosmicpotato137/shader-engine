@@ -2,7 +2,7 @@ const glob = require("glob");
 const { exec } = require("child_process");
 const fs = require("fs");
 
-glob("{./RenderEngine,./RenderLib}/**/*.{h,cpp}", (err, files) => {
+glob("{./RenderEngine,./ShaderEngine}/**/*.{h,cpp}", (err, files) => {
   if (err) {
     console.error(err);
     return;

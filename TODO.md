@@ -1,7 +1,8 @@
 # Todo list for shader-ideas
 
-## RenderLib
+## ShaderEngine
 
+- [ ] move event visitor to new file
 - [x] testing classes for everything
 - [x] Get testing project working with vscode gui
 - [x] Look at warnings

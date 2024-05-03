@@ -4,7 +4,7 @@ target_include_directories(glad SYSTEM PUBLIC glad/include)
 
 # imgui
 add_library(imgui imgui/imgui.cpp imgui/imgui_widgets.cpp imgui/imgui_tables.cpp imgui/imgui_draw.cpp imgui/imgui_demo.cpp)
-target_link_directories(RenderLib PUBLIC imgui)
+target_link_directories(ShaderEngine PUBLIC imgui)
 target_include_directories(imgui SYSTEM PUBLIC imgui)
 
 # imgui backend
@@ -17,5 +17,6 @@ target_include_directories(imgui_glfw_opengl3 SYSTEM PUBLIC imgui/backends)
 
 # imgui file dialog
 add_library(imgui_file_dialog ImGuiFileDialog/ImGuiFileDialog.cpp)
+link_directories(${CMAKE_SOURCE_DIR}/vendor/include/ImGui-FileDialog)
 target_link_libraries(imgui_file_dialog imgui)
 target_include_directories(imgui_file_dialog SYSTEM PUBLIC ImGuiFileDialog)

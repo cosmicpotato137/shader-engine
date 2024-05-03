@@ -8,16 +8,11 @@ source_group("Header Files" FILES ${HEADERS})
 source_group("Shader Files" FILES ${SHADERS})
 
 # Add executable target
-add_executable(RenderEngine ${SOURCES} ${HEADERS} ${SHADERS})
-# steps necessary to link an external library!
-target_link_libraries(RenderEngine RenderLib imgui imgui_glfw_opengl3 imgui_file_dialog)
-target_include_directories(RenderEngine PRIVATE 
-	${PROJECT_SOURCE_DIR}/RenderLib)
+add_library(RenderEngine ${SOURCES} ${HEADERS} ${SHADERS})
 
-add_custom_command(
-    TARGET RenderEngine 
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/vendor/lib/assimp-vc143-mt.dll
-        $<TARGET_FILE_DIR:RenderEngine>
-)
+# steps necessary to link an external library!
+target_link_libraries(RenderEngine ShaderEngine imgui imgui_glfw_opengl3 imgui_file_dialog)
+target_include_directories(RenderEngine PRIVATE ${PROJECT_SOURCE_DIR}/ShaderEngine)
+
+# testing
+add_subdirectory(Test)
