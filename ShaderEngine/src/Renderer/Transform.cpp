@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Transform.h"
 #include "Core/core.h"
 #include "Math/glm_helpers.h"

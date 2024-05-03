@@ -1,8 +1,8 @@
+#include "pch.h"
 #include "Core/core.h"
 
 #include "Core/Log.h"
 #include "RenderTexture.h"
-#include <iostream>
 
 RenderTexture::RenderTexture()
     : framebufferID(0), renderbufferID(0), width(0), height(0) {

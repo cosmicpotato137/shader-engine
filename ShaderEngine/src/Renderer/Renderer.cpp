@@ -1,8 +1,4 @@
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-
+#include "pch.h"
 #include "Core/Log.h"
 #include "Renderer.h"
 #include "Mesh.h"

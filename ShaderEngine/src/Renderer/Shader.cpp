@@ -1,11 +1,7 @@
-#pragma once
+#include "pch.h"
 
 #include "Core/Log.h"
 #include "Shader.h"
-
-#include <cstdio>
-#include <fstream>
-#include <sstream>
 
 bool Shader::Init(const std::string &shaderPath) {
   filepath = shaderPath;

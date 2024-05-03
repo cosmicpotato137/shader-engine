@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Application.h"
 #include "Events/EventVisitor.h"
 #include "Renderer/Renderer.h"

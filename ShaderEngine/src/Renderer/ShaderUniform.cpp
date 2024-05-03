@@ -1,8 +1,7 @@
+#include "pch.h"
 #include "ShaderUniform.h"
 #include "Core/Log.h"
 #include "Math/glm_helpers.h"
-
-#include <regex>
 
 std::ostream &operator<<(std::ostream &os, const Uniform &uniform) {
   // Write object data

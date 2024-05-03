@@ -17,5 +17,8 @@ target_include_directories(ShaderEngine PRIVATE
 target_link_directories(ShaderEngine PUBLIC ${CMAKE_SOURCE_DIR}/vendor/lib)
 target_link_libraries(ShaderEngine imgui imgui_glfw_opengl3 ${CORE})
 
+# precompiled headers
+target_precompile_headers(ShaderEngine PRIVATE ./src/pch.h)
+
 # testing
 add_subdirectory(Tests)
