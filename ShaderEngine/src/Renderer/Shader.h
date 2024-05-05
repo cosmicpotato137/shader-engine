@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Core/core.h"
+#include "Scene/Serializable.h"
 #include "ShaderUniform.h"
 
-class Shader {
+class Shader : public Serializable {
 protected:
   GLuint program;
   std::string filepath;
@@ -47,10 +48,9 @@ public:
   friend std::istream &operator>>(std::istream &is, Shader &shader);
 
 protected:
+  // Shader cimpilation and linking
   bool LoadSource(const std::string &filepath, std::string &shaderSource);
-
   GLuint Compile(GLenum shaderType, const char *shaderSource);
-
   GLuint Link(std::vector<GLuint> programs);
 
   void FindUniforms();

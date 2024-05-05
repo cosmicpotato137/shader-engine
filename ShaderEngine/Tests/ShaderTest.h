@@ -48,28 +48,6 @@ protected:
     ASSERT_EQ(texture->GetPixel(0, 0), glm::vec4(255, 0, 0, 255));
   }
 
-  void TestSerialization() {
-    shader->Init(std::format("{}/hello.shader", SHADER_DIR));
-
-    std::stringstream ss;
-    ss << *shader;
-    Shader deserialized;
-    ss >> deserialized;
-    EXPECT_EQ(shader->name, deserialized.name);
-    EXPECT_EQ(shader->GetFilePath(), deserialized.GetFilePath());
-    EXPECT_EQ(shader->uniforms.size(), deserialized.uniforms.size());
-
-    for (auto &uniform : shader->uniforms) {
-      EXPECT_TRUE(deserialized.HasUniform(uniform.first));
-      EXPECT_EQ(
-          uniform.second->GetType(),
-          deserialized.GetUniform(uniform.first)->GetType());
-      EXPECT_EQ(
-          uniform.second->GetValue(),
-          deserialized.GetUniform(uniform.first)->GetValue());
-    }
-  }
-
   ptr<RenderTexture> renderTexture;
   ptr<Shader> shader;
 };
@@ -78,4 +56,3 @@ TEST_F(ShaderTest, Init) { TestInit(); }
 TEST_F(ShaderTest, InitFail) { TestInitFail(); }
 TEST_F(ShaderTest, HasUniform) { TestHasUniform(); }
 TEST_F(ShaderTest, SetUniform) { TestSetUniform(); }
-TEST_F(ShaderTest, Serialization) { TestSerialization(); }

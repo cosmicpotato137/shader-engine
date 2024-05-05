@@ -55,20 +55,6 @@ void ComputeObject::Render() {
 
 void ComputeObject::ImGuiRender() { ShaderInfoWindow(); }
 
-void ComputeObject::Serialize(std::ofstream &ofs) {
-  ofs << name << std::endl;
-  ofs << shaderPath << std::endl;
-  ofs << *shader << std::endl;
-}
-
-void ComputeObject::Deserialize(std::ifstream &ifs) {
-  std::string name, shaderPath;
-  getline(ifs, name);
-  getline(ifs, shaderPath);
-  ifs >> *shader;
-  SetShader(shaderPath);
-}
-
 void ComputeObject::ShaderInfoWindow() {
   ImGui::Begin((name + " Shader Info").c_str());
 

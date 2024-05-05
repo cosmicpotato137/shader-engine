@@ -17,7 +17,7 @@ struct ApplicationCommandLineArgs {
 
 struct ApplicationProps {
   std::string Name = "Application";
-  std::string WorkingDirectory = "";
+  std::string WorkingDirectory = ROOT_DIR;
   int Width = 1280, Height = 720;
   ApplicationCommandLineArgs Args = {0, nullptr};
 };
@@ -68,6 +68,9 @@ public:
 
   // Clean up GLFW and release resources
   virtual void Shutdown();
+
+  // Get properties
+  ApplicationProps GetProperties() { return properties; }
 
   // Get the glfw context
   GLFWwindow *GetWindow() const { return window; }

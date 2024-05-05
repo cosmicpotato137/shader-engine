@@ -30,9 +30,6 @@ public:
   void Render();
   void ImGuiRender();
 
-protected:
-  void Serialize(std::ofstream &ofs) override;
-  void Deserialize(std::ifstream &ifs) override;
 
 private:
   void ShaderInfoWindow();

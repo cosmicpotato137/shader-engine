@@ -15,7 +15,7 @@ target_include_directories(ShaderEngine PRIVATE
   ${CMAKE_SOURCE_DIR}/ShaderEngine/src
 )
 target_link_directories(ShaderEngine PUBLIC ${CMAKE_SOURCE_DIR}/vendor/lib)
-target_link_libraries(ShaderEngine imgui imgui_glfw_opengl3 ${CORE})
+target_link_libraries(ShaderEngine ${CORE} glad imgui imgui_glfw_opengl3)
 
 # precompiled headers
 target_precompile_headers(ShaderEngine PRIVATE ./src/pch.h)

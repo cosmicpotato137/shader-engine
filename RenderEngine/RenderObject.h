@@ -14,17 +14,4 @@ public:
 
   RenderObject(ptr<Transform> transf, ptr<Mesh> mesh, ptr<Material> mat)
       : transform(transf), mesh(mesh), material(mat) {}
-
-protected:
-  void Serialize(std::ofstream &ofs) override {
-    ofs << *transform;
-    ofs << *mesh;
-    ofs << *material;
-  }
-
-  void Deserialize(std::ifstream &ifs) override {
-    ifs >> *transform;
-    ifs >> *mesh;
-    ifs >> *material;
-  }
 };

@@ -1,7 +1,7 @@
 #version 460 core
 layout(local_size_x = 8, local_size_y = 8) in;
 
-layout(rgba32f, binding = 0) uniform image2D image;
+layout(rgba32f, binding = 0) uniform image2D imageOut;
 uniform vec2 _center;
 uniform float _scale;
 uniform uint max_iterations;
@@ -13,7 +13,7 @@ vec2 cmult(vec2 z1, vec2 z2) {
 
 void main() {
   ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
-  vec2 size = imageSize(image);
+  vec2 size = imageSize(imageOut);
   vec2 uv = (2.0*gidx - size) / size.y; 
 
   vec2 c = _center + _scale * uv;
@@ -29,5 +29,5 @@ void main() {
   }
   float brightness = iter_diverge / float(max_iterations);
 
-  imageStore(image, gidx, vec4(color * brightness, 1.0f));
+  imageStore(imageOut, gidx, vec4(color * brightness, 1.0f));
 }

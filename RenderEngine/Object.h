@@ -16,6 +16,4 @@ public:
   static void Load(Object &obj, const std::string &filepath);
 
 protected:
-  virtual void Serialize(std::ofstream &ofs) = 0;
-  virtual void Deserialize(std::ifstream &ifs) = 0;
 };

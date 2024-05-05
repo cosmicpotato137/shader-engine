@@ -4,13 +4,15 @@
 #include "imgui.h"
 
 #include "Renderer/Renderer.h"
-#include "Pannels/OutputPanel.h"
-#include "Pannels/ScenePanel.h"
+#include "Renderer/ComputeShader.h"
+#include "ImGui/OutputPanel.h"
+#include "ImGui/ScenePanel.h"
 
 class EditorLayer : public ApplicationLayer {
   OutputPanel m_OutputPanel;
   ScenePanel m_ScenePanel;
   ptr<Renderer> m_Renderer;
+  ptr<ComputeShader> m_ComputeShader;
 
 public:
   EditorLayer();
@@ -23,7 +25,7 @@ public:
   // Render dockspace
   void ImGuiRender() override;
 
-  void Render() override {}
+  void Render() override;
 
   void Update(double dt) override {}
 

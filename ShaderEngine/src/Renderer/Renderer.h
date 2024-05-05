@@ -61,6 +61,7 @@ public:
 
   ptr<RenderTexture> GetRenderTarget() const { return renderTarget; }
   ptr<RenderTexture> GetSwapTarget() const { return swapTarget; }
+  glm::vec2 GetViewportSize();
 
   static void DrawLine(
       const glm::vec3 &a, const glm::vec3 &b, GLenum usage = GL_STATIC_DRAW);

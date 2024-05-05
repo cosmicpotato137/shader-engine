@@ -68,7 +68,7 @@ bool Renderer::Init(int targetWidth, int targetHeight) {
   success &= renderTarget->Init(targetWidth, targetHeight, false);
   success &= swapTarget->Init(targetWidth, targetHeight, false);
 
-  glViewport(0, 0, targetWidth, targetHeight);
+  SetViewport(0, 0, targetWidth, targetHeight);
 
   return success;
 }
@@ -103,6 +103,8 @@ void Renderer::SetViewport(int x, int y, int width, int height) {
 }
 
 const float Renderer::GetAspect() { return GetWidth() / GetHeight(); }
+
+glm::vec2 Renderer::GetViewportSize() { return renderTarget->GetSize(); }
 
 // Function to draw a line between two glm::vec2 positions
 void Renderer::DrawLine(const glm::vec3 &a, const glm::vec3 &b, GLenum usage) {

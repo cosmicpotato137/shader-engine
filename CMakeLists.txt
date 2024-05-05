@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.27)
 
 project(shader-engine)
 
@@ -19,24 +19,23 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
 
 # set up packages and libraries
 find_package(OpenGL REQUIRED)
-find_library(GLFW NAMES glfw3 PATHS vendor/lib)
+find_library(GLFW NAMES glfw3 PATHS vendor/lib REQUIRED)
+find_package(Boost 1.85.0 COMPONENTS serialization REQUIRED)
 find_library(ASSIMP NAMES assimp-vc143-mt PATHS vendor/lib)
-set(CORE glad ${GLFW} ${ASSIMP} opengl32.lib)
+set(CORE ${GLFW} ${ASSIMP} ${Boost} opengl32.lib)
 
 # generic includes for all projects
-include_directories(${CMAKE_SOURCE_DIR}/vendor
-                    ${CMAKE_SOURCE_DIR}/vendor/include)
-
-# ImGui File Dialog
-# link_directories(${CMAKE_SOURCE_DIR}/vendor/include/ImGui-FileDialog)
-
-# resource dirs
-add_definitions(-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/shaders\")
-add_definitions(-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/res\")
-add_definitions(-DTEXTURE_DIR=\"${CMAKE_SOURCE_DIR}/res/textures\")
+include_directories(
+    ${CMAKE_SOURCE_DIR}/vendor
+    ${CMAKE_SOURCE_DIR}/vendor/include
+    ${Boost_INCLUDE_DIRS}
+)
 
 # enable imgui operators
 add_definitions(-DIMGUI_DEFINE_MATH_OPERATORS)
+
+# Set macro definition for root directory
+add_definitions(-DROOT_DIR=\"${CMAKE_SOURCE_DIR}\")
 
 # Include sub-projects.
 add_subdirectory("ShaderEngine")
