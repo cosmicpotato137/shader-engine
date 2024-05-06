@@ -5,6 +5,7 @@
 #include "Renderer/Mesh.h"
 
 #include <format>
+#include <filesystem>
 
 class ShaderTest : public ::testing::Test {
 protected:
@@ -48,6 +49,30 @@ protected:
     ASSERT_EQ(texture->GetPixel(0, 0), glm::vec4(255, 0, 0, 255));
   }
 
+  void TestShaderSerialization() {
+    // Init shader and assert color uniform exists
+    ASSERT_TRUE(shader->Init(std::format("{}/hello.shader", SHADER_DIR)));
+    ASSERT_TRUE(shader->HasUniform("color"));
+
+    // Set color to white and save shader
+    shader->SetUniform("color", glm::vec3(1.0f, 1.0f, 1.0f));
+    auto path = std::filesystem::current_path() / "bin" / "Debug" / "data" /
+                "test_shader.dat";
+    Serial::Save(*shader, path.string());
+
+    // Assert color is black
+    shader->SetUniform("color", glm::vec3(0.0f, 0.0f, 0.0f));
+    ASSERT_EQ(
+        shader->GetUniform("color")->GetValue<glm::vec3>(),
+        glm::vec3(0.0f, 0.0f, 0.0f));
+
+    // Load shader and assert color is white
+    auto loaded_shader = Serial::Load<Shader>(path.string());
+    ASSERT_EQ(
+        loaded_shader->GetUniform("color")->GetValue<glm::vec3>(),
+        glm::vec3(1.0f, 1.0f, 1.0f));
+  }
+
   ptr<RenderTexture> renderTexture;
   ptr<Shader> shader;
 };
@@ -56,3 +81,4 @@ TEST_F(ShaderTest, Init) { TestInit(); }
 TEST_F(ShaderTest, InitFail) { TestInitFail(); }
 TEST_F(ShaderTest, HasUniform) { TestHasUniform(); }
 TEST_F(ShaderTest, SetUniform) { TestSetUniform(); }
+TEST_F(ShaderTest, ShaderSerialization) { TestShaderSerialization(); }

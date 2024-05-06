@@ -8,13 +8,12 @@ class Shader {
 protected:
   GLuint program;
   std::string filepath;
+  std::string name;
 
   std::map<std::string, GLuint> uniformLocations;
-
-public:
-  std::string name;
   std::map<std::string, ptr<Uniform>> uniforms;
 
+public:
   Shader() : program(0), name(""), filepath("") {}
   Shader(const std::string &name) : program(0), name(name), filepath("") {}
   ~Shader() { Cleanup(); }

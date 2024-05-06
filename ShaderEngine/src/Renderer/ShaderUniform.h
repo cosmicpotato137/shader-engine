@@ -52,11 +52,6 @@ public:
 
   uniform_types GetValue() const { return this->value; }
 
-  // // Serialization
-  // friend std::ostream &operator<<(std::ostream &os, const Uniform &uniform);
-
-  // // Deserialization
-  // friend std::istream &operator>>(std::istream &is, Uniform &uniform);
 private:
   SE_SERIAL_FRIENDS;
   template <class Archive>
@@ -129,6 +124,14 @@ private:
           m4 = std::get<glm::mat4>(value);
         ar & m4;
         value = m4;
+        break;
+      }
+    case UniformType::Error:
+      {
+        // Set to -1
+        GLint i = -1;
+        ar & i;
+        value = i;
         break;
       }
     }

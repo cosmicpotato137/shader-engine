@@ -86,6 +86,9 @@ public:
   // Get current time in app
   double GetTime() { return glfwGetTime(); }
 
+  // Get the working directory
+  std::string GetWorkingDirectory() { return properties.WorkingDirectory; }
+
   // Get the mouse position
   glm::vec2 GetCursorPosition();
 
