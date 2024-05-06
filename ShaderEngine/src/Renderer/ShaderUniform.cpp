@@ -3,79 +3,79 @@
 #include "Core/Log.h"
 #include "Math/glm_helpers.h"
 
-std::ostream &operator<<(std::ostream &os, const Uniform &uniform) {
-  // Write object data
-  os << uniform.name << '\n';
-  os << static_cast<int>(uniform.type) << '\n';
-  os << uniform.hide << '\n';
+// std::ostream &operator<<(std::ostream &os, const Uniform &uniform) {
+//   // Write object data
+//   os << uniform.name << '\n';
+//   os << static_cast<int>(uniform.type) << '\n';
+//   os << uniform.hide << '\n';
 
-  // Serialize the `value` member based on the type of value it holds
-  std::visit([&os](auto &&arg) { os << arg << '\n'; }, uniform.value);
-  return os;
-}
+//   // Serialize the `value` member based on the type of value it holds
+//   std::visit([&os](auto &&arg) { os << arg << '\n'; }, uniform.value);
+//   return os;
+// }
 
-std::istream &operator>>(std::istream &is, Uniform &uniform) {
-  // Read object data
-  getline(is, uniform.name);
-  int type;
-  is >> type;
-  uniform.type = static_cast<UniformType>(type);
-  is >> uniform.hide;
-  switch (uniform.type) {
-  case UniformType::Bool:
-    {
-      bool b;
-      is >> b;
-      uniform.value = b;
-      break;
-    }
-  case UniformType::Int:
-    {
-      GLint i;
-      is >> i;
-      uniform.value = i;
-      break;
-    }
-  case UniformType::Float:
-    {
-      GLfloat f;
-      is >> f;
-      uniform.value = f;
-      break;
-    }
-  case UniformType::Vec2:
-    {
-      glm::vec2 v2;
-      is >> v2;
-      uniform.value = v2;
-      break;
-    }
-  case UniformType::Vec3:
-  case UniformType::Col3:
-    {
-      glm::vec3 v3;
-      is >> v3;
-      uniform.value = v3;
-      break;
-    }
-  case UniformType::Vec4:
-  case UniformType::Col4:
-    {
-      glm::vec4 v4;
-      is >> v4;
-      uniform.value = v4;
-      break;
-    }
-  case UniformType::Mat4:
-    {
-      glm::mat4 m4;
-      is >> m4;
-      uniform.value = m4;
-      break;
-    }
-  }
-  return is;
-}
+// std::istream &operator>>(std::istream &is, Uniform &uniform) {
+//   // Read object data
+//   getline(is, uniform.name);
+//   int type;
+//   is >> type;
+//   uniform.type = static_cast<UniformType>(type);
+//   is >> uniform.hide;
+//   switch (uniform.type) {
+//   case UniformType::Bool:
+//     {
+//       bool b;
+//       is >> b;
+//       uniform.value = b;
+//       break;
+//     }
+//   case UniformType::Int:
+//     {
+//       GLint i;
+//       is >> i;
+//       uniform.value = i;
+//       break;
+//     }
+//   case UniformType::Float:
+//     {
+//       GLfloat f;
+//       is >> f;
+//       uniform.value = f;
+//       break;
+//     }
+//   case UniformType::Vec2:
+//     {
+//       glm::vec2 v2;
+//       is >> v2;
+//       uniform.value = v2;
+//       break;
+//     }
+//   case UniformType::Vec3:
+//   case UniformType::Col3:
+//     {
+//       glm::vec3 v3;
+//       is >> v3;
+//       uniform.value = v3;
+//       break;
+//     }
+//   case UniformType::Vec4:
+//   case UniformType::Col4:
+//     {
+//       glm::vec4 v4;
+//       is >> v4;
+//       uniform.value = v4;
+//       break;
+//     }
+//   case UniformType::Mat4:
+//     {
+//       glm::mat4 m4;
+//       is >> m4;
+//       uniform.value = m4;
+//       break;
+//     }
+//   }
+//   return is;
+// }
 
 ptr<Uniform>
 glToShaderUniform(const char *name, int location, GLuint type, GLsizei size) {

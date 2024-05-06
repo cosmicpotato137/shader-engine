@@ -28,10 +28,4 @@ public:
 
   // Bind material for rendering
   void Bind();
-
-  // Serialization
-  friend std::ostream &operator<<(std::ostream &os, const Material &material);
-
-  // Deserialization
-  friend std::istream &operator>>(std::istream &is, Material &material);
 };

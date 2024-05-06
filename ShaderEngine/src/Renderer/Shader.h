@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Core/core.h"
-#include "Scene/Serializable.h"
+#include "Core/Serial.h"
 #include "ShaderUniform.h"
 
-class Shader : public Serializable {
+class Shader {
 protected:
   GLuint program;
   std::string filepath;
@@ -41,12 +41,6 @@ public:
   // Check if a uniform exists
   bool HasUniform(const std::string &uniformName) const;
 
-  // Serialization
-  friend std::ostream &operator<<(std::ostream &os, const Shader &shader);
-
-  // Deserialization
-  friend std::istream &operator>>(std::istream &is, Shader &shader);
-
 protected:
   // Shader cimpilation and linking
   bool LoadSource(const std::string &filepath, std::string &shaderSource);
@@ -60,4 +54,11 @@ private:
   void ParseVertexAndFragment(
       const std::string &input, std::string &vertexShader,
       std::string &fragmentShader);
+
+  SE_SERIAL_FRIENDS;
+  template <class Archive> void serialize(Archive &ar, const unsigned int) {
+    ar & name;
+    ar & filepath;
+    ar & uniforms;
+  }
 };

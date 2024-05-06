@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Core/core.h"
+#include "Core/Serial.h"
+#include <boost/variant/get.hpp>
 #include <variant>
 
 typedef std::variant<
@@ -50,11 +52,87 @@ public:
 
   uniform_types GetValue() const { return this->value; }
 
-  // Serialization
-  friend std::ostream &operator<<(std::ostream &os, const Uniform &uniform);
+  // // Serialization
+  // friend std::ostream &operator<<(std::ostream &os, const Uniform &uniform);
 
-  // Deserialization
-  friend std::istream &operator>>(std::istream &is, Uniform &uniform);
+  // // Deserialization
+  // friend std::istream &operator>>(std::istream &is, Uniform &uniform);
+private:
+  SE_SERIAL_FRIENDS;
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar & name;
+    ar & type;
+    ar & hide;
+
+    switch (type) {
+    case UniformType::Bool:
+      {
+        bool b;
+        if (std::holds_alternative<bool>(value))
+          b = std::get<bool>(value);
+        ar & b;
+        value = b;
+        break;
+      }
+    case UniformType::Int:
+      {
+        GLint i;
+        if (std::holds_alternative<GLint>(value))
+          i = std::get<GLint>(value);
+        ar & i;
+        value = i;
+        break;
+      }
+    case UniformType::Float:
+      {
+        GLfloat f;
+        if (std::holds_alternative<GLfloat>(value))
+          f = std::get<GLfloat>(value);
+        ar & f;
+        value = f;
+        break;
+      }
+    case UniformType::Vec2:
+      {
+        glm::vec2 v2;
+        if (std::holds_alternative<glm::vec2>(value))
+          v2 = std::get<glm::vec2>(value);
+        ar & v2;
+        value = v2;
+        break;
+      }
+    case UniformType::Vec3:
+    case UniformType::Col3:
+      {
+        glm::vec3 v3;
+        if (std::holds_alternative<glm::vec3>(value))
+          v3 = std::get<glm::vec3>(value);
+        ar & v3;
+        value = v3;
+        break;
+      }
+    case UniformType::Vec4:
+    case UniformType::Col4:
+      {
+        glm::vec4 v4;
+        if (std::holds_alternative<glm::vec4>(value))
+          v4 = std::get<glm::vec4>(value);
+        ar & v4;
+        value = v4;
+        break;
+      }
+    case UniformType::Mat4:
+      {
+        glm::mat4 m4;
+        if (std::holds_alternative<glm::mat4>(value))
+          m4 = std::get<glm::mat4>(value);
+        ar & m4;
+        value = m4;
+        break;
+      }
+    }
+  }
 };
 
 ptr<Uniform>

@@ -10,6 +10,7 @@
 #include "ShaderTest.h"
 #include "MaterialTest.h"
 #include "ShaderUniformTest.h"
+#include "SerializationTest.h"
 
 class ApplicationTest : public Application {
 public:

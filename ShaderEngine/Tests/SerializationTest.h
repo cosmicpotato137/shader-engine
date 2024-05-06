@@ -1,30 +1,24 @@
 #pragma once
 #include "gtest/gtest.h"
-#include "Scene/Serializable.h"
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include "Core/Serial.h"
+
 #include <filesystem>
 
-class TestSerializable : public Serializable {
+class TestSerializable {
 public:
-  TestSerializable() : Serializable() {}
-  TestSerializable(int a, int b) : Serializable(), a(a), b(b) {}
+  TestSerializable() : a(0), b(0) {}
+  TestSerializable(int a, int b) : a(a), b(b) {}
+  int a, b;
 
-  void
-  serialize(boost::archive::text_oarchive &ar, const unsigned int version) {
+private:
+  SE_SERIAL_FRIENDS;
+  template <class Archive> void serialize(Archive &ar, const unsigned int) {
     ar & a;
     ar & b;
   }
-
-  void
-  serialize(boost::archive::text_iarchive &ar, const unsigned int version) {
-    ar & a;
-    ar & b;
-  }
-
-  int a = 0;
-  int b = 0;
 };
+
+SE_SERIAL_VERSION(TestSerializable, 1)
 
 class SerializationTest : public ::testing::Test {
 protected:
@@ -34,8 +28,9 @@ protected:
   void TestSave() {
     TestSerializable testSerializable(1, 2);
     auto current_path = std::filesystem::current_path();
-    auto output_path = current_path / "data" / "TestSerializable.dat";
-    testSerializable.Save(output_path.string());
+    auto output_path =
+        current_path / "bin" / "debug" / "data" / "TestSerializable.dat";
+    Serial::Save(testSerializable, output_path.string());
 
     // Check if file exists
     ASSERT_TRUE(std::filesystem::exists(output_path));
@@ -43,16 +38,18 @@ protected:
 
   void TestLoad() {
     auto current_path = std::filesystem::current_path();
-    auto output_path = current_path / "data" / "TestSerializable.dat";
-    TestSerializable *testSerializable = dynamic_cast<TestSerializable *>(
-        TestSerializable::Load(output_path.string()));
+    auto output_path =
+        current_path / "bin" / "debug" / "data" / "TestSerializable.dat";
+
+    uptr<TestSerializable> testSerializablePtr =
+        Serial::Load<TestSerializable>(output_path.string());
 
     // Check if object is not null
-    ASSERT_TRUE(testSerializable != nullptr);
+    ASSERT_NE(testSerializablePtr, nullptr);
 
     // Check if object has correct values
-    ASSERT_EQ(testSerializable->a, 1);
-    ASSERT_EQ(testSerializable->b, 2);
+    ASSERT_EQ(testSerializablePtr->a, 1);
+    ASSERT_EQ(testSerializablePtr->b, 2);
   }
 };
 

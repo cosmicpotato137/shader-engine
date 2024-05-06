@@ -39,13 +39,6 @@ public:
   // Get sphere mesh from the number of rings and segments
   static ptr<Mesh> Sphere(int rings, int segments);
 
-  friend std::ostream &operator<<(std::ostream &os, const Mesh &m) {
-    Console::Assert(false, "Not implemented");
-  }
-  friend std::istream &operator>>(std::istream &is, Mesh &m) {
-    Console::Assert(false, "Not implemented");
-  }
-
 private:
   // Load mesh from file
   void LoadMesh(const std::string &filePath);
