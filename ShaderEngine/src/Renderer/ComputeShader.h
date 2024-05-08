@@ -10,6 +10,9 @@ class ComputeShader : public Shader {
   GLuint memBarrier;
 
 public:
+  ComputeShader()
+      : Shader(), computeShaderID(0), x(1), y(1), z(1),
+        memBarrier(GL_ALL_BARRIER_BITS) {}
   ComputeShader(const std::string &name)
       : Shader(name), computeShaderID(0), x(1), y(1), z(1),
         memBarrier(GL_ALL_BARRIER_BITS) {}

@@ -7,12 +7,17 @@
 #include "Renderer/ComputeShader.h"
 #include "ImGui/OutputPanel.h"
 #include "ImGui/ScenePanel.h"
+#include "ImGui/ShaderPanel.h"
 
 class EditorLayer : public ApplicationLayer {
   OutputPanel m_OutputPanel;
   ScenePanel m_ScenePanel;
+  ShaderPanel m_ShaderPanel;
   ptr<Renderer> m_Renderer;
   ptr<ComputeShader> m_ComputeShader;
+
+  std::filesystem::path m_DataPath =
+      std::filesystem::current_path() / "bin/Debug/data";
 
 public:
   EditorLayer();

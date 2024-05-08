@@ -46,8 +46,8 @@ add_definitions(-DIMGUI_DEFINE_MATH_OPERATORS)
 add_definitions(-DROOT_DIR=\"${CMAKE_SOURCE_DIR}\")
 
 # resource dirs
-add_definitions(-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/shaders\")
 add_definitions(-DRESOURCE_DIR=\"${CMAKE_SOURCE_DIR}/res\")
+add_definitions(-DSHADER_DIR=\"${CMAKE_SOURCE_DIR}/res/shaders\")
 add_definitions(-DTEXTURE_DIR=\"${CMAKE_SOURCE_DIR}/res/textures\")
 
 # Include sub-projects.

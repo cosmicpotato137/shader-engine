@@ -162,5 +162,6 @@
     }
   ],
   "cmake.ctestEnabled": false,
-  "cmake.configureOnOpen": true
+  "cmake.configureOnOpen": true,
+  "dotnet.defaultSolution": "build/shader-engine.sln"
 }

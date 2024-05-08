@@ -20,11 +20,16 @@
 // Helper class for boost serialization
 class Serial {
 public:
+  // Save object to file
   template <typename T>
   static void Save(const T &serializable, const std::string &filepath);
 
-  template <typename T> static auto Load(const std::string &filepath);
-  // -> std::enable_if_t<has_serialize<T>::value, std::unique_ptr<T>>
+  // Load new object from file
+  template <typename T> static T Load(const std::string &filepath);
+
+  // Load object values into existing object
+  template <typename T>
+  static void LoadInplace(T &obj, const std::string &filepath);
 };
 
 template <typename T>
@@ -33,18 +38,39 @@ void Serial::Save(const T &serializable, const std::string &filepath) {
   boost::archive::text_oarchive oa(ofs);
 
   // Check if object implements serialize method
-  oa << serializable;
+  try {
+    oa << serializable;
+  } catch (const boost::archive::archive_exception &e) {
+    Console::Error("Failed to serialize object: %s", e.what());
+    return;
+  }
 }
 
-// -> std::enable_if_t<has_serialize<T>::value, std::unique_ptr<T>>
-template <typename T> auto Serial::Load(const std::string &filepath) {
+template <typename T> T Serial::Load(const std::string &filepath) {
   T obj;
   std::ifstream ifs(filepath);
   boost::archive::text_iarchive ia(ifs);
 
-  ia >> obj;
+  try {
+    ia >> obj;
+  } catch (const boost::archive::archive_exception &e) {
+    Console::Error("Failed to deserialize object: %s", e.what());
+    return T();
+  }
 
-  return std::make_unique<T>(obj);
+  return obj;
+}
+
+template <typename T>
+void Serial::LoadInplace(T &obj, const std::string &filepath) {
+  std::ifstream ifs(filepath);
+  boost::archive::text_iarchive ia(ifs);
+
+  try {
+    ia >> obj;
+  } catch (const boost::archive::archive_exception &e) {
+    Console::Error("Failed to deserialize object: %s", e.what());
+  }
 }
 
 namespace boost {
@@ -53,11 +79,10 @@ namespace serialization {
 // shared pointer serialization
 template <class Archive, class T>
 void serialize(Archive &ar, ptr<T> &p, const unsigned int version) {
-  T *raw_ptr = p.get();
-  ar & raw_ptr;
-  if (Archive::is_loading::value) {
-    p.reset(raw_ptr);
-  }
+  // if loading and p is nullptr, create new object
+  if (Archive::is_loading::value && p == nullptr)
+    p = std::make_shared<T>();
+  ar &*p;
 }
 
 template <class Archive>

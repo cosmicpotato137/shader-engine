@@ -33,12 +33,25 @@ public:
   GLuint GetProgramID() const;
   std::string GetFilePath() const;
 
+  // Get the name of the shader
+  std::string GetName() const;
+
   // Set a uniform value
   void SetUniform(const std::string &uniformName, const uniform_types &value);
+
   // Get a uniform
   ptr<Uniform> GetUniform(const std::string &uniformName);
+
   // Check if a uniform exists
-  bool HasUniform(const std::string &uniformName) const;
+  bool HasUniform(const std::string &uniformName);
+
+  // Iterator for uniforms
+  std::map<std::string, ptr<Uniform>>::iterator begin();
+  std::map<std::string, ptr<Uniform>>::iterator end();
+
+  // operator for shader uniforms
+  ptr<Uniform> operator[](const std::string &uniformName);
+  ptr<Uniform> operator[](const char *uniformName);
 
 protected:
   // Shader cimpilation and linking

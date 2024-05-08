@@ -30,6 +30,10 @@ protected:
   void TestHasUniform() {
     ASSERT_TRUE(shader->Init(std::format("{}/hello.shader", SHADER_DIR)));
     ASSERT_TRUE(shader->HasUniform("color"));
+
+    ptr<Uniform> uniform = shader->GetUniform("color");
+    ASSERT_EQ(uniform->GetType(), UniformType::Col3);
+    ASSERT_EQ(uniform->GetHide(), false);
     ASSERT_FALSE(shader->HasUniform("number"));
   }
 
@@ -58,7 +62,7 @@ protected:
     shader->SetUniform("color", glm::vec3(1.0f, 1.0f, 1.0f));
     auto path = std::filesystem::current_path() / "bin" / "Debug" / "data" /
                 "test_shader.dat";
-    Serial::Save(*shader, path.string());
+    Serial::Save(shader, path.string());
 
     // Assert color is black
     shader->SetUniform("color", glm::vec3(0.0f, 0.0f, 0.0f));
@@ -67,9 +71,9 @@ protected:
         glm::vec3(0.0f, 0.0f, 0.0f));
 
     // Load shader and assert color is white
-    auto loaded_shader = Serial::Load<Shader>(path.string());
+    shader = Serial::Load<std::shared_ptr<Shader>>(path.string());
     ASSERT_EQ(
-        loaded_shader->GetUniform("color")->GetValue<glm::vec3>(),
+        shader->GetUniform("color")->GetValue<glm::vec3>(),
         glm::vec3(1.0f, 1.0f, 1.0f));
   }
 

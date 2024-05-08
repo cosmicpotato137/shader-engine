@@ -7,16 +7,15 @@
 
 void SerializeUniformTestWrapper(const Uniform &uniform) {
   auto current_path = std::filesystem::current_path();
-  auto test_path =
-      current_path / "bin" / "Debug" / "data" / "test_uniform.dat";
+  auto test_path = current_path / "bin" / "Debug" / "data" / "test_uniform.dat";
 
   Serial::Save(uniform, test_path.string());
-  auto loaded_uniform = Serial::Load<Uniform>(test_path.string());
+  Uniform loaded_uniform = Serial::Load<Uniform>(test_path.string());
 
-  EXPECT_EQ(uniform.GetName(), loaded_uniform->GetName());
-  EXPECT_EQ(uniform.GetValue(), loaded_uniform->GetValue());
-  EXPECT_EQ(uniform.GetType(), loaded_uniform->GetType());
-  EXPECT_EQ(uniform.GetHide(), loaded_uniform->GetHide());
+  EXPECT_EQ(uniform.GetName(), loaded_uniform.GetName());
+  EXPECT_EQ(uniform.GetValue(), loaded_uniform.GetValue());
+  EXPECT_EQ(uniform.GetType(), loaded_uniform.GetType());
+  EXPECT_EQ(uniform.GetHide(), loaded_uniform.GetHide());
 }
 
 class ShaderUniformTest : public ::testing::Test {
@@ -45,6 +44,17 @@ protected:
     int location = 0;
     uniform_types value = 1;
     UniformType type = UniformType::Int;
+    bool hide = false;
+    Uniform uniform(name, location, value, type, hide);
+
+    SerializeUniformTestWrapper(uniform);
+  }
+
+  void TestUintSerialization() {
+    std::string name = "test";
+    int location = 0;
+    uniform_types value = 1u;
+    UniformType type = UniformType::UInt;
     bool hide = false;
     Uniform uniform(name, location, value, type, hide);
 
@@ -108,21 +118,10 @@ protected:
 };
 
 TEST_F(ShaderUniformTest, TestUniform) { TestUniform(); }
-TEST_F(ShaderUniformTest, TestIntSerialization) {
-  TestIntSerialization();
-}
-TEST_F(ShaderUniformTest, TestFloatSerialization) {
-  TestFloatSerialization();
-}
-TEST_F(ShaderUniformTest, TestVec2Serialization) {
-  TestVec2Serialization();
-}
-TEST_F(ShaderUniformTest, TestVec3Serialization) {
-  TestVec3Serialization();
-}
-TEST_F(ShaderUniformTest, TestVec4Serialization) {
-  TestVec4Serialization();
-}
-TEST_F(ShaderUniformTest, TestMat4Serialization) {
-  TestMat4Serialization();
-}
+TEST_F(ShaderUniformTest, TestIntSerialization) { TestIntSerialization(); }
+TEST_F(ShaderUniformTest, TestUintSerialization) { TestUintSerialization(); }
+TEST_F(ShaderUniformTest, TestFloatSerialization) { TestFloatSerialization(); }
+TEST_F(ShaderUniformTest, TestVec2Serialization) { TestVec2Serialization(); }
+TEST_F(ShaderUniformTest, TestVec3Serialization) { TestVec3Serialization(); }
+TEST_F(ShaderUniformTest, TestVec4Serialization) { TestVec4Serialization(); }
+TEST_F(ShaderUniformTest, TestMat4Serialization) { TestMat4Serialization(); }

@@ -1,6 +1,12 @@
 #include "ScenePanel.h"
 
+void ScenePanel::SetRenderer(ptr<Renderer> renderer) { m_Renderer = renderer; }
+
 void ScenePanel::ImGuiRender() {
+  if (!m_Renderer) {
+    return;
+  }
+
   // Scene window styling
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

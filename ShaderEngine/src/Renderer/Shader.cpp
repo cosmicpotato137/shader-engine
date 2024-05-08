@@ -82,12 +82,32 @@ void Shader::SetUniform(const std::string &name, const uniform_types &value) {
   }
 }
 
+std::string Shader::GetName() const { return name; }
+
 ptr<Uniform> Shader::GetUniform(const std::string &uniformName) {
   return uniforms[uniformName];
 }
 
-bool Shader::HasUniform(const std::string &uniformName) const {
-  return uniforms.find(uniformName) != uniforms.end();
+bool Shader::HasUniform(const std::string &uniformName) {
+  if (uniforms.find(uniformName) != uniforms.end())
+    return uniforms[uniformName]->GetType() != Error;
+  return false;
+}
+
+std::map<std::string, ptr<Uniform>>::iterator Shader::begin() {
+  return uniforms.begin();
+}
+
+std::map<std::string, ptr<Uniform>>::iterator Shader::end() {
+  return uniforms.end();
+}
+
+ptr<Uniform> Shader::operator[](const std::string &uniformName) {
+  return uniforms[uniformName];
+}
+
+ptr<Uniform> Shader::operator[](const char *uniformName) {
+  return uniforms[uniformName];
 }
 
 void Shader::FindUniforms() {
@@ -101,14 +121,17 @@ void Shader::FindUniforms() {
     glGetActiveUniform(
         program, (GLuint)i, (GLsizei)255, &length, &size, &type, name);
 
-    ptr<Uniform> u = glToShaderUniform(
-        name, glGetUniformLocation(program, name), type, size);
+    // Get location from the program
+    int location = glGetUniformLocation(program, name);
+    ptr<Uniform> u = glToShaderUniform(name, location, type, size);
 
     if (uniforms.find(name) != uniforms.end() &&
-        u->GetType() == uniforms[name]->GetType())
-      continue;
-
-    uniforms[name] = u;
+        u->GetType() == uniforms[name]->GetType()) {
+      // Only set the location
+      uniforms[name]->SetLocation(location);
+    } else {
+      uniforms[name] = u;
+    }
   }
 }
 

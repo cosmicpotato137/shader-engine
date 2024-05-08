@@ -44,6 +44,11 @@ public:
   bool GetHide() const { return hide; }
   std::string GetName() const { return name; }
   int GetLocation() const { return location; }
+
+  // Set the location of the uniform in the shader
+  // WARNING: Only use this if you know what you are doing
+  int SetLocation(int location) { return this->location = location; }
+
   UniformType GetType() const { return type; }
 
   void SetValue(const uniform_types &value) { this->value = value; }
@@ -68,6 +73,15 @@ private:
           b = std::get<bool>(value);
         ar & b;
         value = b;
+        break;
+      }
+    case UniformType::UInt:
+      {
+        GLuint ui;
+        if (std::holds_alternative<GLuint>(value))
+          ui = std::get<GLuint>(value);
+        ar & ui;
+        value = ui;
         break;
       }
     case UniformType::Int:
@@ -127,6 +141,7 @@ private:
         break;
       }
     case UniformType::Error:
+    default:
       {
         // Set to -1
         GLint i = -1;

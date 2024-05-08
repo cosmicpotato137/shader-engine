@@ -11,7 +11,7 @@ public:
   ScenePanel() : Panel("Scene") {}
   ~ScenePanel() override = default;
 
-  void SetRenderer(ptr<Renderer> renderer) { m_Renderer = renderer; }
+  void SetRenderer(ptr<Renderer> renderer);
 
   void ImGuiRender();
 
