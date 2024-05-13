@@ -11,6 +11,19 @@ static void glfwErrorCallback(int error, const char *description) {
   Console::Error("GLFW Error %d: %s\n", error, description);
 }
 
+Application::Application(const ApplicationProps &props) : properties(props) {
+  s_Instance = this;
+  // Initialize all keys and mouse buttons to not pressed
+  for (int key = 0; key < GLFW_KEY_LAST; ++key) {
+    m_KeyState[key] = false;
+  }
+  for (int button = 0; button < GLFW_MOUSE_BUTTON_LAST; ++button) {
+    m_MouseButtonState[button] = false;
+  }
+  // Initialize cursor position
+  m_CursorPosition = {0, 0};
+};
+
 Application *Application::GetInstance() {
   Console::Assert(
       s_Instance,
@@ -157,10 +170,12 @@ void Application::Shutdown() {
   glfwTerminate();
 }
 
-glm::vec2 Application::GetCursorPosition() {
-  double xpos, ypos;
-  glfwGetCursorPos(window, &xpos, &ypos);
-  return glm::vec2(xpos, ypos);
+glm::vec2 Application::GetCursorPosition() { return m_CursorPosition; }
+
+bool Application::GetKey(int key) { return m_KeyState[key]; }
+
+bool Application::GetMouseButton(int button) {
+  return m_MouseButtonState[button];
 }
 
 bool Application::OnEvent(event_types e) {
@@ -186,6 +201,14 @@ void Application::MouseButtonCallback(
     GLFWwindow *window, int button, int action, int mods) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
+
+  // Set the mouse button table
+  if (action == GLFW_PRESS) {
+    app->m_MouseButtonState[button] = true;
+  } else if (action == GLFW_RELEASE) {
+    app->m_MouseButtonState[button] = false;
+  }
+
   if (app) {
     MouseButtonEvent me = {false, button, action, mods};
     if (!app->OnEvent(me))
@@ -197,6 +220,10 @@ void Application::CursorPosCallback(
     GLFWwindow *window, double xpos, double ypos) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
+
+  // Set the cursor position
+  app->m_CursorPosition = {xpos, ypos};
+
   if (app) {
     CursorMovedEvent me = {false, xpos, ypos};
     if (!app->OnEvent(me))
@@ -219,6 +246,14 @@ void Application::KeyCallback(
     GLFWwindow *window, int key, int scancode, int action, int mods) {
   Application *app =
       static_cast<Application *>(glfwGetWindowUserPointer(window));
+
+  // Set the key table
+  if (action == GLFW_PRESS) {
+    app->m_KeyState[key] = true;
+  } else if (action == GLFW_RELEASE) {
+    app->m_KeyState[key] = false;
+  }
+
   if (app) {
     KeyboardEvent ke = {false, key, scancode, action, mods};
     if (!app->OnEvent(ke))

@@ -5,14 +5,15 @@
 
 #include "Renderer/Renderer.h"
 #include "Renderer/ComputeShader.h"
-#include "ImGui/OutputPanel.h"
-#include "ImGui/ScenePanel.h"
-#include "ImGui/ShaderPanel.h"
+#include "GUI/OutputPanel.h"
+#include "GUI/ScenePanel.h"
+#include "GUI/ComputeShaderPanel.h"
+#include "Panels/ComputeShaderStackPanel.h"
 
 class EditorLayer : public ApplicationLayer {
   OutputPanel m_OutputPanel;
   ScenePanel m_ScenePanel;
-  ShaderPanel m_ShaderPanel;
+  ComputeShaderStackPanel m_ComputeShaderStackPanel;
   ptr<Renderer> m_Renderer;
   ptr<ComputeShader> m_ComputeShader;
 
@@ -32,7 +33,7 @@ public:
 
   void Render() override;
 
-  void Update(double dt) override {}
+  void Update(double dt) override;
 
   // Event handling
   HANDLE_EVENT_FN(CursorMovedEvent) override {

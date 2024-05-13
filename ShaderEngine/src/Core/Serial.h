@@ -34,6 +34,13 @@ public:
 
 template <typename T>
 void Serial::Save(const T &serializable, const std::string &filepath) {
+  // Check if we can save to this path/file
+  std::filesystem::path path(filepath);
+  if (!std::filesystem::exists(path.parent_path())) {
+    Console::Error("Path does not exist: %s", path.parent_path().string());
+    return;
+  }
+
   std::ofstream ofs(filepath);
   boost::archive::text_oarchive oa(ofs);
 
@@ -47,6 +54,12 @@ void Serial::Save(const T &serializable, const std::string &filepath) {
 }
 
 template <typename T> T Serial::Load(const std::string &filepath) {
+  // Check if file exists
+  if (!std::filesystem::exists(filepath)) {
+    Console::Error("File does not exist: %s", filepath);
+    return T();
+  }
+
   T obj;
   std::ifstream ifs(filepath);
   boost::archive::text_iarchive ia(ifs);
@@ -63,6 +76,12 @@ template <typename T> T Serial::Load(const std::string &filepath) {
 
 template <typename T>
 void Serial::LoadInplace(T &obj, const std::string &filepath) {
+  // Check if file exists
+  if (!std::filesystem::exists(filepath)) {
+    Console::Error("File does not exist: %s", filepath);
+    return;
+  }
+
   std::ifstream ifs(filepath);
   boost::archive::text_iarchive ia(ifs);
 

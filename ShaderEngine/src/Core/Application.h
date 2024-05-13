@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ApplicationLayer.h"
-#include "ImGui/ImGuiLayer.h"
+#include "GUI/ImGuiLayer.h"
 #include "Core/Log.h"
 #include "Core/core.h"
 
@@ -34,15 +34,15 @@ class Application {
   bool initialized = false;
 
   ApplicationProps properties;
+  std::unordered_map<int, bool> m_KeyState;
+  std::unordered_map<int, bool> m_MouseButtonState;
+  glm::vec2 m_CursorPosition;
 
   std::vector<ptr<ApplicationLayer>> layers;
   ptr<ImGuiLayer> uiLayer;
 
 protected:
-  Application(const ApplicationProps &props = ApplicationProps())
-      : properties(props) {
-    s_Instance = this;
-  };
+  Application(const ApplicationProps &props = ApplicationProps());
   ~Application() {}
 
 public:
@@ -88,6 +88,12 @@ public:
 
   // Get the working directory
   std::string GetWorkingDirectory() { return properties.WorkingDirectory; }
+
+  // Get key state
+  bool GetKey(int key);
+
+  // Get mouse button state
+  bool GetMouseButton(int button);
 
   // Get the mouse position
   glm::vec2 GetCursorPosition();

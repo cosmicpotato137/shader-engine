@@ -61,6 +61,11 @@ private:
   SE_SERIAL_FRIENDS;
   template <class Archive>
   void serialize(Archive &ar, const unsigned int version) {
+    if (Archive::is_loading::value) {
+      // Set to -1
+      location = -1;
+    }
+
     ar & name;
     ar & type;
     ar & hide;
@@ -140,13 +145,12 @@ private:
         value = m4;
         break;
       }
+    case UniformType::Texture2D:
+    case UniformType::Image2D:
     case UniformType::Error:
     default:
       {
-        // Set to -1
-        GLint i = -1;
-        ar & i;
-        value = i;
+        // Do nothing
         break;
       }
     }

@@ -34,7 +34,6 @@ bool Shader::InitFromSource(const std::string &shaderSource) {
   }
 
   FindUniforms();
-
   return true;
 }
 

@@ -24,7 +24,7 @@ public:
 
   int GetWidth() { return texture->GetWidth(); }
   int GetHeight() { return texture->GetHeight(); }
-  glm::vec2 GetSize() { return texture->GetSize(); }
+  glm::vec2 GetSize() const { return texture->GetSize(); }
 
   unsigned int GetFramebufferID() const { return framebufferID; }
 

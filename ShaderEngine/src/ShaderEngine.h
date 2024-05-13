@@ -6,7 +6,7 @@
 
 #include "Events/Event.h"
 
-#include "ImGui/ImGuiLayer.h"
+#include "GUI/ImGuiLayer.h"
 
 // Renderer ------------------------------
 #include "Renderer/Renderer.h"

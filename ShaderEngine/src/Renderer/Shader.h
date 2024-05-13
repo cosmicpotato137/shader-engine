@@ -72,5 +72,8 @@ private:
     ar & name;
     ar & filepath;
     ar & uniforms;
+    if (Archive::is_loading::value && std::filesystem::exists(filepath)) {
+      Init(filepath);
+    }
   }
 };
