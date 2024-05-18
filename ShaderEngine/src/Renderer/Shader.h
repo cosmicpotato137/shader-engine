@@ -8,14 +8,14 @@ class Shader {
 protected:
   GLuint program;
   std::string filepath;
-  std::string name;
+  std::string m_Name;
 
   std::map<std::string, GLuint> uniformLocations;
   std::map<std::string, ptr<Uniform>> uniforms;
 
 public:
-  Shader() : program(0), name(""), filepath("") {}
-  Shader(const std::string &name) : program(0), name(name), filepath("") {}
+  Shader() : program(0), m_Name(""), filepath("") {}
+  Shader(const std::string &name) : program(0), m_Name(name), filepath("") {}
   ~Shader() { Cleanup(); }
 
   bool Init(const std::string &shaderPath);
@@ -35,6 +35,9 @@ public:
 
   // Get the name of the shader
   std::string GetName() const;
+
+  // Set the name of the shader
+  void SetName(const std::string& name);
 
   // Set a uniform value
   void SetUniform(const std::string &uniformName, const uniform_types &value);
@@ -69,7 +72,7 @@ private:
 
   SE_SERIAL_FRIENDS;
   template <class Archive> void serialize(Archive &ar, const unsigned int) {
-    ar & name;
+    ar & m_Name;
     ar & filepath;
     ar & uniforms;
     if (Archive::is_loading::value && std::filesystem::exists(filepath)) {

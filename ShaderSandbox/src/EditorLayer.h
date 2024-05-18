@@ -58,4 +58,11 @@ public:
 
     e.handled = true;
   }
+
+  HANDLE_EVENT_FN(KeyboardEvent) override {
+    if (ImGui::GetIO().WantCaptureKeyboard) {
+      e.handled = true;
+      return;
+    }
+  }
 };

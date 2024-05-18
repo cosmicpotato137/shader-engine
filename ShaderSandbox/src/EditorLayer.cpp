@@ -19,9 +19,9 @@ bool EditorLayer::OnAttach() {
   m_ComputeShader->Init(shaderPath);
   // If path exists, load it, otherwise, init values
   std::filesystem::path path =
-      m_DataPath / (m_ComputeShader->GetName() + ".dat");
+      m_DataPath / (m_ComputeShaderStackPanel.GetName() + ".dat");
   if (std::filesystem::exists(path)) {
-    Serial::LoadInplace(m_ShaderPanel, path.string());
+    Serial::LoadInplace(m_ComputeShaderStackPanel, path.string());
   } else {
     m_ComputeShader->SetUniform("_center", glm::vec2{0, 0});
     m_ComputeShader->SetUniform("_scale", 2.0f);
@@ -34,8 +34,8 @@ bool EditorLayer::OnAttach() {
 
 void EditorLayer::OnDetach() {
   std::filesystem::path path =
-      m_DataPath / (m_ComputeShader->GetName() + ".dat");
-  Serial::Save(m_ShaderPanel, path.string());
+      m_DataPath / (m_ComputeShaderStackPanel.GetName() + ".dat");
+  Serial::Save(m_ComputeShaderStackPanel, path.string());
   m_ComputeShader->Cleanup();
   m_Renderer->Cleanup();
 }
@@ -47,9 +47,8 @@ void EditorLayer::ImGuiRender() {
 }
 
 void EditorLayer::Render() {
-  m_ShaderPanel.SetRenderTargets(*m_Renderer);
-  m_ShaderPanel.Render();
+  m_ComputeShaderStackPanel.Render(*m_Renderer);
   m_Renderer->Swap();
 }
 
-void EditorLayer::Update(double dt) { m_ShaderPanel.Update(dt); }
+void EditorLayer::Update(double dt) { m_ComputeShaderStackPanel.Update(dt); }

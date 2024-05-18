@@ -4,9 +4,11 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
 #include <fstream>
 #include <type_traits>
 
+#include "imgui/imgui.h"
 #include "Core/core.h"
 #include "Core/Log.h"
 
@@ -95,7 +97,7 @@ void Serial::LoadInplace(T &obj, const std::string &filepath) {
 namespace boost {
 namespace serialization {
 
-// shared pointer serialization
+// Shared pointer serialization
 template <class Archive, class T>
 void serialize(Archive &ar, ptr<T> &p, const unsigned int version) {
   // if loading and p is nullptr, create new object
@@ -104,12 +106,14 @@ void serialize(Archive &ar, ptr<T> &p, const unsigned int version) {
   ar &*p;
 }
 
+// Vec2 serialization
 template <class Archive>
 void serialize(Archive &ar, glm::vec2 &v, const unsigned int version) {
   ar & v.x;
   ar & v.y;
 }
 
+// Vec3 serialization
 template <class Archive>
 void serialize(Archive &ar, glm::vec3 &v, const unsigned int version) {
   ar & v.x;
@@ -117,6 +121,7 @@ void serialize(Archive &ar, glm::vec3 &v, const unsigned int version) {
   ar & v.z;
 }
 
+// Vec4 serialization
 template <class Archive>
 void serialize(Archive &ar, glm::vec4 &v, const unsigned int version) {
   ar & v.x;
@@ -125,11 +130,19 @@ void serialize(Archive &ar, glm::vec4 &v, const unsigned int version) {
   ar & v.w;
 }
 
+// Mat4 serialization
 template <class Archive>
 void serialize(Archive &ar, glm::mat4 &m, const unsigned int version) {
   for (int i = 0; i < 4; ++i)
     for (int j = 0; j < 4; ++j)
       ar &m[i][j];
+}
+
+// ImVec2 serialization
+template <class Archive>
+void serialize(Archive &ar, ImVec2 &v, const unsigned int version) {
+  ar & v.x;
+  ar & v.y;
 }
 
 }  // namespace serialization

@@ -13,6 +13,7 @@ add_executable(ShaderSandbox ${SOURCES} ${HEADERS} ${SHADERS})
 target_link_libraries(ShaderSandbox ShaderEngine imgui imgui_glfw_opengl3 imgui_file_dialog)
 target_include_directories(ShaderSandbox PRIVATE
     ${PROJECT_SOURCE_DIR}/ShaderEngine/src
+    ${PROJECT_SOURCE_DIR}/ShaderSandbox/src
 )
 
 add_custom_command(

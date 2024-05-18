@@ -163,5 +163,6 @@
   ],
   "cmake.ctestEnabled": false,
   "cmake.configureOnOpen": true,
-  "dotnet.defaultSolution": "build/shader-engine.sln"
+  "dotnet.defaultSolution": "build/shader-engine.sln",
+  "C_Cpp.errorSquiggles": "disabled"
 }

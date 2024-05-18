@@ -61,7 +61,7 @@ GLint Shader::GetUniformLocation(const std::string &name) {
   GLuint loc = glGetUniformLocation(program, name.c_str());
   if (loc == -1)
     Console::Warning(
-        "%s: Uniform '%s' not found", this->name.c_str(), name.c_str());
+        "%s: Uniform '%s' not found", this->m_Name.c_str(), name.c_str());
 
   uniformLocations.insert({name, loc});
   return loc;
@@ -76,12 +76,14 @@ void Shader::SetUniform(const std::string &name, const uniform_types &value) {
     uniforms[name]->SetValue(value);
   else {
     Console::Warning(
-        "%s: uniform '%s' not found", this->name.c_str(), name.c_str());
+        "%s: uniform '%s' not found", this->m_Name.c_str(), name.c_str());
     uniforms[name] = std::make_shared<Uniform>(name, -1, 0);
   }
 }
 
-std::string Shader::GetName() const { return name; }
+std::string Shader::GetName() const { return m_Name; }
+
+void Shader::SetName(const std::string& name ) { m_Name = name; }
 
 ptr<Uniform> Shader::GetUniform(const std::string &uniformName) {
   return uniforms[uniformName];
@@ -233,7 +235,7 @@ void Shader::ApplyUniforms() {
             program, location, 1, GL_FALSE, glm::value_ptr(value));
       }
     };
-    std::visit(Visitor(iter->second, program, this->name), value);
+    std::visit(Visitor(iter->second, program, this->m_Name), value);
   }
 }
 
@@ -272,7 +274,7 @@ GLuint Shader::Compile(GLenum shaderType, const char *shaderSource) {
     std::vector<GLchar> errorLog(maxLength);
     glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
     Console::Error(
-        "%s: Shader compilation error: \n%s\n", name.c_str(), &errorLog[0]);
+        "%s: Shader compilation error: \n%s\n", m_Name.c_str(), &errorLog[0]);
     glDeleteShader(shader);
     return 0;
   }
@@ -293,7 +295,7 @@ GLuint Shader::Link(std::vector<GLuint> programs) {
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
     std::vector<GLchar> errorLog(maxLength);
     glGetProgramInfoLog(program, maxLength, &maxLength, &errorLog[0]);
-    Console::Error("%s : Shader program linking error", name.c_str());
+    Console::Error("%s : Shader program linking error", m_Name.c_str());
     glDeleteProgram(program);
     return 0;
   }
@@ -308,19 +310,19 @@ void Shader::ParseVertexAndFragment(
       "#vertex\n";  // The tag indicating the start of the vertex shader
   size_t vertexPos = input.find(vdelimiter);
   if (vertexPos == std::string::npos) {
-    Console::Error("%s: Vertex shader tag not found:", name.c_str());
+    Console::Error("%s: Vertex shader tag not found:", m_Name.c_str());
     return;
   }
   std::string fdelimiter =
       "#fragment\n";  // The tag indicating the start of the fragment shader
   size_t fragmentPos = input.find(fdelimiter);
   if (fragmentPos == std::string::npos) {
-    Console::Error("%s: Fragment shader tag not found:", name.c_str());
+    Console::Error("%s: Fragment shader tag not found:", m_Name.c_str());
     return;
   }
   if (fragmentPos < vertexPos) {
     Console::Error(
-        "%s: Vertex shader must appear before fragment shader", name.c_str());
+        "%s: Vertex shader must appear before fragment shader", m_Name.c_str());
     return;
   }
 
