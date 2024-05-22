@@ -17,7 +17,7 @@ Shader Engine only supports windows for now, I do have vague plans to get it run
 ## Features
 
 - ImGui interface
-  - Shader info windows
+  - Shader info windows and stack hierarchy
   - Error console
   - Scene view
   - File dialog
@@ -57,7 +57,7 @@ cmake ..
 
 ### GLSL Files
 
-All shader examples can be found [here](./shaders). 
+All shader examples can be found [here](./res/shaders). 
 
 ### C++ Files
 Most changes that you might want to make to this project before you build are likely either in these files:
@@ -70,9 +70,7 @@ Most changes that you might want to make to this project before you build are li
   There is no way to switch the examples at runtime (yet) but layers can be added or removed by commenting any of these lines:
 
 ```cpp
-// app->PushLayer(std::make_shared<RenderLayer>()); // User input
-app->PushLayer(std::make_shared<SimulationLayer>()); // Particle systems
-app->PushLayer(std::make_shared<OutputLayer>()); // Shader output console
+app->PushLayer(std::make_shared<EditorLayer>()); // Particle systems
 ```
 
 ## Contributing
@@ -82,4 +80,3 @@ There are a number of things I would love to add to this project, when I have ti
 - Linux compatibility
 - Model Importing with assimp
 - Material system
-- Better particle system
