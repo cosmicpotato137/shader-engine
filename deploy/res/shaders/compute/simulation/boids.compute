@@ -1,0 +1,222 @@
+#version 460 core
+layout(local_size_x = 8, local_size_y = 1, local_size_z = 1) in;
+
+struct Agent {
+  vec2 position;
+  vec2 lastPosition;
+  vec2 velocity;
+};
+
+layout(binding = 0, std430) buffer AgentBuffer {
+  Agent agentBuffer[];
+};
+
+layout(rgba32f, binding = 1) uniform image2D imageOut;
+
+const int k = 3;
+
+
+void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
+    ivec2 delta = abs(end - start);
+    ivec2 step = ivec2(sign(end.x - start.x), sign(end.y - start.y));
+    
+    int error = delta.x - delta.y;
+    ivec2 current = start;
+
+    while (true) {
+        // Interpolate color along the line
+        float t = length(current - start) / length(end - start);
+        vec4 interpolatedColor = mix(startColor, endColor, t);
+
+        imageStore(imageOut, current, interpolatedColor);
+
+        if (current.x == end.x && current.y == end.y) {
+            break;
+        }
+
+        int error2 = 2 * error;
+
+        if (error2 > -delta.y) {
+            error -= delta.y;
+            current.x += step.x;
+        }
+
+        if (error2 < delta.x) {
+            error += delta.x;
+            current.y += step.y;
+        }
+    }
+}
+
+void drawBox(uint x, uint y, uint w, uint h, vec4 color) {
+  for (uint i = x; i < x + w; i++)
+  {
+    for (uint j = y; j < y + h; j++)
+    {
+      imageStore(imageOut, ivec2(i, j), color);
+    }
+  }
+}
+
+// Function to find k nearest neighbors to a given agent
+void findKNearestNeighbors(int agentIndex, int k, out int[k] nearestIndices) {
+    vec2 targetPosition = agentBuffer[agentIndex].position;
+
+    // Initialize nearestIndices with invalid indices
+    for (int i = 0; i < k; ++i) {
+        nearestIndices[i] = -1;
+    }
+
+    // Iterate over all agents to find k nearest neighbors
+    for (int i = 0; i < agentBuffer.length(); ++i) {
+        if (i == agentIndex) {
+            continue; // Skip the current agent
+        }
+
+        vec2 neighborPosition = agentBuffer[i].position;
+        float currentDistance = distance(targetPosition, neighborPosition);
+
+        // Check if the current agent is closer than any of the previous nearest neighbors
+        for (int j = 0; j < k; ++j) {
+            if (nearestIndices[j] == -1 || currentDistance < distance(targetPosition, agentBuffer[nearestIndices[j]].position)) {
+                // Shift and update the nearest neighbors if necessary
+                for (int l = k - 1; l > j; --l) {
+                    nearestIndices[l] = nearestIndices[l - 1];
+                }
+                nearestIndices[j] = i;
+                break;
+            }
+        }
+    }
+}
+
+// Function to keep agents in bounds
+Agent bounce(Agent agent) {
+  vec2 pos = agent.position;
+  vec2 vel = agent.velocity;
+  vec2 lastPos = agent.lastPosition;
+  vec2 simulationDimension = imageSize(imageOut);
+  // Flip velocity if agent is at the edge of the texture
+  if (pos.x < 0)
+  {
+    float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
+    pos.y += abs(pos.x) * slope;
+    pos.x = 0;
+    vel.x = abs(vel.x);
+  }
+  else if (pos.x > simulationDimension.x)
+  {
+    float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
+    pos.y -= abs(simulationDimension.x - pos.x) * slope;
+    pos.x = simulationDimension.x;
+    vel.x = -abs(vel.x);
+  }
+
+  if (pos.y < 0 )
+  {
+    float slope = (pos.x - lastPos.x) / (pos.y - lastPos.y);
+    pos.x += abs(pos.y) * slope;
+    pos.y = 0;
+    vel.y = abs(vel.y);
+  }
+  else if (pos.y > simulationDimension.y)
+  {
+    float slope = (pos.x - lastPos.x) / (pos.y - lastPos.y);
+    pos.x -= abs(simulationDimension.y - pos.y) * slope;
+    pos.y = simulationDimension.y;
+    vel.y = -abs(vel.y);
+  }
+
+  agent.position = pos;
+  agent.velocity = vel;
+
+  return agent;
+}
+
+// Particle mass
+uniform float mass;
+
+// Maximum velocity
+uniform float maxVelocity;
+
+// Weights and biases for attraction
+uniform float attractDistance;
+uniform float directionAttractWeight;
+uniform float velocityAttractWeight;
+const float dab = 1;
+const float vab = 1;
+
+// Weights and biases for repulsion
+uniform float repelDistance;
+uniform float directionRepelWeight;
+uniform float velocityRepelWeight;
+const float drb = 1;
+const float vrb = 1;
+
+Agent boid(Agent agent, int[k] neighbors) {
+  vec2 pos = agent.position;
+  vec2 vel = agent.velocity;
+
+  // Turn towards neighbors
+  vec2 sumDir = vec2(0);
+  vec2 sumVel = vec2(0);
+  for (int i = 0; i < k; i++)
+  {
+    Agent n = agentBuffer[neighbors[i]];
+    vec2 dir = n.position - pos;
+    if (length(dir) != 0)
+    {
+      float dist = distance(n.position, pos);
+      if (dist < repelDistance)
+      {
+        sumDir -= normalize(dir) * directionRepelWeight / (drb + dist);
+        sumVel -= n.velocity * velocityRepelWeight / (vrb + dist);
+      }
+      else if (dist < attractDistance)
+      {
+        sumDir += normalize(dir) * directionAttractWeight / (dab + dist);
+        sumVel += n.velocity * velocityAttractWeight / (vab + dist);
+      }
+    }
+  }
+  if (length(sumDir) != 0)
+  {
+    vel += normalize(sumDir);
+  }
+  if (length(sumVel) != 0)
+  {
+    vel += normalize(sumVel);
+  }
+
+  // Clamp velocity;
+  float maxLen = maxVelocity;
+  if (length(vel) > maxLen)
+    vel = normalize(vel) * maxLen;
+
+  agent.velocity = vel;
+  agent.position = pos;
+  return agent;
+}
+
+void main() {
+  uint idx = gl_GlobalInvocationID.x;
+  if (idx >= agentBuffer.length())
+  {
+    return;
+  }
+
+  Agent agent = agentBuffer[idx];
+
+  agent.lastPosition = agent.position;
+  agent.position += agent.velocity * .1f;
+
+  agent = bounce(agent);
+
+  int neighbors[k];
+  findKNearestNeighbors(int(idx), k, neighbors);
+  agent = boid(agent, neighbors);
+
+  drawLine(ivec2(agent.position), ivec2(agent.lastPosition), vec4(1), vec4(1));
+
+  agentBuffer[idx] = agent;
+}

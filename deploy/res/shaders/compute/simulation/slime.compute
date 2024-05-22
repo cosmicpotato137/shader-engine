@@ -1,0 +1,248 @@
+#version 460 core
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct Agent {
+  vec2 position;
+  vec2 lastPosition;
+  vec2 velocity;
+};
+
+layout(binding = 0, std430) buffer AgentBuffer {
+  Agent agentBuffer[];
+};
+
+layout(rgba32f, binding = 1) uniform image2D imageIn;
+layout(rgba32f, binding = 2) uniform image2D imageOut;
+
+uniform bool _pause;
+
+// Reset to random values
+float random(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+Agent bounce(Agent agent) {
+  vec2 pos = agent.position;
+  vec2 vel = agent.velocity;
+  vec2 lastPos = agent.lastPosition;
+
+  vec2 simulationDimension = imageSize(imageOut);
+  // Flip velocity if agent is at the edge of the texture
+  if (pos.x < 0)
+  {
+    float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
+    pos.y += abs(pos.x) * slope;
+    pos.x = 0;
+    vel.x = abs(vel.x);
+  }
+  else if (pos.x > simulationDimension.x)
+  {
+    float slope = (pos.y - lastPos.y) / (pos.x - lastPos.x);
+    pos.y -= abs(simulationDimension.x - pos.x) * slope;
+    pos.x = simulationDimension.x;
+    vel.x = -abs(vel.x);
+  }
+
+  if (pos.y < 0 )
+  {
+    float slope = (pos.x - lastPos.x) / (pos.y - lastPos.y);
+    pos.x += abs(pos.y) * slope;
+    pos.y = 0;
+    vel.y = abs(vel.y);
+  }
+  else if (pos.y > simulationDimension.y)
+  {
+    float slope = (pos.x - lastPos.x) / (pos.y - lastPos.y);
+    pos.x -= abs(simulationDimension.y - pos.y) * slope;
+    pos.y = simulationDimension.y;
+    vel.y = -abs(vel.y);
+  }
+
+  agent.position = pos;
+  agent.velocity = vel;
+
+  return agent;
+}
+
+Agent clamp(Agent agent) {
+  vec2 dim = imageSize(imageOut);
+
+  if (agent.position.x > dim.x)
+  {
+    agent.position.x = dim.x - 1;
+  }
+  if (agent.position.y > dim.y)
+  {
+    agent.position.y = dim.y - 1;
+  }
+  if (agent.position.x < 0)
+  {
+    agent.position.x = 0;
+  }
+  if (agent.position.y < 0)
+  {
+    agent.position.y = 0;
+  }
+
+  return agent;
+}
+
+void drawLine(ivec2 start, ivec2 end, vec4 startColor, vec4 endColor) {
+    ivec2 delta = abs(end - start);
+    ivec2 step = ivec2(sign(end.x - start.x), sign(end.y - start.y));
+    
+    int error = delta.x - delta.y;
+    ivec2 current = start;
+
+    while (true) {
+        // Interpolate color along the line
+        float t = length(current - start) / length(end - start);
+        vec4 interpolatedColor = mix(startColor, endColor, t);
+
+        imageStore(imageOut, current, interpolatedColor);
+
+        if (current.x == end.x && current.y == end.y) {
+            break;
+        }
+
+        int error2 = 2 * error;
+
+        if (error2 > -delta.y) {
+            error -= delta.y;
+            current.x += step.x;
+        }
+
+        if (error2 < delta.x) {
+            error += delta.x;
+            current.y += step.y;
+        }
+    }
+}
+
+float raySumPix(vec2 start, vec2 direction, float distance, float stepSize) {
+    // Normalize the direction vector
+    vec2 normalizedDirection = vec2(0);
+    if (length(direction) != 0 && distance > 0 && stepSize > 0)
+    {
+      normalizedDirection = normalize(direction);
+    }
+    else
+    {
+      return 0;
+    }
+
+    // Initialize the current position to the start point
+    vec2 currentPos = start;
+
+    // Initialize the sum of x-values
+    float sumX = 0.0;
+
+    // Iterate along the ray up to the specified distance
+    for (float t = 2.0; t <= distance; t += stepSize) {
+        // Sample the x-value of the current pixel (you may use texture2D for texture sampling)
+        float pixelXValue = imageLoad(imageIn, ivec2(currentPos)).x;
+
+        // Accumulate the x-value to the sum
+        sumX += pixelXValue;
+
+        // Move to the next pixel along the ray
+        currentPos += normalizedDirection;
+    }
+
+    return sumX;
+}
+
+uniform float maxVelocity;
+uniform float weight;
+uniform float lookahead;
+uniform float stepSize;
+uniform float fov;
+
+const float PI = 3.14159;
+const int steps = 7;
+
+Agent slime(Agent agent) {
+  // DrawLine(ivec2(agent.position), ivec2(agent.position + normalize(agent.velocity) * 15), vec4(0, 1, 0, 1), vec4(0, 1, 0, 1));
+
+  vec2 vel = agent.velocity;
+
+  // Turn towards neighbors
+  vec2 sumRays = vec2(0);
+  for (int i = 0; i <= steps; i++)
+  {
+    vec2 rayDir = vec2(0);
+
+    // Check if agent is going somewhere
+    // If not, then look around to all directions
+    if (length(vel) > 0)
+    {
+      // Find direction of the agent in radians
+      float sign = 1;
+      if (vel.y != 0)
+        sign = vel.y / abs(vel.y);
+      float agentDir = sign * acos(vel.x / sqrt(vel.x * vel.x + vel.y * vel.y));
+
+      // Find ray direction relative to agent dir
+      float angle = fov * PI / 180.0;
+      float c = angle * i / steps - angle / 2;
+      rayDir = vec2(cos(agentDir + c), sin(agentDir + c));
+    }
+    else
+    {
+      float c = 2 * PI * i / steps;
+      rayDir = vec2(cos(c), sin(c));
+    }
+
+    float sumPix = raySumPix(agent.position, rayDir, lookahead, stepSize);
+
+    // Debug line
+    // DrawLine(ivec2(agent.position), ivec2(agent.position + rayDir * 10), vec4(0, 0, 1, 1), vec4(0, 0, 1, 1));
+    if (sumPix != 0 && length(rayDir) != 0)
+    {
+      vec2 d = normalize(rayDir) * sumPix;
+      if (sumPix < 3)
+      {
+        sumRays += d;
+      }
+      else
+      {
+        sumRays -= d;
+      }
+    }
+  }
+  if (length(sumRays) > 0)
+  {
+    vel += normalize(sumRays) * weight;
+  }
+
+  agent.velocity = vel;
+  return agent;
+}
+
+void main() {
+  uint idx = gl_GlobalInvocationID.x;
+  if (idx >= agentBuffer.length())
+  {
+    return;
+  }
+
+  Agent agent = agentBuffer[idx];
+  
+  // Clamp velocity;
+  if (length(agent.velocity) > maxVelocity && length(agent.velocity) > 0)
+  {
+    agent.velocity = normalize(agent.velocity) * maxVelocity;
+  }
+
+  agent.lastPosition = agent.position;
+  agent.position += agent.velocity * .1f;
+
+  agent = bounce(agent);
+
+  if (!_pause)
+    agent = slime(agent);
+
+  drawLine(ivec2(agent.position), ivec2(agent.lastPosition), vec4(1), vec4(1));
+
+  agentBuffer[idx] = agent;
+}

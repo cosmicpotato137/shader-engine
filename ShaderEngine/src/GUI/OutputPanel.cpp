@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "OutputPanel.h"
 #include "Core/Log.h"
 #include "imgui.h"

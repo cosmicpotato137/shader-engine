@@ -1,3 +1,5 @@
+#include "pch.h"
+
 #include "FileDialog.h"
 #include <vector>
 #include <utility>

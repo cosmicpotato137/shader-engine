@@ -1,0 +1,78 @@
+#version 460 core
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(rgba32f, binding = 0) uniform image2D imageIn;
+layout(rgba32f, binding = 1) uniform image2D imageOut;
+
+uniform float _time;
+uniform bool _reset;
+uniform bool _pause;
+uniform bool _lmb_down;
+uniform bool _rmb_down;
+uniform vec2 _mouse_position;
+uniform int gridSize;
+uniform int brushSize;
+
+// Reset to random values
+float random(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+void main() {
+  // Int correctedBrushSize = 1;
+  // If (brushSize > 0)
+  // {
+  //   correctedBrushSize = brushSize;
+  // }
+
+  // Int correctedGridSize = 1;
+  // If (gridSize > 0)
+  // {
+  //   correctedGridSize = gridSize;
+  // }
+
+  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+
+  ivec2 grid = gidx / gridSize;
+
+  ivec2 size = imageSize(imageOut);
+
+  ivec2 gridMousePos = ivec2(floor(_mouse_position / gridSize));
+  float gridMouseOffset = length(vec2(grid) - vec2(gridMousePos));
+
+
+  vec4 color = imageLoad(imageIn, gidx);
+
+  if (_reset)
+  {
+    color = vec4(0, 0, 0, 1);
+  }
+  else if (_pause)
+  {
+    return;
+  }
+  else if (gridMouseOffset <= brushSize && 
+    _mouse_position.x >= 0 && _mouse_position.x <= size.x &&
+    _mouse_position.y >= 0 && _mouse_position.y <= size.y)
+  {
+    if (_lmb_down)
+    {
+      color = vec4(1, 0, 0, 1);
+    }
+    else if (_rmb_down)
+    {
+      color = vec4(0, 0, 0, 1);
+    }
+    else 
+    {
+      color = vec4(color.x, 1, 0, 1);
+    }
+  }
+  else 
+  {
+    color = vec4(color.x, 0, 0, 1);
+  }
+
+  imageStore(imageIn, gidx, color);
+  imageStore(imageOut, gidx, color);
+}

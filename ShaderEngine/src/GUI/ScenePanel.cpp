@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ScenePanel.h"
 
 std::vector<ScenePanel *> ScenePanel::m_ScenePanels;
@@ -42,10 +43,7 @@ void ScenePanel::SceneWindow() {
   // Update render target size if needed
   m_PanelContentSize = ImGui::GetContentRegionAvail();
   if (ImGui::GetWindowSize() != m_Size) {
-    m_Renderer->GetRenderTarget()->Init(
-        m_PanelContentSize.x, m_PanelContentSize.y, false);
-    m_Renderer->GetSwapTarget()->Init(
-        m_PanelContentSize.x, m_PanelContentSize.y, false);
+    m_Renderer->Init(m_PanelContentSize.x, m_PanelContentSize.y);
   }
 
   // Get Size

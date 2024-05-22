@@ -1,0 +1,81 @@
+#version 460 core
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(rgba32f, binding = 0) uniform image2D imageIn;
+layout(rgba32f, binding = 1) uniform image2D imageOut;
+
+uniform float _time;
+uniform bool _pause;
+uniform bool _reset;
+uniform float _scale;
+uniform int gridSize;
+
+// Reset to random values
+float random(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float updateCell(ivec2 cell_idx, int cell_size) {
+  float current_status = imageLoad(imageIn, cell_idx).x;
+  float threshold = .8f;
+
+  uint alive_cells = 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(-1, -1) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(-1, 0) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(-1, 1) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(0, -1) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(0, 1) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(1, -1) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(1, 0) * cell_size).x > threshold ? 1 : 0;
+  alive_cells += imageLoad(imageIn, cell_idx + ivec2(1, 1) * cell_size).x > threshold ? 1 : 0;
+
+  // If (current_status < .5f)
+  // {
+  //   return 0;
+  // }
+  // Else
+  // {
+  //   return 1;
+  // }
+  if (current_status <= threshold && alive_cells > 2 && < 3)
+  {
+    return current_status + .01f;
+  }
+  else if (current_status > threshold && alive_cells > 1 && alive_cells < 4)
+  {
+    return current_status + .01f; 
+  }
+  else
+  {
+    return current_status - .01f;
+  }
+}
+
+void main() {
+  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+
+  ivec2 grid = gidx / gridSize;
+
+  vec4 color = imageLoad(imageIn, gidx);
+
+  if (_reset)
+  {
+    vec4 col = vec4(random(grid), 0, 0, 1);
+
+    imageStore(imageOut, gidx, col);
+    imageStore(imageIn, gidx, col);
+  }
+  else if (_pause)
+  {
+    imageStore(imageOut, gidx, imageLoad(imageIn, gidx));
+  }
+  else 
+  {
+    float next_status = updateCell(grid * gridSize + gridSize / 2, gridSize);
+    // Uint next_status = conway(gidx, gridSize);
+
+    // Float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
+    imageStore(imageOut, gidx, vec4(next_status, color.y, 0, 1));
+  }
+
+}

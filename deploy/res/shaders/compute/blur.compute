@@ -1,0 +1,56 @@
+#version 460 core
+layout(local_size_x = 8, local_size_y = 8) in;
+
+layout(rgba32f, binding = 0) uniform image2D imageIn;
+layout(rgba32f, binding = 1) uniform image2D imageOut;
+
+uniform float _time;
+uniform bool _reset;
+uniform bool _pause;
+uniform bool _lmb_down;
+uniform bool _rmb_down;
+uniform vec2 _mouse_position;
+
+uniform int filterSize;
+uniform float blurAmount;
+uniform float darken;
+
+vec4 blur() {
+  ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+
+  vec2 size = imageSize(imageIn);
+  float xs = size.x;
+  float ys = size.y;
+
+  vec4 color = vec4(0);
+  for (int i = -1; i <= 1; i++)
+  {
+    for (int j = -1; j <= 1; j++)
+    {
+      color += imageLoad(imageIn, texelCoord + ivec2(i, j));
+    }
+  }
+
+  return color / 9.0f;
+}
+
+
+void main() {
+  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+
+  vec4 color = imageLoad(imageIn, gidx);
+
+  if (_reset)
+  {
+    color = vec4(0, 0, 0, 1);
+    imageStore(imageIn, gidx, color);
+    imageStore(imageOut, gidx, color);
+  }
+  else
+  {
+    color = blur() * blurAmount + color * (1 - blurAmount);
+    color *= darken;
+    color.w = 1;
+    imageStore(imageOut, gidx, color);
+  }
+}

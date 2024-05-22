@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ComputeShaderPanel.h"
 #include "Core/Application.h"
 #include "GUI/ScenePanel.h"

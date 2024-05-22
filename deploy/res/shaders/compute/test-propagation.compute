@@ -1,0 +1,41 @@
+#version 460 core
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba32f, binding = 0) uniform image2D imageIn;
+layout(rgba32f, binding = 1) uniform image2D imageOut;
+
+uniform float _time;
+uniform bool _reset;
+uniform float _scale;
+uniform int gridSize;
+
+uniform vec3 color;
+
+void main() {
+  ivec2 gidx = ivec2(gl_GlobalInvocationID.xy);
+
+  // _time is more reliable than _reset
+  if (_reset)
+  {
+    float col = 0;
+    if (gidx.x / gridSize == 5 && gidx.y / gridSize == 5)
+    {
+      col = 1;
+    }
+
+    imageStore(imageOut, gidx, vec4(color * col, 1));
+    imageStore(imageIn, gidx, vec4(vec3(1 * col), 1));
+  }
+  else 
+  {
+    // Uint next_status = updateCell(grid * gridSize + gridSize / 2, gridSize);
+    // Ivec2 pos = ivec2(floor(gidx.x / gridSize), floor(gidx.y / gridSize)) * gridSize;
+    // Ivec2 pos = ivec2(floor(gidx.x / gridSize) * gridSize, gidx.y);
+    uint next_status = uint(ceil(imageLoad(imageIn, gidx - ivec2(2, 2)).x));
+
+    // Float col2 = clamp(0, 1, (1 + abs(_scale)) / 100.0f) * next_status;
+    imageStore(imageOut, gidx, uvec4(next_status));
+    // ImageStore(imageIn, gidx, imageLoad(imageOut, gidx + ivec2(1, 1)));
+  }
+
+}

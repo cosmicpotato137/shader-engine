@@ -13,6 +13,7 @@
 /vendor/googletest/
 
 # User-specific files
+*.zip
 *.rsuser
 *.suo
 *.user
