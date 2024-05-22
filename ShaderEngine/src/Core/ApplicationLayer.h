@@ -4,8 +4,6 @@
 #include "Core/Log.h"
 #include "Core/core.h"
 
-#define HANDLE_EVENT_FN(type) virtual void Handle##type(type &e)
-
 class ApplicationLayer {
   friend class Application;
 
@@ -38,4 +36,5 @@ public:
   HANDLE_EVENT_FN(KeyboardEvent) {}
   HANDLE_EVENT_FN(CursorMovedEvent) {}
   HANDLE_EVENT_FN(WindowResizeEvent) {}
+  HANDLE_EVENT_FN(WindowMoveEvent) {}
 };

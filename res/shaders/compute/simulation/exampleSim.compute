@@ -1,0 +1,44 @@
+#version 460 core
+layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+struct Agent {
+  vec2 position;
+  vec2 lastPosition;
+  vec2 velocity;
+};
+
+layout(binding = 0, std430) buffer AgentBuffer {
+  Agent agentBuffer[];
+};
+
+layout(rgba32f, binding = 1) uniform image2D imageIn;
+layout(rgba32f, binding = 2) uniform image2D imageOut;
+
+uniform bool _pause;
+uniform bool _reset;
+
+void main() {
+  uint idx = gl_GlobalInvocationID.x;
+  if (idx >= agentBuffer.length())
+  {
+    return;
+  }
+
+  Agent agent = agentBuffer[idx];
+  
+  if (!_pause)
+  {
+    // Store white at agent position
+    imageStore(imageOut, ivec2(agent.position), vec4(1.0, 1.0, 1.0, 1.0));
+  }
+
+  // store 10 x 10 box
+  for (int i = 0; i < 10; i++)
+  {
+    for (int j = 0; j < 10; j++)
+    {
+      imageStore(imageOut, ivec2(agent.position) + ivec2(i, j), vec4(1.0, 1.0, 1.0, 1.0));
+    }
+  }
+  
+}

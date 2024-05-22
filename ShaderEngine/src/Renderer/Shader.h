@@ -19,6 +19,7 @@ public:
   ~Shader() { Cleanup(); }
 
   bool Init(const std::string &shaderPath);
+  bool ReInit();
   virtual bool InitFromSource(const std::string &shaderSource);
 
   // Use the shader program
@@ -37,7 +38,7 @@ public:
   std::string GetName() const;
 
   // Set the name of the shader
-  void SetName(const std::string& name);
+  void SetName(const std::string &name);
 
   // Set a uniform value
   void SetUniform(const std::string &uniformName, const uniform_types &value);

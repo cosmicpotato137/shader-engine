@@ -15,6 +15,11 @@ bool Shader::Init(const std::string &shaderPath) {
   return InitFromSource(shaderSource);
 }
 
+bool Shader::ReInit() {
+  Cleanup();
+  return Init(filepath);
+}
+
 bool Shader::InitFromSource(const std::string &shaderSource) {
   std::string vertexSource, fragmentSource;
   ParseVertexAndFragment(shaderSource, vertexSource, fragmentSource);
@@ -83,7 +88,7 @@ void Shader::SetUniform(const std::string &name, const uniform_types &value) {
 
 std::string Shader::GetName() const { return m_Name; }
 
-void Shader::SetName(const std::string& name ) { m_Name = name; }
+void Shader::SetName(const std::string &name) { m_Name = name; }
 
 ptr<Uniform> Shader::GetUniform(const std::string &uniformName) {
   return uniforms[uniformName];

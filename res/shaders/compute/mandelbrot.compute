@@ -2,8 +2,8 @@
 layout(local_size_x = 8, local_size_y = 8) in;
 
 layout(rgba32f, binding = 0) uniform image2D imageOut;
-uniform vec2 _center;
-uniform float _scale;
+uniform vec2 center;
+uniform float scale;
 uniform uint max_iterations;
 uniform vec3 color;
 
@@ -16,7 +16,7 @@ void main() {
   vec2 size = imageSize(imageOut);
   vec2 uv = (2.0*gidx - size) / size.y; 
 
-  vec2 c = _center + _scale * uv;
+  vec2 c = center + scale * uv;
   vec2 z = vec2(0, 0);
 
   uint iter_diverge = max_iterations;

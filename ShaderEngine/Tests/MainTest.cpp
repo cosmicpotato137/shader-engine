@@ -44,3 +44,30 @@ int main(int argc, char **argv) {
     return 1;
   }
 }
+// #include "testtest.h"
+
+// int main() {
+//   {
+//     AbstractPoint *point(new Point(7.4));
+
+//     std::ofstream outputStream(path + "test.txt");
+//     boost::archive::text_oarchive outputArchive(outputStream);
+//     outputArchive << point;
+//     outputStream.close();
+//     delete point;
+//   }
+
+//   {
+//     AbstractPoint *pointRead;
+
+//     std::ifstream inputStream(path + "test.txt");
+//     boost::archive::text_iarchive inputArchive(inputStream);
+//     inputArchive >> pointRead;
+
+//     if (auto p = static_cast<Point *>(pointRead))
+//       std::cout << p->mData << std::endl;
+//     delete pointRead;
+//   }
+
+//   return 0;
+// }

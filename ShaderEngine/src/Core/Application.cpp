@@ -89,8 +89,9 @@ bool Application::Init() {
   glfwSetKeyCallback(window, Application::KeyCallback);
   glfwSetMouseButtonCallback(window, Application::MouseButtonCallback);
   glfwSetCursorPosCallback(window, Application::CursorPosCallback);
-  glfwSetWindowSizeCallback(window, Application::WindowSizeCallback);
   glfwSetScrollCallback(window, Application::ScrollCallback);
+  glfwSetWindowSizeCallback(window, Application::WindowSizeCallback);
+  glfwSetWindowPosCallback(window, Application::WindowPosCallback);
 
   // Push ui layer
   uiLayer = std::make_shared<ImGuiLayer>();
@@ -172,6 +173,12 @@ void Application::Shutdown() {
 
 glm::vec2 Application::GetCursorPosition() { return m_CursorPosition; }
 
+glm::vec2 Application::GetCursorScreenPosition() {
+  return m_CursorPosition + m_WindowPosition;
+}
+
+glm::vec2 Application::GetWindowPosition() { return m_WindowPosition; }
+
 bool Application::GetKey(int key) { return m_KeyState[key]; }
 
 bool Application::GetMouseButton(int button) {
@@ -195,6 +202,10 @@ void Application::OnWindowResize(int width, int height) {
   properties.Height = height;
   // todo: do we need this?
   glViewport(0, 0, width, height);
+}
+
+void Application::OnWindowMove(int xpos, int ypos) {
+  m_WindowPosition = {xpos, ypos};
 }
 
 void Application::MouseButtonCallback(
@@ -269,5 +280,15 @@ void Application::WindowSizeCallback(
     WindowResizeEvent we = {false, width, height};
     if (!app->OnEvent(we))
       app->OnWindowResize(width, height);
+  }
+}
+
+void Application::WindowPosCallback(GLFWwindow *window, int xpos, int ypos) {
+  Application *app =
+      static_cast<Application *>(glfwGetWindowUserPointer(window));
+  if (app) {
+    WindowMoveEvent we = {false, xpos, ypos};
+    if (!app->OnEvent(we))
+      app->OnWindowMove(xpos, ypos);
   }
 }

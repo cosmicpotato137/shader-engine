@@ -28,7 +28,10 @@ protected:
   virtual void SetWorkGroups(const Renderer &renderer);
   void UniformVisitor();
   void HeaderOperations();
-  void CustomUniforms();
+  virtual void CustomUniforms();
+  virtual void OnReset();
+  virtual void OnPause();
+  virtual void OnStep();
 
   // Boost serailization
   SE_SERIAL_FRIENDS;

@@ -74,4 +74,5 @@ void main() {
   }
 
   imageStore(imageIn, gidx, color);
+  imageStore(imageOut, gidx, color);
 }

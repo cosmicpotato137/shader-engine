@@ -1,11 +1,19 @@
 #include "ComputeShaderStackPanel.h"
+#include "SimulationPanel.h"
 
 void ComputeShaderStackPanel::ImGuiRender() {
   ImGui::Begin(m_Name.c_str());
   if (ImGui::Button("Add Compute Shader")) {
     std::string filepath = m_FileDialog.Show();
     if (filepath != "") {
-      NewComputeShader(filepath);
+      NewComputeShaderPanel<ComputeShaderPanel>(filepath);
+    }
+  }
+
+  if (ImGui::Button("Add Simulation")) {
+    std::string filepath = m_FileDialog.Show();
+    if (filepath != "") {
+      NewComputeShaderPanel<SimulationPanel>(filepath);
     }
   }
 
@@ -22,61 +30,25 @@ void ComputeShaderStackPanel::ImGuiRender() {
 
   // Render inspector
   if (m_SelectedIndex >= 0 && m_SelectedIndex < m_ComputeShaderPanels.size())
-    m_ComputeShaderPanels[m_SelectedIndex].ImGuiRender();
+    m_ComputeShaderPanels[m_SelectedIndex]->ImGuiRender();
 }
 
 void ComputeShaderStackPanel::Render(const Renderer &ren) {
-  for (ComputeShaderPanel p : m_ComputeShaderPanels) {
-    p.Render(ren);
+  for (ptr<ComputeShaderPanel> p : m_ComputeShaderPanels) {
+    p->Render(ren);
   }
 }
 
 void ComputeShaderStackPanel::Update(double dt) {
-  for (ComputeShaderPanel p : m_ComputeShaderPanels) {
-    p.Update(dt);
+  for (ptr<ComputeShaderPanel> p : m_ComputeShaderPanels) {
+    p->Update(dt);
   }
-}
-
-void ComputeShaderStackPanel::NewComputeShader(
-    const std::string &filepath, std::string name) {
-  if (name == "") {
-    std::string filename = filepath.substr(filepath.find_last_of("/\\") + 1);
-    name = filename.substr(0, filename.find_last_of('.'));
-  }
-  auto shader = std::make_shared<ComputeShader>(name);
-  AddComputeShader(shader);
-  m_SelectedIndex = m_ComputeShaderPanels.size() - 1;
-  if (!shader->Init(filepath)) {
-    Console::Log("Failed to load compute shader: %s", name);
-    DeleteSelectedComputeShader();
-    m_SelectedIndex = -1;
-  }
-}
-
-void ComputeShaderStackPanel::AddComputeShader(
-    std::shared_ptr<ComputeShader> shader) {
-  ComputeShaderPanel panel(shader);
-  m_ComputeShaderPanels.emplace_back(panel);
-  m_ComputeShaderOrder.push_back(m_ComputeShaderPanels.size() - 1);
 }
 
 void ComputeShaderStackPanel::DeleteSelectedComputeShader() {
   if (m_SelectedIndex >= 0 && m_SelectedIndex < m_ComputeShaderPanels.size()) {
     m_ComputeShaderPanels.erase(
         m_ComputeShaderPanels.begin() + m_SelectedIndex);
-    m_ComputeShaderOrder.erase(
-        std::remove(
-            m_ComputeShaderOrder.begin(),
-            m_ComputeShaderOrder.end(),
-            m_SelectedIndex),
-        m_ComputeShaderOrder.end());
-
-    // Decrement all elements greater than the deleted index
-    for (int &index : m_ComputeShaderOrder) {
-      if (index > m_SelectedIndex) {
-        index--;
-      }
-    }
 
     m_SelectedIndex = -1;
   }
@@ -86,7 +58,7 @@ void ComputeShaderStackPanel::DragAndDropList() {
   for (int n = 0; n < m_ComputeShaderPanels.size(); n++) {
     ImGui::PushID(n);
 
-    std::string name = m_ComputeShaderPanels[n].GetName();
+    std::string name = m_ComputeShaderPanels[n]->GetName();
     bool selected = m_SelectedIndex == n;
     if (ImGui::Selectable(name.c_str(), selected)) {
       m_SelectedIndex = n;

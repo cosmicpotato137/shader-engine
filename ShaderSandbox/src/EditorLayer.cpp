@@ -4,9 +4,7 @@
 
 EditorLayer::EditorLayer() : ApplicationLayer("Editor Layer") {
   m_Renderer = std::make_shared<Renderer>();
-  m_ComputeShader = std::make_shared<ComputeShader>("Compute Shader");
   m_ScenePanel.SetRenderer(m_Renderer);
-  m_ComputeShaderStackPanel.AddComputeShader(m_ComputeShader);
 }
 EditorLayer::~EditorLayer() {}
 
@@ -14,21 +12,13 @@ bool EditorLayer::OnAttach() {
   Console::Log("Welcome to the Shader Sandbox!");
   m_Renderer->Init(100, 100);
 
-  std::string shaderPath =
-      std::string(SHADER_DIR) + "/compute/mandelbrot.compute";
-  m_ComputeShader->Init(shaderPath);
   // If path exists, load it, otherwise, init values
   std::filesystem::path path =
       m_DataPath / (m_ComputeShaderStackPanel.GetName() + ".dat");
   if (std::filesystem::exists(path)) {
-    Serial::LoadInplace(m_ComputeShaderStackPanel, path.string());
-  } else {
-    m_ComputeShader->SetUniform("_center", glm::vec2{0, 0});
-    m_ComputeShader->SetUniform("_scale", 2.0f);
-    m_ComputeShader->SetUniform("max_iterations", GLuint(20));
-    m_ComputeShader->SetUniform("color", glm::vec3{1, 1, 1});
+    m_ComputeShaderStackPanel = Serial::Load<ComputeShaderStackPanel>(
+        path.string());
   }
-
   return true;
 }
 
@@ -36,7 +26,6 @@ void EditorLayer::OnDetach() {
   std::filesystem::path path =
       m_DataPath / (m_ComputeShaderStackPanel.GetName() + ".dat");
   Serial::Save(m_ComputeShaderStackPanel, path.string());
-  m_ComputeShader->Cleanup();
   m_Renderer->Cleanup();
 }
 

@@ -31,10 +31,17 @@ struct WindowResizeEvent : public Event {
   int width, height;
 };
 
+struct WindowMoveEvent : public Event {
+  int xPos, yPos;
+};
+
 typedef std::variant<
     std::reference_wrapper<CursorMovedEvent>,
     std::reference_wrapper<MouseButtonEvent>,
     std::reference_wrapper<ScrollEvent>,
     std::reference_wrapper<WindowResizeEvent>,
+    std::reference_wrapper<WindowMoveEvent>,
     std::reference_wrapper<KeyboardEvent>>
     event_types;
+
+#define HANDLE_EVENT_FN(type) virtual void Handle##type(type &e)

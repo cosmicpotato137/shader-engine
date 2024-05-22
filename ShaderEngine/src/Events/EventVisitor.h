@@ -20,6 +20,7 @@ struct EventVisitor {
   EVENT_FN(WindowResizeEvent)
   EVENT_FN(ScrollEvent)
   EVENT_FN(KeyboardEvent)
+  EVENT_FN(WindowMoveEvent)
 };
 
 #undef EVENT_FN

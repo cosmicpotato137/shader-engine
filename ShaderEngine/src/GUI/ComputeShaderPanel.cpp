@@ -1,5 +1,6 @@
 #include "ComputeShaderPanel.h"
 #include "Core/Application.h"
+#include "GUI/ScenePanel.h"
 
 ComputeShaderPanel::ComputeShaderPanel(std::shared_ptr<ComputeShader> shader)
     : Panel("Compute Shader"), m_Shader(shader) {
@@ -60,18 +61,32 @@ void ComputeShaderPanel::Update(double dt) {
     m_Time += dt;
     if (m_Shader->HasUniform("_time"))
       (*m_Shader)["_time"]->SetValue(m_Time);
+  } else if (m_Pause && m_Step) {
+    m_Time += .01f;
+    if (m_Shader->HasUniform("_time"))
+      (*m_Shader)["_time"]->SetValue(m_Time);
   }
 
   // Set user input uniforms
   Application *app = Application::GetInstance();
   if (m_Shader->HasUniform("_mouse_position")) {
-    glm::vec2 pos = app->GetCursorPosition();
-    (*m_Shader)["_mouse_position"]->SetValue(pos);
+    ScenePanel *scenePanel = ScenePanel::GetScenePanel(0);
+    ImVec2 pos = {};
+    if (scenePanel != nullptr) {
+      pos = scenePanel->GetPanelCursorPos();
+      pos.y = scenePanel->GetPanelContentSize().y - pos.y;
+    }
+
+    (*m_Shader)["_mouse_position"]->SetValue(glm::vec2{pos.x, pos.y});
   }
 
-  // TODO: Application::GetMouseState() is not implemented
-  if (m_Shader->HasUniform("_mouse_state")) {
-  }
+  if (m_Shader->HasUniform("_lmb_down"))
+    (*m_Shader)["_lmb_down"]->SetValue(
+        app->GetMouseButton(GLFW_MOUSE_BUTTON_1));
+
+  if (m_Shader->HasUniform("_rmb_down"))
+    (*m_Shader)["_rmb_down"]->SetValue(
+        app->GetMouseButton(GLFW_MOUSE_BUTTON_2));
 }
 
 void ComputeShaderPanel::ImGuiRender() {
@@ -79,6 +94,9 @@ void ComputeShaderPanel::ImGuiRender() {
     return;
 
   ImGui::Begin("Shader Info");
+
+  m_Size = ImGui::GetWindowSize();
+  m_Position = ImGui::GetWindowPos();
 
   // Shader name and update
   HeaderOperations();
@@ -205,7 +223,18 @@ void ComputeShaderPanel::HeaderOperations() {
   if (ImGui::Button("Load Compute Shader")) {
     std::string path = m_FileDialog.Show();
     if (path != "") {
-      m_Shader->Init(path);
+      if (m_Shader->Init(path)) {
+        Console::Log("Shader %s loaded", m_Shader->GetName().c_str());
+      }
+    }
+  }
+
+  ImGui::Spacing();
+  if (ImGui::Button("Reload Compute Shader")) {
+    if (m_Shader->GetFilePath() != "") {
+      if (m_Shader->ReInit()) {
+        Console::Log("Shader %s reloaded", m_Shader->GetName().c_str());
+      }
     }
   }
 }
@@ -214,7 +243,9 @@ void ComputeShaderPanel::CustomUniforms() {
   // User input uniforms
   Application *app = Application::GetInstance();
   if (m_Shader->HasUniform("_mouse_position")) {
-    glm::vec2 pos = app->GetCursorPosition();
+    glm::vec2 pos =
+        m_Shader->GetUniform("_mouse_position")->GetValue<glm::vec2>();
+    // glm::vec2 pos = app->GetCursorPosition();
     ImGui::Text("MousePosition: (%f, %f)", pos.x, pos.y);
   }
 
@@ -227,22 +258,31 @@ void ComputeShaderPanel::CustomUniforms() {
   }
 
   if (m_Shader->HasUniform("_pause")) {
-    if (ImGui::Button(m_Pause ? "Play" : "Pause", ImVec2(150, 25)))
-      m_Pause = !m_Pause;
-    if (ImGui::Button("Step", ImVec2(150, 25)))
-      m_Step = true;
-    (*m_Shader)["_pause"]->SetValue(m_Pause || m_Step);
+    OnPause();
+    OnStep();
+    (*m_Shader)["_pause"]->SetValue(m_Pause && !m_Step);
   }
 
-  if (m_Shader->HasUniform("_reset") || m_Shader->HasUniform("_time")) {
-    if (ImGui::Button("Reset shader", ImVec2(150, 25))) {
-      m_Reset = true;
-      m_Time = 0.0f;
-    }
-    if (m_Reset) {
-      (*m_Shader)["_reset"]->SetValue(true);
-    } else {
-      (*m_Shader)["_reset"]->SetValue(false);
-    }
+  // TODO implement _time
+  OnReset();
+  if (m_Shader->HasUniform("_reset")) {
+    (*m_Shader)["_reset"]->SetValue(m_Reset);
   }
+}
+
+void ComputeShaderPanel::OnReset() {
+  if (ImGui::Button("Reset shader", ImVec2(150, 25))) {
+    m_Reset = true;
+    m_Time = 0.0f;
+  }
+}
+
+void ComputeShaderPanel::OnPause() {
+  if (ImGui::Button(m_Pause ? "Play" : "Pause", ImVec2(150, 25)))
+    m_Pause = !m_Pause;
+}
+
+void ComputeShaderPanel::OnStep() {
+  if (ImGui::Button("Step", ImVec2(150, 25)))
+    m_Step = true;
 }

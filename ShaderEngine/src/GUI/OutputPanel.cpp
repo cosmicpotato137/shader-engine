@@ -19,18 +19,11 @@ void OutputPanel::ImGuiRender() {
 
   ImGui::Begin(m_Name.c_str());
 
-  // check if the window was resized
-  ImVec2 size = ImGui::GetWindowSize();
-  if (size.x != m_Size.x || size.y != m_Size.y) {
-    m_Size = size;
-    OnResize();
-  }
+  // Get window size
+  ImVec2 m_Size = ImGui::GetWindowSize();
 
-  // the cursor position
-  ImVec2 cursor;
-
-  // add top padding
-  cursor = ImGui::GetCursorPos();
+  // Add top padding
+  ImVec2 cursor = ImGui::GetCursorPos();
   ImGui::SetCursorPos(cursor + ImVec2(0, 5));
 
   ImGui::Columns(2, nullptr, false);

@@ -10,6 +10,8 @@ public:
   TestSerializable(int a, int b) : a(a), b(b) {}
   int a, b;
 
+  virtual ~TestSerializable() {}
+
 private:
   SE_SERIAL_FRIENDS;
   template <class Archive> void serialize(Archive &ar, const unsigned int) {
@@ -18,7 +20,23 @@ private:
   }
 };
 
-SE_SERIAL_VERSION(TestSerializable, 1)
+BOOST_CLASS_EXPORT(TestSerializable)
+
+class TestSerializableChild : public TestSerializable {
+public:
+  TestSerializableChild() : TestSerializable(), c(0) {}
+  TestSerializableChild(int a, int b, int c) : TestSerializable(a, b), c(c) {}
+  int c;
+
+private:
+  SE_SERIAL_FRIENDS;
+  template <class Archive> void serialize(Archive &ar, const unsigned int) {
+    ar &boost::serialization::base_object<TestSerializable>(*this);
+    ar & c;
+  }
+};
+
+BOOST_CLASS_EXPORT(TestSerializableChild)
 
 class SerializationTest : public ::testing::Test {
 protected:
@@ -36,7 +54,7 @@ protected:
     ASSERT_TRUE(std::filesystem::exists(output_path));
   }
 
-  void TestLoadNew() {
+  void TestLoad() {
     auto current_path = std::filesystem::current_path();
     auto output_path =
         current_path / "bin" / "debug" / "data" / "TestSerializable.dat";
@@ -49,35 +67,13 @@ protected:
     ASSERT_EQ(testSerializable.b, 2);
   }
 
-  void TestLoadInplace() {
-    auto current_path = std::filesystem::current_path();
-    auto output_path =
-        current_path / "bin" / "debug" / "data" / "TestSerializable.dat";
-
-    TestSerializable testSerializable;
-    Serial::LoadInplace(testSerializable, output_path.string());
-
-    // Check if object has correct values
-    ASSERT_EQ(testSerializable.a, 1);
-    ASSERT_EQ(testSerializable.b, 2);
-  }
-
-  void TestSharedPtrSave() {
-    std::shared_ptr<TestSerializable> testSerializable =
-        std::make_shared<TestSerializable>(1, 2);
+  void TestSharedPtrLoad() {
     auto current_path = std::filesystem::current_path();
     auto output_path =
         current_path / "bin" / "Debug" / "data" / "TestSerializable.dat";
+
+    std::shared_ptr<TestSerializable> testSerializable = std::make_shared<TestSerializable>(1, 2);
     Serial::Save(testSerializable, output_path.string());
-
-    // Check if file exists
-    ASSERT_TRUE(std::filesystem::exists(output_path));
-  }
-
-  void TestSharedPtrLoadNew() {
-    auto current_path = std::filesystem::current_path();
-    auto output_path =
-        current_path / "bin" / "Debug" / "data" / "TestSerializable.dat";
 
     std::shared_ptr<TestSerializable> testSerializablePtr =
         Serial::Load<std::shared_ptr<TestSerializable>>(output_path.string());
@@ -87,17 +83,71 @@ protected:
     ASSERT_EQ(testSerializablePtr->b, 2);
   }
 
-  void TestSharedPtrLoadInplace() {
+  void TestBaseClass() {
+    TestSerializableChild testSerializable(1, 2, 3);
+    auto current_path = std::filesystem::current_path();
+    auto output_path =
+        current_path / "bin" / "Debug" / "data" / "TestSerializable.dat";
+    Serial::Save(testSerializable, output_path.string());
+
+    // Check if file exists
+    ASSERT_TRUE(std::filesystem::exists(output_path));
+
+    TestSerializableChild testSerializableLoaded =
+        Serial::Load<TestSerializableChild>(output_path.string());
+
+    // Check if object has correct values
+    ASSERT_EQ(testSerializableLoaded.a, 1);
+    ASSERT_EQ(testSerializableLoaded.b, 2);
+    ASSERT_EQ(testSerializableLoaded.c, 3);
+  }
+
+  void TestBaseClassPtr() {
+    TestSerializable *testSerializable = new TestSerializableChild(1, 2, 3);
     auto current_path = std::filesystem::current_path();
     auto output_path =
         current_path / "bin" / "Debug" / "data" / "TestSerializable.dat";
 
-    std::shared_ptr<TestSerializable> testSerializablePtr;
-    Serial::LoadInplace(testSerializablePtr, output_path.string());
+    Serial::Save(testSerializable, output_path.string());
+
+    // Check if file exists
+    ASSERT_TRUE(std::filesystem::exists(output_path));
+
+    TestSerializable *testSerializablePtr = Serial::Load<TestSerializable *>(
+        output_path.string());
+    TestSerializableChild *testSerializableChildPtr =
+        dynamic_cast<TestSerializableChild *>(testSerializablePtr);
 
     // Check if object has correct values
-    ASSERT_EQ(testSerializablePtr->a, 1);
-    ASSERT_EQ(testSerializablePtr->b, 2);
+    ASSERT_EQ(testSerializableChildPtr->a, 1);
+    ASSERT_EQ(testSerializableChildPtr->b, 2);
+    ASSERT_EQ(testSerializableChildPtr->c, 3);
+
+    delete testSerializable;
+    delete testSerializablePtr;
+  }
+
+  void TestBaseClassSharedPtr() {
+    std::shared_ptr<TestSerializable> testSerializable =
+        std::make_shared<TestSerializableChild>(1, 2, 3);
+    auto current_path = std::filesystem::current_path();
+    auto output_path =
+        current_path / "bin" / "Debug" / "data" / "TestSerializable.dat";
+    Serial::Save(testSerializable, output_path.string());
+
+    // Check if file exists
+    ASSERT_TRUE(std::filesystem::exists(output_path));
+
+    std::shared_ptr<TestSerializable> testSerializablePtr =
+        Serial::Load<std::shared_ptr<TestSerializable>>(output_path.string());
+
+    std::shared_ptr<TestSerializableChild> testSerializableChildPtr =
+        std::dynamic_pointer_cast<TestSerializableChild>(testSerializablePtr);
+
+    // Check if object has correct values
+    ASSERT_EQ(testSerializableChildPtr->a, 1);
+    ASSERT_EQ(testSerializableChildPtr->b, 2);
+    ASSERT_EQ(testSerializableChildPtr->c, 3);
   }
 
   void TestMap() {
@@ -150,12 +200,10 @@ protected:
 };
 
 TEST_F(SerializationTest, TestSave) { TestSave(); }
-TEST_F(SerializationTest, TestLoadNew) { TestLoadNew(); }
-TEST_F(SerializationTest, TestLoadInplace) { TestLoadInplace(); }
-TEST_F(SerializationTest, TestSharedPtrSave) { TestSharedPtrSave(); }
-TEST_F(SerializationTest, TestSharedPtrLoadNew) { TestSharedPtrLoadNew(); }
-TEST_F(SerializationTest, TestSharedPtrLoadInplace) {
-  TestSharedPtrLoadInplace();
-}
+TEST_F(SerializationTest, TestLoad) { TestLoad(); }
+TEST_F(SerializationTest, TestBaseClassPtr) { TestBaseClassPtr(); }
+TEST_F(SerializationTest, TestSharedPtrLoad) { TestSharedPtrLoad(); }
+TEST_F(SerializationTest, TestBaseClass) { TestBaseClass(); }
+TEST_F(SerializationTest, TestBaseClassSharedPtr) { TestBaseClassSharedPtr(); }
 TEST_F(SerializationTest, TestMap) { TestMap(); }
 TEST_F(SerializationTest, TestPtrMap) { TestPtrMap(); }

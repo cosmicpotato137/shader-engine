@@ -1,16 +1,10 @@
-#pragma once
-
 #include "SimulationPanel.h"
 
-SimulationPanel::SimulationPanel(
-    std::shared_ptr<ComputeShader> shader,
-    std::function<std::vector<Agent>()> setAgents)
+BOOST_CLASS_EXPORT_GUID(SimulationPanel, "SimulationPanel")
+
+SimulationPanel::SimulationPanel(std::shared_ptr<ComputeShader> shader)
     : ComputeShaderPanel(shader) {
   m_Agents = std::make_shared<ComputeBuffer1D<Agent>>();
-
-  if (setAgents != nullptr) {
-    m_SetAgents = setAgents;
-  }
 
   ResetSimulation();
 }
@@ -34,14 +28,16 @@ void SimulationPanel::SetRenderTargets(const Renderer &renderer) {
   m_Agents->BindCompute(0);
 }
 
-void SimulationPanel::ResetSimulation() {
-  if (m_SetAgents != nullptr) {
-    auto agents = m_SetAgents();
-    m_Agents->InitFromVector(agents);
+void SimulationPanel::OnReset() {
+  ImGui::DragInt("Number of Agents", &m_Specification.NumAgents, 1, 10000);
+  if (ImGui::Button("Reset Simulation", ImVec2(150, 25))) {
+    m_Time = 0.0f;
+    m_Reset = true;
+    ResetSimulation();
   }
 }
 
-void SimulationPanel::SetSetAgentsCallback(
-    std::function<std::vector<Agent>()> callback) {
-  m_SetAgents = callback;
+void SimulationPanel::ResetSimulation() {
+  auto agents = m_Specification.InitAgents();
+  m_Agents->InitFromVector(agents);
 }

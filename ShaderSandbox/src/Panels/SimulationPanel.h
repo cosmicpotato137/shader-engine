@@ -2,24 +2,32 @@
 #include "GUI/ComputeShaderPanel.h"
 #include "Renderer/ComputeBuffer1D.h"
 #include "Simulation/Agent.h"
+#include "Simulation/SimulationSpecification.h"
+#include "Core/Serial.h"
+
 #include <functional>
 
 class SimulationPanel : public ComputeShaderPanel {
   ptr<ComputeBuffer1D<Agent>> m_Agents;
 
-  // Set no agents by default
-  std::function<std::vector<Agent>()> m_SetAgents = []() {
-    return std::vector<Agent>();
-  };
+  // Init specification for simulation
+  SimulationSpecification m_Specification;
 
 public:
-  SimulationPanel(
-      std::shared_ptr<ComputeShader> shader = nullptr,
-      std::function<std::vector<Agent>()> setAgents = nullptr);
+  SimulationPanel(std::shared_ptr<ComputeShader> shader = nullptr);
 
+protected:
   virtual void SetWorkGroups(const Renderer &renderer) override;
   virtual void SetRenderTargets(const Renderer &renderer) override;
 
+  virtual void OnReset() override;
   void ResetSimulation();
-  void SetSetAgentsCallback(std::function<std::vector<Agent>()> setAgents);
+
+  // Boost serialization
+  SE_SERIAL_FRIENDS;
+  template <class Archive> void serialize(Archive &ar, const unsigned int) {
+    // Serialize base class
+    ar &boost::serialization::base_object<ComputeShaderPanel>(*this);
+    ar & m_Specification;
+  }
 };

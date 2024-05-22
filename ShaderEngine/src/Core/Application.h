@@ -37,6 +37,7 @@ class Application {
   std::unordered_map<int, bool> m_KeyState;
   std::unordered_map<int, bool> m_MouseButtonState;
   glm::vec2 m_CursorPosition;
+  glm::vec2 m_WindowPosition;
 
   std::vector<ptr<ApplicationLayer>> layers;
   ptr<ImGuiLayer> uiLayer;
@@ -97,6 +98,8 @@ public:
 
   // Get the mouse position
   glm::vec2 GetCursorPosition();
+  glm::vec2 GetCursorScreenPosition();
+  glm::vec2 GetWindowPosition();
 
   // Generic event callback
   virtual bool OnEvent(event_types e);
@@ -111,6 +114,8 @@ public:
   virtual void OnMouseButton(int button, int action, int mods) {}
   // Window resize callback
   virtual void OnWindowResize(int width, int height);
+  // Window move callback
+  virtual void OnWindowMove(int xpos, int ypos);
 
   // Window callbacks for glfw
   static void
@@ -121,4 +126,5 @@ public:
   static void
   KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
   static void WindowSizeCallback(GLFWwindow *window, int width, int height);
+  static void WindowPosCallback(GLFWwindow *window, int xpos, int ypos);
 };

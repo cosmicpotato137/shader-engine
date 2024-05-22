@@ -9,6 +9,7 @@ class Panel {
 protected:
   std::string m_Name;
   ImVec2 m_Size;
+  ImVec2 m_Position;
 
 public:
   Panel(const std::string &name = "Panel") : m_Name(name){};
@@ -18,10 +19,10 @@ public:
   virtual void ImGuiRender() = 0;
   virtual void Update(double dt) {}
   virtual void Render(const Renderer &ren) {}
-  virtual void OnResize() {}
 
   std::string GetName() const { return m_Name; }
   ImVec2 GetSize() const { return m_Size; }
+  ImVec2 GetPosition() const { return m_Position; }
 
   Panel &operator=(const Panel &other);
 
