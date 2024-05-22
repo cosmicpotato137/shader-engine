@@ -4,9 +4,8 @@
 
 ComputeShaderPanel::ComputeShaderPanel(std::shared_ptr<ComputeShader> shader)
     : Panel("Compute Shader"), m_Shader(shader) {
-  if (m_Shader != nullptr) {
+  if (m_Shader != nullptr)
     m_Name = m_Shader->GetName();
-  }
 }
 
 ComputeShaderPanel::ComputeShaderPanel(const ComputeShaderPanel &other)
@@ -211,11 +210,12 @@ void ComputeShaderPanel::UniformVisitor() {
 
 void ComputeShaderPanel::HeaderOperations() {
   char buffer[256];
-  std::strncpy(buffer, m_Shader->GetName().c_str(), sizeof(buffer));
+  std::strncpy(buffer, m_Name.c_str(), sizeof(buffer));
   buffer[sizeof(buffer) - 1] = 0;  // Ensure null-termination
 
   if (ImGui::InputText("Shader Name", buffer, sizeof(buffer))) {
-    m_Shader->SetName(std::string(buffer));
+    m_Name = std::string(buffer);
+    m_Shader->SetName(m_Name);
   }
 
   ImGui::Spacing();
@@ -225,6 +225,7 @@ void ComputeShaderPanel::HeaderOperations() {
     if (path != "") {
       if (m_Shader->Init(path)) {
         Console::Log("Shader %s loaded", m_Shader->GetName().c_str());
+        m_Name = m_Shader->GetName();  // keeping names consistent for now
       }
     }
   }

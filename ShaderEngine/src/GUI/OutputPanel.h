@@ -5,7 +5,7 @@
 
 class OutputPanel : public Panel {
   int m_LastLogCount = 0;
-  std::vector<std::string> m_ConsoleLogs;
+  std::vector<std::pair<std::string, int>> m_ConsoleLogs;
   bool m_AutoScroll = true;
 
 public:

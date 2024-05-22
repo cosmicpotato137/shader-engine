@@ -5,7 +5,11 @@
 OutputPanel::OutputPanel() : Panel("Output") {
   Console::SetCallback([this](const std::string &str) {
     m_LastLogCount = m_ConsoleLogs.size();
-    m_ConsoleLogs.push_back(str);
+    if (m_ConsoleLogs.empty() || m_ConsoleLogs.back().first != str) {
+      m_ConsoleLogs.push_back({str, 1});
+    } else {
+      m_ConsoleLogs.back().second++;
+    }
     std::cout << str << std::endl;  // also push to the console for now
   });
 }
@@ -50,7 +54,8 @@ void OutputPanel::ImGuiRender() {
   // align boxes correctly
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10, 0));
 
-  for (size_t i = 0; i < m_ConsoleLogs.size(); ++i) {
+  size_t i = 0;
+  for (auto &log : m_ConsoleLogs) {
     if (i % 2 == 0) {
       ImGui::PushStyleColor(
           ImGuiCol_ChildBg, IM_COL32(30, 30, 30, 255));  // Dark gray color
@@ -63,7 +68,12 @@ void OutputPanel::ImGuiRender() {
     int ypad = 5;
     int xpad = 10;
 
-    std::string text = m_ConsoleLogs[i];
+    std::string text = log.first;
+
+    // Log the number of identical logs
+    if (log.second > 1) {
+      text += " (" + std::to_string(log.second) + ")";
+    }
     ImVec2 textSize = ImGui::CalcTextSize(
         text.c_str(), nullptr, true, ImGui::GetWindowWidth() - xpad * 2);
 
@@ -77,14 +87,16 @@ void OutputPanel::ImGuiRender() {
     ImGui::SetCursorPos(cursor + ImVec2(xpad, ypad));
     ImGui::PushTextWrapPos(
         ImGui::GetWindowWidth() - xpad);  // Wrap text at the edge of the window
-    ImGui::TextUnformatted(m_ConsoleLogs[i].c_str());  // Display the text
-    ImGui::PopTextWrapPos();                           // Stop text wrapping
+    ImGui::TextUnformatted(text.c_str());  // Display the text
+    ImGui::PopTextWrapPos();               // Stop text wrapping
     // add bottom padding
     cursor = ImGui::GetCursorPos();
     ImGui::SetCursorPos(cursor + ImVec2(0, ypad));
 
     ImGui::EndChild();
     ImGui::PopStyleColor();
+
+    i++;
   }
 
   // Scroll to the end of the content

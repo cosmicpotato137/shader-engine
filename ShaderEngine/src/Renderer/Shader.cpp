@@ -3,8 +3,14 @@
 #include "Core/Log.h"
 #include "Shader.h"
 
-bool Shader::Init(const std::string &shaderPath) {
+bool Shader::Init(const std::string &shaderPath, const std::string &name) {
   filepath = shaderPath;
+
+  if (name.empty()) {
+    size_t found = filepath.find_last_of("/\\");
+    size_t found2 = filepath.find_last_of(".");
+    m_Name = filepath.substr(found + 1, found2 - found - 1);
+  }
 
   // Load shader source code from files
   std::string shaderSource;
@@ -17,7 +23,7 @@ bool Shader::Init(const std::string &shaderPath) {
 
 bool Shader::ReInit() {
   Cleanup();
-  return Init(filepath);
+  return Init(filepath, m_Name);
 }
 
 bool Shader::InitFromSource(const std::string &shaderSource) {
@@ -56,6 +62,10 @@ void Shader::Cleanup() {
   }
 }
 
+std::string Shader::GetName() const { return m_Name; }
+
+void Shader::SetName(const std::string &name) { m_Name = name; }
+
 // Deprecated
 GLint Shader::GetUniformLocation(const std::string &name) {
   // Try to find the uniform
@@ -85,10 +95,6 @@ void Shader::SetUniform(const std::string &name, const uniform_types &value) {
     uniforms[name] = std::make_shared<Uniform>(name, -1, 0);
   }
 }
-
-std::string Shader::GetName() const { return m_Name; }
-
-void Shader::SetName(const std::string &name) { m_Name = name; }
 
 ptr<Uniform> Shader::GetUniform(const std::string &uniformName) {
   return uniforms[uniformName];

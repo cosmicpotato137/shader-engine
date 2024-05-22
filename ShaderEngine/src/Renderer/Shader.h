@@ -18,7 +18,7 @@ public:
   Shader(const std::string &name) : program(0), m_Name(name), filepath("") {}
   ~Shader() { Cleanup(); }
 
-  bool Init(const std::string &shaderPath);
+  bool Init(const std::string &shaderPath, const std::string &name = "");
   bool ReInit();
   virtual bool InitFromSource(const std::string &shaderSource);
 
@@ -28,17 +28,17 @@ public:
 
   void Cleanup();
 
-  // Find the integer location of a uniform
-  GLint GetUniformLocation(const std::string &name);
-
-  GLuint GetProgramID() const;
-  std::string GetFilePath() const;
-
   // Get the name of the shader
   std::string GetName() const;
 
   // Set the name of the shader
   void SetName(const std::string &name);
+
+  // Find the integer location of a uniform
+  GLint GetUniformLocation(const std::string &name);
+
+  GLuint GetProgramID() const;
+  std::string GetFilePath() const;
 
   // Set a uniform value
   void SetUniform(const std::string &uniformName, const uniform_types &value);
