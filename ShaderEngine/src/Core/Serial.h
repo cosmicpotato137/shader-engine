@@ -38,8 +38,10 @@ void Serial::Save(T serializable, const std::string &filepath) {
   // Check if we can save to this path/file
   std::filesystem::path path(filepath);
   if (!std::filesystem::exists(path.parent_path())) {
-    Console::Error("Path does not exist: %s", path.parent_path().string());
-    return;
+    Console::Warning(
+        "Path does not exist: %s", path.parent_path().string().c_str());
+    Console::Log("Creating directory: %s", path.parent_path().string().c_str());
+    std::filesystem::create_directories(path.parent_path());
   }
 
   // Check if object implements serialize method
@@ -57,7 +59,7 @@ void Serial::Save(T serializable, const std::string &filepath) {
 template <typename T> T Serial::Load(const std::string &filepath) {
   // Check if file exists
   if (!std::filesystem::exists(filepath)) {
-    Console::Error("File does not exist: %s", filepath);
+    Console::Error("File does not exist: %s", filepath.c_str());
     return T();
   }
   T obj;

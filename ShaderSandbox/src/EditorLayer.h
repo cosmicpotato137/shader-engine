@@ -16,8 +16,7 @@ class EditorLayer : public ApplicationLayer {
   ComputeShaderStackPanel m_ComputeShaderStackPanel;
   ptr<Renderer> m_Renderer;
 
-  std::filesystem::path m_DataPath =
-      std::filesystem::current_path() / "bin/Debug/data";
+  std::filesystem::path m_DataPath = std::filesystem::current_path() / "data";
 
 public:
   EditorLayer();

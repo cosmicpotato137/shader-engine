@@ -17,7 +17,7 @@ struct ApplicationCommandLineArgs {
 
 struct ApplicationProps {
   std::string Name = "Application";
-  std::string WorkingDirectory = ROOT_DIR;
+  std::string WorkingDirectory = "";
   int Width = 1280, Height = 720;
   ApplicationCommandLineArgs Args = {0, nullptr};
 };

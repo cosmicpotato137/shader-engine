@@ -7,7 +7,9 @@ source_group("Source Files" FILES ${SOURCES})
 source_group("Header Files" FILES ${HEADERS})
 source_group("Shader Files" FILES ${SHADERS})
 
-add_executable(ShaderSandbox WIN32 ${SOURCES} ${HEADERS} ${SHADERS})
+add_executable(ShaderSandbox WIN32 
+    ${SOURCES} ${HEADERS} ${SHADERS}
+    ${CMAKE_SOURCE_DIR}/res/resource.rc)
 
 # steps necessary to link an external library!
 target_link_libraries(ShaderSandbox ShaderEngine imgui imgui_glfw_opengl3 imgui_file_dialog)

@@ -54,7 +54,7 @@ void ComputeShaderStackPanel::NewComputeShaderPanel(
 
   m_SelectedIndex = m_ComputeShaderPanels.size() - 1;
   if (!shader->Init(filepath)) {
-    Console::Log("Failed to load compute shader: %s", name);
+    Console::Log("Failed to load compute shader: %s", name.c_str());
     DeleteSelectedComputeShader();
     m_SelectedIndex = -1;
   }
