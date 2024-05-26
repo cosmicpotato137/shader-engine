@@ -1,8 +1,0 @@
-22 serialization::archive 20 0 0 0 0 20 Compute Shader Stack 0 0 0.000000000e+00 0.000000000e+00 0 0 1 1 0 1 5 1 0
-0 10 mandelbrot 3.240000000e+02 4.290000000e+02 0 1 7 1 0
-1 10 mandelbrot 89 C:\Users\imacs\Documents\Code\shader-engine\deploy\res\shaders\compute\mandelbrot.compute 0 0 5 0 0 0 6 center 0 1 11 1 0
-2 6 center 4 0 0 0 0.000000000e+00 0.000000000e+00 5 color 11
-3 5 color 6 0 0 0 6.568627357e-01 1.030372828e-01 1.030372828e-01 8 imageOut 11
-4 8 imageOut 11 1 14 max_iterations 11
-5 14 max_iterations 3 0 29 5 scale 11
-6 5 scale 1 0 2.700000048e+00 0

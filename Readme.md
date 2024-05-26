@@ -72,11 +72,3 @@ Most changes that you might want to make to this project before you build are li
 ```cpp
 app->PushLayer(std::make_shared<EditorLayer>()); // Particle systems
 ```
-
-## Contributing
-
-There are a number of things I would love to add to this project, when I have time, but until then, I would welcome PRs on any of these topics (from most to least important):
-
-- Linux compatibility
-- Model Importing with assimp
-- Material system
