@@ -12,7 +12,7 @@ add_executable(ShaderSandbox WIN32
     ${CMAKE_SOURCE_DIR}/res/resource.rc)
 
 # steps necessary to link an external library!
-target_link_libraries(ShaderSandbox ShaderEngine imgui imgui_glfw_opengl3 imgui_file_dialog)
+target_link_libraries(ShaderSandbox ShaderEngine imgui imgui_glfw_opengl3)
 target_include_directories(ShaderSandbox PRIVATE
     ${PROJECT_SOURCE_DIR}/ShaderEngine/src
     ${PROJECT_SOURCE_DIR}/ShaderSandbox/src

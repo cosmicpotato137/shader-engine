@@ -26,7 +26,7 @@ class Application {
   friend class ApplicationTest;
 
   // Essentially a template static function
-  extern friend Application *
+  friend Application *
   CreateApplication(const ApplicationCommandLineArgs &props);
 
   static Application *s_Instance;
@@ -72,6 +72,10 @@ public:
 
   // Get properties
   ApplicationProps GetProperties() { return properties; }
+
+  // Get the path to the current (cross platform implementation)
+  // Must be static if path is needed before instance is created
+  static std::string GetApplicationPath();
 
   // Get the glfw context
   GLFWwindow *GetWindow() const { return window; }

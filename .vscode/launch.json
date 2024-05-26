@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0",
   "configurations": [
     {
       "name": "Launch (Windows)",
@@ -21,7 +22,28 @@
       "cwd": "${workspaceRoot}/bin/Debug",
       "environment": [],
       "console": "internalConsole"
+    },
+    {
+      "name": "Launch (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/bin/ShaderSandbox",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}/bin/",
+      "environment": [],
+      "miDebuggerPath": "/usr/bin/gdb"
+    },
+    {
+      "name": "Test (Linux)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/bin/ShaderEngineTest",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceRoot}/bin/",
+      "environment": [],
+      "miDebuggerPath": "/usr/bin/gdb"
     }
   ],
-  "version": "1.0.0"
 }

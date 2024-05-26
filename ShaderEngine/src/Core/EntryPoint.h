@@ -1,8 +1,11 @@
-#include <windows.h>
-#include <shellapi.h>
-#include "Application.h"
+#pragma once
+#include "Core/Application.h"
 
 extern Application *CreateApplication(const ApplicationCommandLineArgs &args);
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#include <shellapi.h>
 
 int WINAPI WinMain(
     HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine,
@@ -44,3 +47,20 @@ int WINAPI WinMain(
 
   return 0;
 }
+#elif defined(__linux__)
+// TODO: run without terminal by default
+int main(int argc, char **argv) {
+  auto *app = CreateApplication({argc, argv});
+
+  if (app->Init()) {
+    // Run the application
+    app->Run();
+    // Clean up all resources
+    Application::DestroyInstance();
+  } else {
+    Console::Assert(false, "Unable to run the app");
+  }
+
+  return 0;
+}
+#endif

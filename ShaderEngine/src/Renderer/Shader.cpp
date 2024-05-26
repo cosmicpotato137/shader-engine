@@ -49,8 +49,10 @@ bool Shader::InitFromSource(const std::string &shaderSource) {
 }
 
 void Shader::Use() {
-  glUseProgram(program);
-  ApplyUniforms();
+  if (program) {
+    glUseProgram(program);
+    ApplyUniforms();
+  }
 }
 
 void Shader::Cleanup() {

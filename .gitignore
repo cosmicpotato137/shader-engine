@@ -6,6 +6,7 @@
 # build and bin folders
 /build/
 /bin/
+/lib/
 ./vs/
 /out/
 

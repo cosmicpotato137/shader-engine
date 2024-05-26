@@ -5,8 +5,6 @@
 #include "Renderer/Mesh.h"
 #include "Renderer/RenderTexture.h"
 
-#include <format>
-
 class MaterialTest : public ::testing::Test {
 protected:
   virtual void SetUp() {
@@ -18,8 +16,8 @@ protected:
     tex->WritePixel(0, 0, 255, 0, 0);  // init to red
 
     ptr<Shader> shader = std::make_shared<Shader>("Test Shader");
-    shader->Init(
-        std::format("{}/postProcessing/defaultPost.shader", SHADER_DIR));
+    std::string shaderPath = shaderDir + "/postProcessing/defaultPost.shader";
+    shader->Init(shaderPath);
 
     material = std::make_shared<Material>("test material", shader, tex);
   }
@@ -42,6 +40,7 @@ protected:
 
   ptr<Material> material;
   ptr<RenderTexture> renderTexture;
+  std::string shaderDir = Application::GetInstance()->GetWorkingDirectory() + "res/shaders";
 };
 
 TEST_F(MaterialTest, Render) { TestRender(); }

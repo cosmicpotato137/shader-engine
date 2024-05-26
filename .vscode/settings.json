@@ -111,7 +111,9 @@
     "strstream": "cpp",
     "syncstream": "cpp",
     "typeindex": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "*.tcc": "cpp",
+    "string_view": "cpp"
   },
   "editor.tokenColorCustomizations": {
     "[*Light*]": {

@@ -22,15 +22,8 @@ Application *CreateApplication(const ApplicationCommandLineArgs &args) {
   props.Name = "Shader Sandbox";
   props.Args = args;
 
-  // find the directory the application was started from
-  char buffer[MAX_PATH];
-  GetModuleFileName(NULL, buffer, MAX_PATH);
-  std::string fullPath(buffer);
-  std::filesystem::path path(fullPath);
-  std::string directory = path.parent_path().string();
-
   // store the directory in the props
-  props.WorkingDirectory = directory;
+  props.WorkingDirectory = Application::GetApplicationPath();
 
   return new ShaderSandbox(props);
 }

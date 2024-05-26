@@ -46,7 +46,7 @@ void Console::Assert(bool condition, const char *format, ...) {
   std::ostringstream oss;
   oss << "[EXCEPTION] " << buffer;
 
-  throw std::exception(oss.str().c_str());
+  throw std::runtime_error(oss.str());
 }
 
 #undef FORMAT_ARGS

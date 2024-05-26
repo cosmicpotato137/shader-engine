@@ -1,6 +1,8 @@
 #include "pch.h"
 
-#include "FileDialog.h"
+#include "Core/FileDialog.h"
+#include <windows.h>
+#include <commdlg.h>
 #include <vector>
 #include <utility>
 

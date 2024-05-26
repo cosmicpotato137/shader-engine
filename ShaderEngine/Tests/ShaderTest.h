@@ -4,7 +4,6 @@
 #include "Renderer/RenderTexture.h"
 #include "Renderer/Mesh.h"
 
-#include <format>
 #include <filesystem>
 
 class ShaderTest : public ::testing::Test {
@@ -21,14 +20,13 @@ protected:
   }
 
   void TestInit() {
-    ASSERT_TRUE(shader->Init(
-        std::format("{}/postProcessing/defaultPost.shader", SHADER_DIR)));
+    ASSERT_TRUE(shader->Init(shaderDir + "/postProcessing/defaultPost.shader"));
   }
 
   void TestInitFail() { ASSERT_FALSE(shader->Init("badDir")); }
 
   void TestHasUniform() {
-    ASSERT_TRUE(shader->Init(std::format("{}/hello.shader", SHADER_DIR)));
+    ASSERT_TRUE(shader->Init(shaderDir + "/hello.shader"));
     ASSERT_TRUE(shader->HasUniform("color"));
 
     ptr<Uniform> uniform = shader->GetUniform("color");
@@ -38,7 +36,7 @@ protected:
   }
 
   void TestSetUniform() {
-    ASSERT_TRUE(shader->Init(std::format("{}/hello.shader", SHADER_DIR)));
+    ASSERT_TRUE(shader->Init(shaderDir + "/hello.shader"));
     ASSERT_TRUE(shader->HasUniform("color"));
     shader->SetUniform("color", glm::vec3(1.0f, 0.0f, 0.0f));
 
@@ -55,7 +53,7 @@ protected:
 
   void TestShaderSerialization() {
     // Init shader and assert color uniform exists
-    ASSERT_TRUE(shader->Init(std::format("{}/hello.shader", SHADER_DIR)));
+    ASSERT_TRUE(shader->Init(shaderDir + "/hello.shader"));
     ASSERT_TRUE(shader->HasUniform("color"));
 
     // Set color to white and save shader
@@ -79,6 +77,8 @@ protected:
 
   ptr<RenderTexture> renderTexture;
   ptr<Shader> shader;
+  std::string shaderDir =
+      Application::GetInstance()->GetWorkingDirectory() + "res/shaders";
 };
 
 TEST_F(ShaderTest, Init) { TestInit(); }

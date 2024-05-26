@@ -25,6 +25,14 @@ Application *CreateApplication(const ApplicationCommandLineArgs &args) {
   props.Args = args;
   props.Width = 10;
   props.Height = 10;
+
+// Check if running from default build directory
+#ifdef SHADER_ENGINE_BUILD_DIR
+  props.WorkingDirectory = std::string(SHADER_ENGINE_BUILD_DIR);
+#else
+  props.WorkingDirectory = Application::GetApplicationPath();
+#endif
+
   return new ApplicationTest(props);
 }
 

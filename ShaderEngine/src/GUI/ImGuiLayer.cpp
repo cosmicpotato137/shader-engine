@@ -25,7 +25,7 @@ bool ImGuiLayer::OnAttach() {
   ImGui_ImplGlfw_InitForOpenGL(Application::GetInstance()->GetWindow(), true);
 
   // Initialize ImGui for OpenGL
-  ImGui_ImplOpenGL3_Init("#version 460 core");
+  ImGui_ImplOpenGL3_Init("#version 430 core");
 
   return true;
 }

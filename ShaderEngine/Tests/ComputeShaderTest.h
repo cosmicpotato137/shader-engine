@@ -1,6 +1,5 @@
 #pragma once
 
-#include <format>
 #include "gtest/gtest.h"
 #include "Renderer/ComputeShader.h"
 
@@ -23,7 +22,7 @@ protected:
   }
 
   void TestInit() {
-    std::string source = std::string(SHADER_DIR) + "/compute/hello.compute";
+    std::string source = shaderDir + "/compute/hello.compute";
     EXPECT_TRUE(computeShader->Init(source));
     EXPECT_NE(computeShader->GetProgramID(), 0);
   }
@@ -35,15 +34,15 @@ protected:
   }
 
   void TestUse() {
-    computeShader->Init(std::format("{}/compute/hello.compute", SHADER_DIR));
+
+    computeShader->Init(shaderDir + "/compute/hello.compute");
     computeShader->Use();
     EXPECT_EQ(glGetError(), GL_NO_ERROR);
   }
 
   void TestShaderSerialization() {
     // Init shader and assert color uniform exists
-    ASSERT_TRUE(
-        computeShader->Init(std::format("{}/compute/test-color.compute", SHADER_DIR)));
+    ASSERT_TRUE(computeShader->Init(shaderDir + "/compute/test-color.compute"));
     ASSERT_TRUE(computeShader->HasUniform("color"));
 
     // Set color to white and save shader
@@ -66,6 +65,9 @@ protected:
   }
 
   std::shared_ptr<ComputeShader> computeShader;
+  std::string shaderDir =
+      Application::GetInstance()->GetWorkingDirectory() + "/res/shaders";
+  ;
 };
 
 TEST_F(ComputeShaderTest, SetWorkGroups) { TestSetWorkGroups(); }

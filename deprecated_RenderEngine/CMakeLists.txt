@@ -11,7 +11,7 @@ source_group("Shader Files" FILES ${SHADERS})
 add_library(RenderEngine ${SOURCES} ${HEADERS} ${SHADERS})
 
 # steps necessary to link an external library!
-target_link_libraries(RenderEngine ShaderEngine imgui imgui_glfw_opengl3 imgui_file_dialog)
+target_link_libraries(RenderEngine ShaderEngine imgui imgui_glfw_opengl3)
 target_include_directories(RenderEngine PRIVATE ${PROJECT_SOURCE_DIR}/ShaderEngine)
 
 # testing

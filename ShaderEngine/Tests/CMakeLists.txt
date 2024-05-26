@@ -29,9 +29,9 @@ target_link_libraries(
 	ShaderEngineTest 
 	gtest
 	gtest_main
-	ShaderEngine 
 	imgui 
 	imgui_glfw_opengl3
+	ShaderEngine 
 )
 
 target_include_directories(

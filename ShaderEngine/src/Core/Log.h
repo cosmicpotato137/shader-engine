@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
-#include <format>
 #include <sstream>
 
 #include <streambuf>

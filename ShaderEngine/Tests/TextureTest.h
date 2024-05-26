@@ -1,6 +1,5 @@
 #pragma once
 #include <gtest/gtest.h>
-#include <format>
 #include "Renderer/RenderTexture.h"
 
 class TextureTest : public ::testing::Test {
@@ -29,7 +28,8 @@ protected:
   }
 
   void InitFromImageTest() {
-    std::string filePath = std::format("{}/test.png", TEXTURE_DIR);
+    std::string filePath = Application::GetInstance()->GetWorkingDirectory() +
+                           "/res/textures/test.png";
     EXPECT_TRUE(texture->Init(filePath));
     EXPECT_NE(texture->GetTextureID(), 0);
     EXPECT_NE(texture->GetWidth(), 0);
