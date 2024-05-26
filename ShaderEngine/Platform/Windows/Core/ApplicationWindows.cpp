@@ -1,5 +1,6 @@
 #include "Core/Application.h"
 #include "pch.h"
+#include <windows.h>
 
 std::string Application::GetApplicationPath() {
   char buffer[MAX_PATH];
