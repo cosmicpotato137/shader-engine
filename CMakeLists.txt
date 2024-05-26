@@ -30,7 +30,7 @@ find_package(OpenGL REQUIRED)
 # boost serialization
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.85.0 COMPONENTS serialization REQUIRED)
-link_directories({$ENV{BOOST_ROOT}} ${Boost_LIBRARY_DIRS})
+link_directories($ENV{BOOST_ROOT}/stage/lib ${Boost_LIBRARY_DIRS})
 
 if (WIN32)
 find_library(GLFW_LIBRARY NAMES glfw3 PATHS vendor/lib REQUIRED)
