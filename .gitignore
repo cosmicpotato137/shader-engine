@@ -9,6 +9,7 @@
 /lib/
 ./vs/
 /out/
+/deploy/
 
 # Using FetchContent instead of submodules
 /vendor/googletest/
