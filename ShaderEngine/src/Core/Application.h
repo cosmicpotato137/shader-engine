@@ -20,6 +20,7 @@ struct ApplicationProps {
   std::string WorkingDirectory = "";
   int Width = 1280, Height = 720;
   ApplicationCommandLineArgs Args = {0, nullptr};
+  std::string OpenGLVersion = "460";
 };
 
 class Application {

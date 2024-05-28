@@ -13,6 +13,16 @@ static void glfwErrorCallback(int error, const char *description) {
 
 Application::Application(const ApplicationProps &props) : properties(props) {
   s_Instance = this;
+
+  // Find OpenGL version from command line args
+  for (int i = 0; i < props.Args.Count; i++) {
+    if (props.Args[i] == std::string("-gl")) {
+      if (i + 1 < props.Args.Count) {
+        properties.OpenGLVersion = props.Args[i + 1];
+      }
+    }
+  }
+
   // Initialize all keys and mouse buttons to not pressed
   for (int key = 0; key < GLFW_KEY_LAST; ++key) {
     m_KeyState[key] = false;
@@ -53,10 +63,12 @@ bool Application::Init() {
     return false;
   }
 
-  // Configure GLFW (optional)
+  std::string version = properties.OpenGLVersion;
+  int major = std::stoi(version.substr(0, 1));
+  int minor = std::stoi(version.substr(1, 1));
 
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   // Create a GLFW window

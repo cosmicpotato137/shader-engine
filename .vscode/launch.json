@@ -28,7 +28,7 @@
       "type": "cppdbg",
       "request": "launch",
       "program": "${workspaceRoot}/bin/ShaderSandbox",
-      "args": [],
+      "args": ["-gl", "410"],
       "stopAtEntry": false,
       "cwd": "${workspaceRoot}/bin/",
       "environment": [],
